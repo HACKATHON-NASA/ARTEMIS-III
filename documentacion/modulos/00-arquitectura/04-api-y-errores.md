@@ -126,7 +126,7 @@ enum CodigoSintomas: string
 }
 ```
 
-El manejador común (`bootstrap/app.php` → `withExceptions`) convierte la excepción en el sobre de error. Cada módulo documenta sus códigos en una tabla "Códigos de respuesta" de su `backend/README.md`; un código publicado **no cambia**.
+El manejador común (`bootstrap/app.php` → `withExceptions`) convierte la excepción en el sobre de error. En las **pantallas** (rutas web de Inertia) la misma excepción llega como error de validación del campo que declara (`useForm` lo muestra bajo el campo) o, si no declara campo, como `flash.error`. El servicio no sabe ni le importa desde dónde lo llamaron. Cada módulo documenta sus códigos en una tabla "Códigos de respuesta" de su `backend/README.md`; un código publicado **no cambia**.
 
 ## 5. Cómo encontrar un error en el log
 

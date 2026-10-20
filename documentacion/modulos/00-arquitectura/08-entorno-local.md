@@ -1,6 +1,6 @@
 # 8 · Preparar el entorno local
 
-> [← Guía](README.md) · Anterior: [Forma de trabajo](07-forma-de-trabajo.md) · [ARCHITECTURE.md](ARCHITECTURE.md)
+> [← Guía](README.md) · Anterior: [Forma de trabajo](07-forma-de-trabajo.md) · Siguiente: [Flujo de trabajo con Git](09-flujo-de-git.md) · [ARCHITECTURE.md](ARCHITECTURE.md)
 
 Paso a paso para que **cada integrante** tenga AstroHealth funcionando en su computador (Windows), con **las mismas versiones** que el servidor. Siga los pasos **en orden** y no se salte las verificaciones.
 
@@ -130,7 +130,7 @@ git config --global user.name "Su Nombre"
 git config --global user.email "su-correo@ejemplo.com"
 ```
 
-**Se trabaja siempre en la rama `development`** ([forma de trabajo](07-forma-de-trabajo.md#ramas)). El repositorio tiene tres carpetas: `documentacion/`, `astrohealth/` (la aplicación) y `simulador/`.
+**Se trabaja siempre en la rama `development`** ([forma de trabajo](09-flujo-de-git.md#1-las-tres-ramas-permanentes)). El repositorio tiene tres carpetas: `documentacion/`, `astrohealth/` (la aplicación) y `simulador/`.
 
 ## Paso 6 · Instalar las dependencias
 
@@ -218,10 +218,11 @@ Marque cada punto antes de empezar a programar:
 
 ## El día a día
 
-Cada vez que trae cambios de otros (`git pull`), ejecute dentro de `astrohealth/`:
+Cada vez que trae cambios de otros, ejecute dentro de `astrohealth/` (el flujo completo de ramas está en [Flujo de trabajo con Git](09-flujo-de-git.md)):
 
 ```powershell
-git pull
+git switch development
+git pull origin development
 composer install
 npm install
 php artisan migrate

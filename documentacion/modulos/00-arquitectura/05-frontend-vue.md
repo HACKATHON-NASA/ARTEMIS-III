@@ -104,10 +104,14 @@ Reglas:
 **Con conexión** (pantallas de F2, F3 y F4): `useForm`.
 
 ```ts
+import { store } from '@/actions/App/Modules/Identidad/Http/Controllers/Web/UsuarioController'   // generado por Wayfinder
+
 const form = useForm({ name: '', email: '', rol: 'astronauta' })
-form.post('/admin/usuarios', { onSuccess: () => cerrarPanel() })
+form.submit(store(), { onSuccess: () => cerrarPanel() })
 // form.errors.email → el error 422 bajo el campo; form.processing → botón deshabilitado
 ```
+
+**Las URL no se escriben a mano:** Wayfinder genera en `resources/js/actions/` y `resources/js/routes/` una función por cada controlador y ruta de Laravel. Si alguien cambia una ruta, TypeScript avisa en lugar de fallar en producción. Esas carpetas se regeneran solas con `npm run dev` y no se suben a Git.
 
 **Sin conexión** (capturas de F1): el `id` se genera **antes** de guardar y el registro va a la cola de M15, que lo envía cuando hay red.
 

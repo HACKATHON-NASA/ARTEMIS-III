@@ -18,7 +18,7 @@ Capa **Laravel** del módulo: API, eventos, reglas de negocio, contratos, permis
 | `DELETE` | `/admin/tokens/{id}` | Gate `emitir-tokens` (los de nodo, solo `admin`) | Revoca un token |
 | `GET` | `/admin/auditoria` | Gate `ver-auditoria` | Consulta de la auditoría |
 
-El inicio de sesión también es web (Inertia). Detalle de cada ruta en las [historias de backend](HU/README.md). El registro público del *starter kit* se **elimina en el backend** (rutas `register` borradas de `routes/auth.php`), no solo se oculta en la pantalla.
+El inicio de sesión también es web (Inertia). Detalle de cada ruta en las [historias de backend](HU/README.md). El inicio de sesión lo atiende **Laravel Fortify** (del *starter kit*), que llama a `Application/AutenticarUsuario`. El registro público se **elimina en el backend** con `php artisan install:features` (quita `Features::registration()`, sus rutas, su página y sus pruebas), no solo se oculta en la pantalla.
 
 ## 2. Eventos
 
@@ -33,7 +33,7 @@ El inicio de sesión también es web (Inertia). Detalle de cada ruta en las [his
 1. Un usuario tiene **exactamente un rol**. El CMO tiene, además de sus permisos de CMO, los del astronauta sobre **sus propios datos**.
 2. El rol `sistema` solo lo tienen los usuarios técnicos `nodo-nave` y `nodo-tierra`, dueños del token de nodo. **No puede iniciar sesión** ni asignarse desde `Admin/Usuarios`.
 3. **Usuario inactivo:** no puede iniciar sesión (la comprobación de `activo` se añade al *Form Request* de inicio de sesión del *starter kit*), sus tokens se revocan al desactivarlo y el middleware `UsuarioActivo` cierra en la siguiente petición cualquier sesión que siga abierta.
-4. **Contraseñas:** el admin crea cada usuario con una contraseña temporal y puede ponerle otra. "Olvidé mi contraseña" solo se activa si el nodo tiene correo configurado (`canResetPassword = false` en otro caso). No hay "Recordarme".
+4. **Contraseñas:** el admin crea cada usuario con una contraseña temporal y puede ponerle otra. "Olvidé mi contraseña" solo se activa si el nodo tiene correo configurado (`canResetPassword = false` en otro caso). No hay "Recordarme", ni registro, ni verificación de correo, ni doble factor, ni *passkeys*: se quitan del *starter kit* con `install:features` ([HU-01.01](HU/HU-01.01-inicio-de-sesion.md)).
 5. **Cambio de rol:** revoca todos los tokens del usuario (el de la PWA lleva los permisos del rol anterior).
 6. **Protecciones del admin:** nadie puede cambiarse su propio rol ni desactivarse, y debe quedar al menos un admin activo.
 7. **Usuario vinculado a un tripulante:** solo puede tener rol `astronauta` o `cmo`; para cambiarlo, primero se desvincula en M02.
@@ -117,41 +117,44 @@ Los nombres van en minúsculas con guion medio. `HandleInertiaRequests` comparte
 ## 6. Archivos
 
 ```
-app/Modules/Identidad/
+astrohealth/app/Modules/Identidad/
 ├── IdentidadServiceProvider.php
-├── routes.php
+├── routes.php                      # Grupo web: /inicio, /admin/usuarios, /admin/tokens, /admin/auditoria
 ├── Contratos/
 │   └── RegistroAuditoria.php
-├── Domain/Enums/
-│   ├── Rol.php                     # Los 6 roles de usuario + sistema
-│   ├── TipoToken.php               # dispositivo, pwa, nodo
-│   └── AccionAuditoria.php
+├── Domain/
+│   ├── Enums/{Rol,TipoToken,AccionAuditoria,CodigoIdentidad}.php
+│   ├── Reglas/ReglasAdministrador.php
+│   └── Excepciones/{CredencialesNoAdmitidas,UsuarioDesactivado,RolFueraDeNodo,NoPuedeCambiarSuPropioRol,UltimoAdministrador,UsuarioVinculadoATripulante,DispositivoConToken,TabletaSinToken}.php
 ├── Application/
+│   ├── AutenticarUsuario.php       # Comprobaciones del inicio de sesión (lo llama Fortify::authenticateUsing)
 │   ├── GuardarUsuario.php          # Reglas del admin y del tripulante vinculado
+│   ├── DesactivarUsuario.php
 │   ├── EmitirTokenDispositivo.php
 │   ├── EmitirTokenPwa.php          # Revoca el anterior y emite el nuevo (HU-15.04)
 │   ├── RevocarToken.php
-│   ├── DesactivarUsuario.php
-│   └── RegistrarAuditoria.php      # Aplica la regla de 10 minutos y omite las recargas parciales
-├── Console/
-│   ├── TokenNodoCommand.php        # identidad:token-nodo
-│   ├── VerificarAuditoriaCommand.php   # identidad:verificar-auditoria
-│   └── EncolarAuditoriaCommand.php # identidad:encolar-auditoria (solo nave, cada hora)
-├── Http/
-│   ├── Controllers/Web/{UsuarioController,TokenController,AuditoriaController}.php
-│   ├── Requests/{GuardarUsuarioRequest,EmitirTokenRequest}.php
-│   └── Middleware/{RedirigirSegunRol,RolPermitidoEnNodo,UsuarioActivo,TokenDeTipo}.php
+│   ├── RegistrarAuditoria.php      # Implementa RegistroAuditoria: regla de 10 minutos, sin recargas parciales
+│   └── DTOs/{DatosUsuario,ResultadoUsuario}.php
 ├── Infrastructure/
-│   ├── Models/{Auditoria,AuditoriaEnvio}.php
-│   ├── Repositorios/AuditoriaEloquent.php
+│   ├── Repositorios/{UsuarioLectura,UsuarioEscritura,TokenLectura,TokenEscritura,AuditoriaLectura,AuditoriaEscritura}Repositorio.php
+│   ├── Models/{Auditoria,AuditoriaEnvio}.php       # User sigue en app/Models (lo exigen Fortify y Sanctum)
 │   ├── Listeners/{AuditarLogin,AuditarLogout,AuditarLoginFallido,AuditarUmbralModificado}.php
 │   └── Sincronizacion/ImportadorAuditoria.php
-├── Policies/{GatesIdentidad,TokenPolicy}.php   # Gates de la sección 5 (GatesIdentidad::queCumple) y TokenPolicy
+├── Http/
+│   ├── Controllers/Web/{InicioController,UsuarioController,TokenController,AuditoriaController}.php
+│   ├── Requests/{LoginRequest,GuardarUsuarioRequest,EmitirTokenRequest}.php
+│   ├── Resources/{UsuarioResource,TokenResource,AuditoriaResource}.php
+│   └── Middleware/{RedirigirSegunRol,RolPermitidoEnNodo,UsuarioActivo,TokenDeTipo}.php
+├── Policies/{GatesIdentidad,TokenPolicy}.php       # Los 23 Gates (queCumple) y la revocación de tokens de nodo
+├── Console/{TokenNodoCommand,VerificarAuditoriaCommand,EncolarAuditoriaCommand}.php
 ├── Database/
 │   ├── Migrations/{add_rol_activo_to_users,create_auditoria,create_auditoria_envios}.php
-│   └── Seeders/{UsuariosDePruebaSeeder,UsuariosSistemaSeeder,TokenSimuladorSeeder}.php
-└── Tests/
+│   ├── Seeders/{UsuariosDePruebaSeeder,UsuariosSistemaSeeder,TokenSimuladorSeeder}.php
+│   └── Factories/AuditoriaFactory.php
+└── Tests/{Unit,Feature}/
 ```
+
+Del *starter kit* siguen fuera del módulo `app/Models/User.php`, `app/Providers/FortifyServiceProvider.php` (configura Fortify y llama a `AutenticarUsuario`) y `app/Http/Middleware/HandleInertiaRequests.php` (*props* compartidas). M01 es su dueño.
 
 ## 7. Pruebas mínimas (Pest)
 
@@ -167,3 +170,20 @@ app/Modules/Identidad/
 - [ ] Diez recargas parciales de `Cmo/Tripulacion/Index` no crean entradas; abrir dos veces la misma página en 10 minutos crea una sola.
 - [ ] Intentar modificar una fila de `auditoria` lanza una excepción, también con `DB::table('auditoria')->update(...)` (*trigger*).
 - [ ] `POST /register` devuelve `404`.
+- [ ] Los códigos de la sección 8 llegan con su campo (pantallas) o en el sobre JSON (API).
+
+## 8. Códigos de respuesta
+
+M01 no tiene API propia, pero su middleware `TokenDeTipo` responde en todas las rutas `/api/v1` con el [sobre de error](../../00-arquitectura/ARCHITECTURE.md#12-estándar-json). En las pantallas, sus errores de negocio llegan como error de validación del campo indicado.
+
+| Código | HTTP | Mensaje | Dónde |
+|---|:---:|---|---|
+| `IDENTIDAD_TOKEN_REQUERIDO` | 401 | "Las escrituras en la API requieren un token." | `TokenDeTipo` (petición con sesión) |
+| `IDENTIDAD_TOKEN_NO_PERMITIDO` | 403 | "Este token no permite esta operación." | `TokenDeTipo` (tipo o habilidad incorrectos) |
+| `IDENTIDAD_USUARIO_DESACTIVADO` | 401 / campo `email` | "Usuario desactivado." (API) · "Este usuario está desactivado. Contacte con la administración." (inicio de sesión) | `TokenDeTipo` · `AutenticarUsuario` |
+| `IDENTIDAD_ROL_FUERA_DE_NODO` | campo `email` | "Este usuario trabaja en el nodo Tierra." / "Este usuario trabaja en la nave." | `AutenticarUsuario` |
+| `IDENTIDAD_PROPIO_ROL` | campo `rol` o `activo` | "No puede cambiar su propio rol ni desactivarse." | `GuardarUsuario` |
+| `IDENTIDAD_ULTIMO_ADMIN` | campo `rol` o `activo` | "Debe quedar al menos un administrador activo." | `GuardarUsuario` |
+| `IDENTIDAD_USUARIO_VINCULADO` | campo `rol` | "Este usuario está vinculado al tripulante T2. Desvincúlelo primero en Tripulantes." | `GuardarUsuario` |
+| `IDENTIDAD_TABLETA_SIN_TOKEN` | campo `dispositivo_id` | "Las tabletas no usan token de dispositivo: el astronauta usa el de la PWA." | `EmitirTokenDispositivo` |
+| `IDENTIDAD_DISPOSITIVO_CON_TOKEN` | campo `dispositivo_id` | "Este dispositivo ya tiene un token vigente. Confirme si quiere reemplazarlo." | `EmitirTokenDispositivo` |

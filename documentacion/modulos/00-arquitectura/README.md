@@ -21,6 +21,8 @@
 | 6 | [Base de datos y migraciones](06-base-de-datos.md) | Cómo se crea y se cambia una tabla sin romper nada | Backend |
 | 7 | [Forma de trabajo](07-forma-de-trabajo.md) | Git, Jira, ramas, *pull requests*, pruebas y cuándo una historia está terminada | Todo el equipo |
 | 8 | [Preparar el entorno local](08-entorno-local.md) | Instalar PHP 8.4, Node 22, MySQL, clonar el repositorio y arrancar la aplicación, con la solución a los errores frecuentes | **Todo el equipo, primero que todo** |
+| 9 | [Flujo de trabajo con Git](09-flujo-de-git.md) | Ramas `development` → `testing` → `main`, el ciclo de una historia con sus comandos, cómo evitar y resolver conflictos, y la configuración de GitHub | **Todo el equipo, antes del primer *commit*** |
+| 10 | [Estructura de carpetas](10-estructura-de-carpetas.md) | Dónde va cada cosa en el backend y el frontend, cómo se conectan (Inertia, API, contratos, eventos, nave ↔ Tierra), qué archivos crear en una historia y cómo documentar | **Todo el equipo, antes de la primera historia** |
 
 ## Cómo se usa junto con las fichas de los módulos
 

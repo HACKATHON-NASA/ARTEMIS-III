@@ -2,10 +2,46 @@
 
 > [← Volver al inicio](README.md)
 
+## 2026-10-19 · M01 alineado con el *starter kit* real y con la norma
+
+Revisión de las tres capas de M01 contra lo que instaló el *kit* (Laravel 13 con **Fortify**, *passkeys*, doble factor y Wayfinder) y contra ARCHITECTURE.md.
+
+- **Funciones del *kit* que no se usan** (registro, verificación de correo, doble factor, *passkeys* y confirmación de contraseña): se quitan con la herramienta oficial del *kit*, `php artisan install:features`, al empezar HU-01.01. Así se borran rutas, páginas, pruebas, migraciones y paquetes sin tocarlos a mano. Se reemplaza la tabla de "dos posibilidades" de las reglas comunes.
+- **Inicio de sesión:** las comprobaciones viven en `Application/AutenticarUsuario` y se conectan con `Fortify::authenticateUsing()`, **antes** de abrir la sesión (credenciales y `sistema` → mensaje de Fortify; desactivado y rol fuera de nodo → excepciones con código). "Recordarme" se anula con un `LoginRequest` propio. `fortify.home = /inicio`; se eliminan `dashboard` y `settings/profile` (edición y borrado de cuenta); `/` redirige a `/inicio`; quedan Seguridad (contraseña) y Apariencia. Las páginas del *kit* pasan a `modules/Identidad/Pages/Auth` y `Settings`.
+- ***Props* compartidas:** `auth.user` lleva también `email` (lo usan los componentes del *kit*), y se conservan `name` y `sidebarOpen` del *kit*. Actualizado en el backend, el frontend y las [convenciones](modulos/README.md#convenciones-del-frontend).
+- **Errores con código:** nueva sección [§8 Códigos de respuesta](modulos/M01-identidad/backend/README.md#8-códigos-de-respuesta) con los 9 códigos `IDENTIDAD_…`. `TokenDeTipo` responde con el sobre JSON. Las reglas de HU-01.02 y HU-01.03 lanzan excepciones del dominio con su campo.
+- **Capas:** árbol de archivos de la ficha igual al de la estructura creada en el código: `ReglasAdministrador`, excepciones, DTOs, repositorios de lectura y escritura (usuarios, tokens y auditoría), `Resources`, `InicioController` y `LoginRequest`. La transacción de HU-01.02 usa `Transaccion`. Base de datos: `users` sin columnas de doble factor y sin el usuario `test@example.com` del *kit*. Frontend: componentes, tipos y utilidades de M01 dentro de `modules/Identidad`.
+- **Norma:**
+  - [§13](modulos/00-arquitectura/ARCHITECTURE.md#13-manejo-de-errores-y-códigos-funcionales): un `ErrorDeNegocio` puede declarar su campo; en las pantallas llega como error de validación de ese campo (o `flash.error`), y en la API, en el sobre.
+  - [§15](modulos/00-arquitectura/ARCHITECTURE.md#15-vue-e-inertia): las URL del frontend se importan de Wayfinder.
+  - [§26 E5](modulos/00-arquitectura/ARCHITECTURE.md#26-excepciones-documentadas): `User`, `FortifyServiceProvider` y `HandleInertiaRequests` siguen en las carpetas del *kit*.
+  - Actualizados los manuales de API y de frontend, y los README del código de M01.
+
+## 2026-10-19 · Documentación técnica por capa y por módulo
+
+- `astrohealth/docs/` se organiza en `backend/`, `frontend/` y `database/` (una carpeta por módulo, de `M01-identidad` a `M16-configuracion`, cada una con su `README.md` de arranque) y `server/` (despliegue, `.env` por nodo, cron, colas, CI y *logs*). Las fichas dicen **qué** construir; `docs/` documenta **cómo quedó hecho**, en el mismo *pull request* que el código.
+- [Estructura de carpetas](modulos/00-arquitectura/10-estructura-de-carpetas.md): la tabla "Documentar siempre" incluye actualizar el módulo en `astrohealth/docs/` al terminar cada historia.
+
+## 2026-10-19 · Estructura de carpetas creada y documentada
+
+- **Estructura creada en `astrohealth/`**, con un `README.md` en cada carpeta (610 en total):
+  - Backend de los 16 módulos en `app/Modules/<Modulo>/`, con todas sus capas: `Contratos`, `Domain` (`Enums`, `Reglas`, `Eventos`, `ValueObjects`, `Excepciones`), `Application` (`DTOs`), `Infrastructure` (`Repositorios`, `Models`, `Listeners`, `Sincronizacion`), `Http` (`Controllers/Web`, `Controllers/Api`, `Requests`, `Resources`, `Middleware`), `Policies`, `Console`, `Database` (`Migrations`, `Seeders`, `Factories`) y `Tests` (`Unit`, `Feature`).
+  - Frontend de los 16 módulos en `resources/js/modules/<Modulo>/` (`Pages`, `Components`, `Composables`, `Types`, `Utils`).
+  - `app/Shared`, carpetas globales del frontend (`contratos`, `offline` y las del *kit*), `app/README.md`, `astrohealth/README.md` y `astrohealth/docs/`.
+  - **M01 · Identidad** es el ejemplo completo: cada carpeta lista los archivos previstos y la historia que los crea. Los demás módulos enlazan la lista de archivos de su ficha.
+- Nueva guía [Estructura de carpetas](modulos/00-arquitectura/10-estructura-de-carpetas.md): dónde se trabaja el backend y el frontend, quién puede usar a quién, las 9 integraciones (Inertia, *props* compartidas, Wayfinder, API, contratos y eventos, nave ↔ Tierra, M16, base de datos, cola), el recorrido de "crear un usuario", qué archivos crear en una historia y la regla de documentar siempre.
+- [ARCHITECTURE §5](modulos/00-arquitectura/ARCHITECTURE.md#5-estructura-de-un-módulo) y [HU-00.01](scrum/fundaciones/HU-00.01-repositorio-y-estructura-de-modulos.md): la estructura completa viene creada (antes: "solo las carpetas que se necesiten").
+
+## 2026-10-19 · Flujo de trabajo con Git
+
+- Nueva guía [Flujo de trabajo con Git](modulos/00-arquitectura/09-flujo-de-git.md): las ramas `development` (trabajo diario), `testing` (pruebas de fase) y `main` (producción); el ciclo de una historia en 9 pasos con sus comandos; hábitos para evitar conflictos y los archivos compartidos; cómo resolver un conflicto (también en los *lockfiles*); promoción `development` → `testing` → `main` con *merge commit* y etiquetas; *hotfix* durante el evento; comandos de rescate y la configuración de GitHub (rama por defecto `development`, protección de ramas y borrado automático).
+- Plantilla de *pull request* en `.github/pull_request_template.md`.
+- La sección de Git de la [forma de trabajo](modulos/00-arquitectura/07-forma-de-trabajo.md) remite a la nueva guía.
+
 ## 2026-10-19 · Repositorio en GitHub y ramas
 
 - Repositorio: [HACKATHON-NASA/ARTEMIS-III](https://github.com/HACKATHON-NASA/ARTEMIS-III), con las ramas `main` (estable), `testing` (pruebas de fase) y `development` (**rama de trabajo diaria**).
-- [Forma de trabajo](modulos/00-arquitectura/07-forma-de-trabajo.md#ramas): las ramas de historia salen de `development` y vuelven a `development` por *pull request*; `development` → `testing` al cerrar cada fase y `testing` → `main` cuando las pruebas pasan. URL real del repositorio en la [guía del entorno local](modulos/00-arquitectura/08-entorno-local.md).
+- [Forma de trabajo](modulos/00-arquitectura/09-flujo-de-git.md#1-las-tres-ramas-permanentes): las ramas de historia salen de `development` y vuelven a `development` por *pull request*; `development` → `testing` al cerrar cada fase y `testing` → `main` cuando las pruebas pasan. URL real del repositorio en la [guía del entorno local](modulos/00-arquitectura/08-entorno-local.md).
 
 ## 2026-10-19 · Guía del entorno local y proyecto creado
 

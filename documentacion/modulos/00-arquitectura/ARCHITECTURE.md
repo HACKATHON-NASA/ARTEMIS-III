@@ -173,7 +173,7 @@ astrohealth/app/Modules/Sintomas/
     └── Feature/                      # HTTP + Service + Repository
 ```
 
-**Solo se crean las carpetas que el módulo necesita**, pero cuando existen se llaman así, en todos los módulos. Las fichas nombran a veces el repositorio como `<Cosa>Eloquent` (por ejemplo `SintomasEloquent`): es el **repositorio de lectura** que implementa el contrato.
+**La estructura completa ya está creada en los 16 módulos** (backend y frontend), y **cada carpeta tiene un `README.md`** que dice qué va y qué no va ([estructura de carpetas](10-estructura-de-carpetas.md)). Nadie crea carpetas nuevas fuera de esta estructura sin actualizar esta norma; si un módulo no usa una carpeta, queda solo con su README. Las fichas nombran a veces el repositorio como `<Cosa>Eloquent` (por ejemplo `SintomasEloquent`): es el **repositorio de lectura** que implementa el contrato.
 
 ## 6. Las capas
 
@@ -356,7 +356,7 @@ Nunca se responde `200` para esconder un error. Si una ficha fija un código par
 
 - Cada módulo declara sus códigos en un *enum* (`Domain/Enums/CodigoSintomas`) y los **documenta** en una tabla "Códigos de respuesta" de su `backend/README.md`. Un código publicado **no cambia**: lo usan el simulador, la PWA y el otro nodo.
 - Los éxitos de escritura llevan un código propio (`SINTOMAS_REGISTRADO`, `SINTOMAS_YA_REGISTRADO` en el reenvío); las consultas, `OK`.
-- **Errores de negocio:** el servicio lanza una excepción que hereda de `ErrorDeNegocio` (con su código y su HTTP). El manejador común de `bootstrap/app.php` la convierte en el sobre de error. Nadie arma respuestas de error a mano.
+- **Errores de negocio:** el servicio lanza una excepción que hereda de `ErrorDeNegocio` (con su código, su HTTP y, si corresponde, el **campo** del formulario). El manejador común de `bootstrap/app.php` la convierte: en la **API**, en el sobre de error; en las **pantallas** (Inertia), en un error de validación de ese campo (lo muestra `useForm`) o, si no tiene campo, en `flash.error`, y vuelve a la página anterior. Nadie arma respuestas de error a mano.
 - **Dónde se generó:** `meta.modulo` (deducido del espacio de nombres de la excepción o del controlador) y `meta.traza_id`, que también va en el encabezado `X-Traza-Id` y en cada línea de *log* de esa petición.
 - **En local** (`APP_DEBUG=true`), `meta.debug` añade `{ excepcion, archivo, linea }`.
 - **En producción nunca** se exponen trazas, SQL, credenciales, tokens, rutas internas ni datos del servidor: un `500` responde siempre "Ocurrió un error inesperado." con su `traza_id`.
@@ -385,6 +385,7 @@ Nunca se responde `200` para esconder un error. Si una ficha fija un código par
 1. Inertia **une** Laravel y Vue, pero no mezcla responsabilidades: el controlador entrega *props* ya calculadas; la página las presenta.
 2. **Ninguna regla de negocio en Vue.** Umbrales, rangos, permisos y textos clínicos llegan en las *props*.
 3. Las pantallas reciben sus datos como *props*; **no** usan `fetch` ni `axios` para eso. Solo la cola offline (M15) llama a `/api/v1`.
+4. **Las URL no se escriben a mano:** se importan de Wayfinder (`@/actions/…` para los controladores, `@/routes/…` para las rutas con nombre), que Vite genera a partir de las rutas de Laravel. Si una ruta cambia, TypeScript avisa.
 4. Formularios con conexión: `useForm`. Capturas de F1 sin conexión: UUID en el cliente y cola offline.
 5. **TypeScript:** las *props* de cada página se tipan en `Types/` del módulo, con la forma de la ficha.
 6. **Estado:** local (`ref`, `computed`) por defecto; nada de *stores* globales para datos que ya vienen en *props* (D11).
@@ -597,6 +598,7 @@ foreach ($modulos as $m) {
 | E2 | Autenticación de Sanctum y de la sesión, y lectura del usuario autenticado (`$request->user()`, `->activo`, `->rol`) | Middleware y *Gates* de M01 | Lo resuelve el framework |
 | E3 | `DB::unprepared()` y SQL por motor en migraciones (los *triggers* de `auditoria`) | `Database/Migrations` | Las migraciones son parte de la persistencia |
 | E4 | `Schema::` y `DB::` en *seeders* y en `TransaccionMysql` | `Database/Seeders`, `App\Shared\Persistencia` | Son infraestructura |
+| E5 | `App\Models\User`, `FortifyServiceProvider` y `HandleInertiaRequests` siguen en las carpetas del *starter kit* | `app/Models`, `app/Providers`, `app/Http/Middleware` | Fortify, Sanctum y la configuración de `auth` los esperan ahí. Su dueño es M01 y delegan en sus casos de uso |
 
 ## 27. Ejemplos de flujo
 

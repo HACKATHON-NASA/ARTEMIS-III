@@ -24,11 +24,16 @@ Cómo debe verse cada pantalla (guía visual provisional, bocetos y textos exact
 ## 2. Archivos
 
 ```
-resources/js/modules/Identidad/Pages/Auth/Login.vue                 # Del starter kit (se traduce; el enlace de registro se quita y la ruta se borra en el backend)
+resources/js/modules/Identidad/Pages/Auth/Login.vue              # Del starter kit (pasa aquí desde pages/auth; se traduce y se quita "Recordarme")
+resources/js/modules/Identidad/Pages/Auth/{ForgotPassword,ResetPassword}.vue   # Del kit; solo con correo configurado
+resources/js/modules/Identidad/Pages/Settings/{Security,Appearance}.vue        # Del kit: cambio de contraseña y apariencia
 resources/js/modules/Identidad/Pages/Admin/Usuarios/Index.vue
 resources/js/modules/Identidad/Pages/Admin/Tokens/Index.vue
 resources/js/modules/Identidad/Pages/Admin/Auditoria/Index.vue
-resources/js/Layouts/{AstronautaLayout,CmoLayout,TierraLayout,AdminLayout}.vue   # Menú según los permisos
+resources/js/modules/Identidad/Components/{UsuariosFiltros,UsuariosTabla,UsuarioPanel,DialogoDesactivarUsuario,TokenUnaVez,AuditoriaFiltros,AuditoriaTabla}.vue
+resources/js/modules/Identidad/Types/{usuarios,tokens,auditoria}.ts
+resources/js/modules/Identidad/Utils/accionesAuditoria.ts
+resources/js/layouts/{AstronautaLayout,CmoLayout,TierraLayout,AdminLayout}.vue   # Globales: menú según los permisos
 resources/js/composables/usePermisos.ts         # puede('ver-auditoria') a partir de auth.permisos
 ```
 
@@ -36,7 +41,9 @@ resources/js/composables/usePermisos.ts         # puede('ver-auditoria') a parti
 
 ```ts
 // Prop compartida (HandleInertiaRequests): se amplía la de las convenciones del frontend
-auth: { user: { id: number, name: string, rol: Rol }, permisos: string[] /* Gates que cumple, backend §5 */ }
+auth: { user: { id: number, name: string, email: string, rol: Rol }, permisos: string[] /* Gates que cumple, backend §5 */ }
+name: string                       // nombre de la app (del kit)
+sidebarOpen: boolean               // estado del menú lateral (del kit)
 flash: { exito: string | null, error: string | null,
          tokenPwa: { token: string, expira_en: string } | null /* solo tras iniciar sesión (HU-15.04) */,
          descargarUrl: string | null /* M14: reporte recién generado */ }
@@ -83,7 +90,9 @@ flash: { exito: string | null, error: string | null,
 
 | Componente | Uso |
 |---|---|
-| `Admin/Tokens/TokenUnaVez.vue` | Caja con el token en texto plano, botón copiar y aviso |
+| `Components/TokenUnaVez.vue` | Caja con el token en texto plano, botón copiar y aviso |
+| `Components/UsuariosFiltros.vue` · `UsuariosTabla.vue` · `UsuarioPanel.vue` · `DialogoDesactivarUsuario.vue` | Piezas de `Admin/Usuarios/Index`: la página solo las coordina |
+| `Components/AuditoriaFiltros.vue` · `AuditoriaTabla.vue` | Piezas de `Admin/Auditoria/Index` |
 | Menú de cada *layout* | Muestra solo las entradas cuyo *Gate* está en `auth.permisos` (el frontend **oculta**, el backend **prohíbe**; la matriz no se repite en el frontend) |
 
 ## 5. Comportamiento
