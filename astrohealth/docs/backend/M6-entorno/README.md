@@ -2,9 +2,9 @@
 
 > [← Backend](../README.md) · Código: `astrohealth/app/Modules/Entorno/` · Qué construir: [ficha de M6](../../../../documentacion/modulos/M6-entorno/README.md)
 
-| Estado | Fase | Responsable |
-|---|:---:|---|
-| ⬜ Sin empezar | **1** (tablas) · 4 (cambio de entorno) | Backend |
+| Estado         |                  Fase                  | Responsable |
+| -------------- | :------------------------------------: | ----------- |
+| ⬜ Sin empezar | **1** (tablas) · 4 (cambio de entorno) | Backend     |
 
 **Qué hace:** es dueño de **la misión** y **la tripulación**, y de los datos de los 4 entornos (gravedad, radiación base, retraso de la comunicación y riesgos). Todos los módulos le preguntan "¿en qué entorno está este astronauta?" y "¿es de esta misión?".
 
@@ -72,37 +72,37 @@ app/Modules/Entorno/
 
 ## 3. Endpoints
 
-| Método | Ruta | Permiso | Respuesta |
-|---|---|---|---|
-| GET | `/api/v1/environments` | `crew.read` | 200 los 4 entornos |
-| GET | `/api/v1/missions/current` | `crew.read` | 200 misión, entorno, día, clima espacial, tripulación ([ejemplo](../../../../documentacion/modulos/M6-entorno/README.md#4-api)) |
-| PATCH | `/api/v1/missions/{id}` | `mission.update` | 200 · publica `MissionEnvironmentChanged` |
-| GET | `/api/v1/astronauts` | `crew.read` | 200 la tripulación |
+| Método | Ruta                       | Permiso          | Respuesta                                                                                                                       |
+| ------ | -------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/v1/environments`     | `crew.read`      | 200 los 4 entornos                                                                                                              |
+| GET    | `/api/v1/missions/current` | `crew.read`      | 200 misión, entorno, día, clima espacial, tripulación ([ejemplo](../../../../documentacion/modulos/M6-entorno/README.md#4-api)) |
+| PATCH  | `/api/v1/missions/{id}`    | `mission.update` | 200 · publica `MissionEnvironmentChanged`                                                                                       |
+| GET    | `/api/v1/astronauts`       | `crew.read`      | 200 la tripulación                                                                                                              |
 
 ## 4. Contratos y eventos
 
-| Tipo | Nombre | Lo usa |
-|---|---|---|
-| Ofrece | `MissionQuery` | M1, M4, M5 |
-| Ofrece | `CrewQuery` | M0 (`mission_id` del token), M1 (ingesta), M7, M8 |
-| Publica | `MissionEnvironmentChanged` | M1 |
-| Usa | `SpaceWeather` (M2) | Opcional: si falla, `space_weather: null` |
+| Tipo    | Nombre                      | Lo usa                                            |
+| ------- | --------------------------- | ------------------------------------------------- |
+| Ofrece  | `MissionQuery`              | M1, M4, M5                                        |
+| Ofrece  | `CrewQuery`                 | M0 (`mission_id` del token), M1 (ingesta), M7, M8 |
+| Publica | `MissionEnvironmentChanged` | M1                                                |
+| Usa     | `SpaceWeather` (M2)         | Opcional: si falla, `space_weather: null`         |
 
 ## 5. Códigos de error
 
-| Código | HTTP | Cuándo |
-|---|:---:|---|
-| `VALIDATION_FAILED` | 422 | Un entorno que no existe |
-| `ENVIRONMENT_MISSION_NOT_FOUND` | 404 | No hay misión (falta el *seeder*) |
-| `FORBIDDEN` | 403 | Un astronauta intenta cambiar el entorno |
+| Código                          | HTTP | Cuándo                                   |
+| ------------------------------- | :--: | ---------------------------------------- |
+| `VALIDATION_FAILED`             | 422  | Un entorno que no existe                 |
+| `ENVIRONMENT_MISSION_NOT_FOUND` | 404  | No hay misión (falta el _seeder_)        |
+| `FORBIDDEN`                     | 403  | Un astronauta intenta cambiar el entorno |
 
 ## 6. Pruebas
 
-| Prueba | Verifica |
-|---|---|
+| Prueba                  | Verifica                                                                |
+| ----------------------- | ----------------------------------------------------------------------- |
 | `ChangeEnvironmentTest` | Médico cambia a ISS → 200 + evento · astronauta → 403 · `jupiter` → 422 |
-| `CurrentMissionTest` | `current_day` correcto · Python caído → `space_weather: null` sin error |
-| `MissionDayTest` | Antes del inicio → 1 · después del final → `day_count` |
+| `CurrentMissionTest`    | `current_day` correcto · Python caído → `space_weather: null` sin error |
+| `MissionDayTest`        | Antes del inicio → 1 · después del final → `day_count`                  |
 
 ## 7. Avance
 
@@ -117,4 +117,4 @@ app/Modules/Entorno/
 
 _Pendiente._
 
-> 📝 **Documentar siempre:** este documento se actualiza en el mismo *pull request* que cambia el código.
+> 📝 **Documentar siempre:** este documento se actualiza en el mismo _pull request_ que cambia el código.

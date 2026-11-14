@@ -2,19 +2,19 @@
 
 > [← Backend](../README.md) · Código: `astrohealth/app/Modules/Identidad/` · Contrato: [API y JSON](../../../../documentacion/arquitectura/01-api-y-json.md#8-autenticación-jwt)
 
-| Estado | Fase | Responsable |
-|---|:---:|---|
-| ⬜ Sin empezar | **1** (va primero) | Backend |
+| Estado         |        Fase        | Responsable |
+| -------------- | :----------------: | ----------- |
+| ✅ Terminado (2026-11-14) | **1** (va primero) | Backend     |
 
 > 🛠️ **¿Por dónde empezar?** [Plan de trabajo paso a paso](plan-de-trabajo.md).
 
-**Qué hace:** decide **quién** llama (persona o máquina) y **qué puede** hacer. Emite y verifica los JWT, rota los *refresh tokens*, define los roles y los permisos, y registra los dispositivos (el simulador). Todos los demás módulos se apoyan en él.
+**Qué hace:** decide **quién** llama (persona o máquina) y **qué puede** hacer. Emite y verifica los JWT, rota los _refresh tokens_, define los roles y los permisos, y registra los dispositivos (el simulador). Todos los demás módulos se apoyan en él.
 
 ---
 
 ## 1. Cómo funciona
 
-### Personas: login + *refresh* con rotación
+### Personas: login + _refresh_ con rotación
 
 ```mermaid
 sequenceDiagram
@@ -36,9 +36,9 @@ sequenceDiagram
     V->>A: reintenta la petición original
 ```
 
-**Detección de robo:** si alguien presenta un *refresh token* **ya usado**, se revoca **toda su familia** (todas las sesiones que salieron de ese login) y responde 401 `AUTH_REFRESH_REUSED`. El usuario legítimo vuelve a iniciar sesión; el ladrón queda fuera.
+**Detección de robo:** si alguien presenta un _refresh token_ **ya usado**, se revoca **toda su familia** (todas las sesiones que salieron de ese login) y responde 401 `AUTH_REFRESH_REUSED`. El usuario legítimo vuelve a iniciar sesión; el ladrón queda fuera.
 
-### Máquinas: *client credentials*
+### Máquinas: _client credentials_
 
 ```mermaid
 sequenceDiagram
@@ -55,58 +55,58 @@ sequenceDiagram
     S->>A: (al expirar) pide otro token con las mismas credenciales
 ```
 
-Los dispositivos **no tienen *refresh token***: cuando el JWT expira, piden otro con sus credenciales. El `client_secret` se guarda **hasheado** y se muestra **una sola vez** al crearlo.
+Los dispositivos **no tienen _refresh token_**: cuando el JWT expira, piden otro con sus credenciales. El `client_secret` se guarda **hasheado** y se muestra **una sola vez** al crearlo.
 
 ## 2. El JWT
 
-| Tema | Valor |
-|---|---|
-| Librería | [`firebase/php-jwt`](https://github.com/firebase/php-jwt) (PHP puro, sin dependencia de Laravel) |
-| Algoritmo | `HS256` con `JWT_SECRET` de 256 bits (base64) en `.env`. Solo Laravel firma y verifica |
-| Vida del *access token* | 15 min (`JWT_TTL=15`) |
-| Vida del *refresh token* | 7 días (`JWT_REFRESH_TTL=10080`), opaco (64 bytes aleatorios), se guarda **solo su hash SHA-256** |
-| Tolerancia de reloj | 30 s (`leeway`) |
-| Dónde viaja | `Authorization: Bearer <token>`. El *refresh*, solo en la *cookie* `refresh_token` |
+| Tema                     | Valor                                                                                             |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| Librería                 | [`firebase/php-jwt`](https://github.com/firebase/php-jwt) (PHP puro, sin dependencia de Laravel)  |
+| Algoritmo                | `HS256` con `JWT_SECRET` de 256 bits (base64) en `.env`. Solo Laravel firma y verifica            |
+| Vida del _access token_  | 15 min (`JWT_TTL=15`)                                                                             |
+| Vida del _refresh token_ | 7 días (`JWT_REFRESH_TTL=10080`), opaco (64 bytes aleatorios), se guarda **solo su hash SHA-256** |
+| Tolerancia de reloj      | 30 s (`leeway`)                                                                                   |
+| Dónde viaja              | `Authorization: Bearer <token>`. El _refresh_, solo en la _cookie_ `refresh_token`                |
 
 **Claims:**
 
 ```json
 {
-  "iss": "https://astrohealth.app",
-  "aud": "astrohealth-api",
-  "sub": "user:7",
-  "typ": "user",
-  "role": "astronaut",
-  "astronaut_id": 2,
-  "mission_id": 1,
-  "jti": "9f1c2e7a-4b1d-4c55-9e0a-2f3b8d6c1a77",
-  "iat": 1763107200,
-  "nbf": 1763107200,
-  "exp": 1763108100
+    "iss": "https://astrohealth.app",
+    "aud": "astrohealth-api",
+    "sub": "user:7",
+    "typ": "user",
+    "role": "astronaut",
+    "astronaut_id": 2,
+    "mission_id": 1,
+    "jti": "9f1c2e7a-4b1d-4c55-9e0a-2f3b8d6c1a77",
+    "iat": 1763107200,
+    "nbf": 1763107200,
+    "exp": 1763108100
 }
 ```
 
-| Claim | Para qué |
-|---|---|
-| `sub` | `user:<id>` o `device:<id>`. El *guard* carga ese actor desde la base **en cada petición** |
-| `typ` | `user` o `device` |
-| `role` | Solo informativo para Vue. **El backend usa el rol de la base**, así un cambio de rol o una desactivación aplica de inmediato |
-| `astronaut_id` · `mission_id` | Para las *Policies* ("¿es suyo?", "¿es de su misión?") |
-| `jti` | Identificador único; permite revocar un token en el *logout* |
+| Claim                         | Para qué                                                                                                                      |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `sub`                         | `user:<id>` o `device:<id>`. El _guard_ carga ese actor desde la base **en cada petición**                                    |
+| `typ`                         | `user` o `device`                                                                                                             |
+| `role`                        | Solo informativo para Vue. **El backend usa el rol de la base**, así un cambio de rol o una desactivación aplica de inmediato |
+| `astronaut_id` · `mission_id` | Para las _Policies_ ("¿es suyo?", "¿es de su misión?")                                                                        |
+| `jti`                         | Identificador único; permite revocar un token en el _logout_                                                                  |
 
 **Verificación en cada petición** (`JwtGuard`): firma → `exp`/`nbf` → `iss` y `aud` → `jti` no revocado → el actor existe y está activo. Cualquier fallo → 401.
 
-**Cookie del *refresh*:** `HttpOnly`, `Secure` (en producción), `SameSite=Strict`, `Path=/api/v1/auth`. Además, `/refresh` exige que el `Origin` sea el de la app.
+**Cookie del _refresh_:** `HttpOnly`, `Secure` (en producción), `SameSite=Strict`, `Path=/api/v1/auth`. Además, `/refresh` exige que el `Origin` sea el de la app.
 
 ## 3. Roles
 
-| `Role` | Dónde | Tipo de actor | Astronauta enlazado | Se crea con |
-|---|---|---|---|---|
-| `astronaut` | 🚀 Nave | `user` | Obligatorio | `UserSeeder` |
-| `crew_medical_officer` | 🚀 Nave | `user` | Obligatorio (también es tripulante) | `UserSeeder` |
-| `flight_surgeon` | 🌍 Tierra | `user` | No admite | `UserSeeder` |
-| `admin` | 🌍 Tierra | `user` | No admite | `UserSeeder` |
-| `device` | 🚀 Nave | `device` | Opcional (*gateway* si no tiene) | `DeviceSeeder` o `identidad:device-create` |
+| `Role`                 | Dónde     | Tipo de actor | Astronauta enlazado                 | Se crea con                                |
+| ---------------------- | --------- | ------------- | ----------------------------------- | ------------------------------------------ |
+| `astronaut`            | 🚀 Nave   | `user`        | Obligatorio                         | `UserSeeder`                               |
+| `crew_medical_officer` | 🚀 Nave   | `user`        | Obligatorio (también es tripulante) | `UserSeeder`                               |
+| `flight_surgeon`       | 🌍 Tierra | `user`        | No admite                           | `UserSeeder`                               |
+| `admin`                | 🌍 Tierra | `user`        | No admite                           | `UserSeeder`                               |
+| `device`               | 🚀 Nave   | `device`      | Opcional (_gateway_ si no tiene)    | `DeviceSeeder` o `identidad:device-create` |
 
 `role` se guarda como **texto** y se lee como el `enum` `Role` de PHP: agregar un rol no exige una migración.
 
@@ -219,36 +219,36 @@ SIMULADOR_CLIENT_SECRET=   # lo usa DeviceSeeder en local; en producción: ident
 
 ## 5. Datos
 
-| Tabla | Columnas | Notas |
-|---|---|---|
-| `users` (del kit) | + `role` `string(30)` (`Role` en PHP), + `active` `boolean`, + `astronaut_id` *nullable*, único → `astronauts` | El enlace usuario ↔ astronauta vive aquí (M0), así M0 no depende de M6 para el *claim* `astronaut_id` |
-| `devices` | `id`, `mission_id` → `missions`, `astronaut_id` *nullable* → `astronauts`, `name`, `client_id` (único), `secret_hash`, `active`, `last_seen_at` | Con `astronaut_id = null`, el dispositivo es un ***gateway***: envía lecturas de cualquier astronauta de **su** misión |
-| `refresh_tokens` | `id`, `user_id`, `family_id` (uuid), `token_hash` (único, sha256), `expires_at`, `used_at`, `revoked_at`, `created_at`, `user_agent`, `ip` | Índice `(family_id)`. Una limpieza diaria borra los vencidos |
+| Tabla             | Columnas                                                                                                                                        | Notas                                                                                                                  |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `users` (del kit) | + `role` `string(30)` (`Role` en PHP), + `active` `boolean`, + `astronaut_id` _nullable_, único → `astronauts`                                  | El enlace usuario ↔ astronauta vive aquí (M0), así M0 no depende de M6 para el _claim_ `astronaut_id`                  |
+| `devices`         | `id`, `mission_id` → `missions`, `astronaut_id` _nullable_ → `astronauts`, `name`, `client_id` (único), `secret_hash`, `active`, `last_seen_at` | Con `astronaut_id = null`, el dispositivo es un _**gateway**_: envía lecturas de cualquier astronauta de **su** misión |
+| `refresh_tokens`  | `id`, `user_id`, `family_id` (uuid), `token_hash` (único, sha256), `expires_at`, `used_at`, `revoked_at`, `created_at`, `user_agent`, `ip`      | Índice `(family_id)`. Una limpieza diaria borra los vencidos                                                           |
 
 **`UserSeeder`** (solo local; contraseña `password`):
 
-| Correo | Rol | Astronauta |
-|---|---|---|
-| `admin@astrohealth.test` | `admin` | — |
-| `tierra@astrohealth.test` | `flight_surgeon` | — |
-| `astro1@astrohealth.test` … `astro3@astrohealth.test` | `astronaut` | 1 … 3 |
-| `cmo@astrohealth.test` | `crew_medical_officer` | 4 |
+| Correo                                                | Rol                    | Astronauta |
+| ----------------------------------------------------- | ---------------------- | ---------- |
+| `admin@astrohealth.test`                              | `admin`                | —          |
+| `tierra@astrohealth.test`                             | `flight_surgeon`       | —          |
+| `astro1@astrohealth.test` … `astro3@astrohealth.test` | `astronaut`            | 1 … 3      |
+| `cmo@astrohealth.test`                                | `crew_medical_officer` | 4          |
 
-**`DeviceSeeder`:** el *gateway* `Simulador Ares-1` (misión 1, sin astronauta fijo) con `SIMULADOR_CLIENT_ID` y `SIMULADOR_CLIENT_SECRET` del `.env`.
+**`DeviceSeeder`:** el _gateway_ `Simulador Ares-1` (misión 1, sin astronauta fijo) con `SIMULADOR_CLIENT_ID` y `SIMULADOR_CLIENT_SECRET` del `.env`.
 
 ## 6. Endpoints
 
 | Método | Ruta | Acceso | Caso de uso | Respuesta |
 |---|---|---|---|---|
-| POST | `/api/v1/auth/login` | Público · `throttle:login` (5/min por correo+IP) | `Login` | 200 token + *cookie* |
-| POST | `/api/v1/auth/refresh` | *Cookie* `refresh_token` | `RefreshSession` | 200 token + *cookie* nueva |
+| POST | `/api/v1/auth/login` | Público · `throttle:api-login` (5/min por correo+IP) | `Login` | 200 token + perfil + *cookie* |
+| POST | `/api/v1/auth/refresh` | *Cookie* `refresh_token` · `throttle:api-refresh` (30/min) · `VerifyOrigin` | `RefreshSession` | 200 token + *cookie* nueva |
 | POST | `/api/v1/auth/logout` | `auth:api` | `Logout` | 204 + borra la *cookie* |
-| GET | `/api/v1/auth/me` | `auth:api` | `GetMe` | 200 actor + permisos |
-| POST | `/api/v1/auth/device-token` | Público · `throttle:device` (10/min por IP) | `IssueDeviceToken` | 200 token |
-| GET · POST · PATCH | `/api/v1/users` | `can:users.manage` | `CreateUser`, `UpdateUser`… | Opcional (fase 6) |
-| GET · POST | `/api/v1/devices` · POST `/devices/{id}/rotate-secret` | `can:devices.manage` | `CreateDevice`, `RotateDeviceSecret` | Opcional (fase 6) |
+| GET | `/api/v1/auth/me` | `auth:api` | `GetMe` | 200 perfil + permisos |
+| POST | `/api/v1/auth/device-token` | Público · `throttle:api-device` (10/min por IP) | `IssueDeviceToken` | 200 token + perfil |
+| GET · POST · PATCH | `/api/v1/users` | `can:users.manage` | — | ⏳ Fase 6 (en la demo bastan los *seeders*) |
+| GET · POST | `/api/v1/devices` | `can:devices.manage` | — | ⏳ Fase 6 (hoy: `identidad:device-create`) |
 
-**`POST /api/v1/auth/login`**
+**`POST /api/v1/auth/login`** (respuesta real, probada en vivo el 2026-11-14)
 
 ```json
 { "email": "astro2@astrohealth.test", "password": "password" }
@@ -257,102 +257,165 @@ SIMULADOR_CLIENT_SECRET=   # lo usa DeviceSeeder en local; en producción: ident
 ```json
 {
   "data": {
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…",
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9…",
     "token_type": "Bearer",
     "expires_in": 900,
-    "user": { "id": 4, "name": "Astronauta 2", "role": "astronaut", "astronaut_id": 2, "mission_id": 1 }
+    "actor": {
+      "type": "user",
+      "id": 4,
+      "name": "Kenji Mori",
+      "email": "astro2@astrohealth.test",
+      "role": "astronaut",
+      "role_label": "Astronauta",
+      "location": "space",
+      "astronaut_id": 2,
+      "mission_id": 1,
+      "permissions": ["crew.read", "health.read.own", "measurements.write.own", "alerts.read", "alerts.send", "reminders.manage.own", "gamification.read"]
+    }
   },
   "message": "ok"
 }
 ```
 
-**`GET /api/v1/auth/me`** → el mismo `user` + `"permissions": ["crew.read", "health.read.own", "measurements.write.own", …]`. Vue la usa para mostrar u ocultar botones. **Ocultar no es proteger:** el backend vuelve a comprobar todo.
+\+ encabezado `Set-Cookie: refresh_token=…; path=/api/v1/auth; httponly; samesite=strict` (y `secure` en producción). **El *refresh token* nunca va en el JSON.**
 
-**`POST /api/v1/auth/device-token`**
+**`GET /api/v1/auth/me`** → `data` es el mismo objeto `actor`. Vue lo usa para mostrar u ocultar botones. **Ocultar no es proteger:** el backend vuelve a comprobar todo.
 
-```json
-{ "client_id": "sim-ares-1", "client_secret": "…" }
-```
-
-```json
-{ "data": { "access_token": "eyJ…", "token_type": "Bearer", "expires_in": 900, "device": { "id": 1, "name": "Simulador Ares-1", "mission_id": 1 } }, "message": "ok" }
-```
+**`POST /api/v1/auth/device-token`** → la misma forma, con `"actor": {"type": "device", "role": "device", "name": "Simulador Ares-1", "mission_id": 1, "permissions": ["measurements.ingest"], …}`. Sin *cookie*.
 
 ## 7. Códigos de error
 
 | Código | HTTP | Cuándo | Mensaje |
 |---|:---:|---|---|
+| `VALIDATION_FAILED` | 422 | Falta el correo o la contraseña, o el correo no tiene formato | Por campo, en español ("El correo no tiene un formato válido.") |
 | `AUTH_INVALID_CREDENTIALS` | 401 | Correo o contraseña incorrectos (no se dice cuál) | "Credenciales inválidas." |
-| `AUTH_USER_INACTIVE` | 403 | El usuario está desactivado | "Tu usuario está desactivado." |
-| `AUTH_TOKEN_MISSING` | 401 | No viene `Authorization: Bearer` | "Inicia sesión para continuar." |
-| `AUTH_TOKEN_INVALID` | 401 | Firma, `iss`, `aud` o formato inválidos, o `jti` revocado | "Sesión no válida." |
-| `AUTH_TOKEN_EXPIRED` | 401 | `exp` vencido → Vue llama a `/refresh` | "La sesión expiró." |
-| `AUTH_REFRESH_INVALID` | 401 | *Refresh* inexistente, vencido o revocado | "Inicia sesión de nuevo." |
-| `AUTH_REFRESH_REUSED` | 401 | *Refresh* ya usado → se revoca la familia | "Inicia sesión de nuevo." |
-| `AUTH_DEVICE_INVALID` | 401 | `client_id` o `secret` incorrectos, o dispositivo inactivo | "Credenciales de dispositivo inválidas." |
-| `FORBIDDEN` | 403 | El rol no tiene el permiso | "No tienes permiso para esta acción." |
-| `TOO_MANY_REQUESTS` | 429 | Superó el límite | "Demasiados intentos. Espera un momento." |
+| `AUTH_USER_INACTIVE` | 403 | La contraseña es correcta pero el usuario está desactivado | "Tu usuario está desactivado." |
+| `AUTH_USER_WITHOUT_ROLE` | 403 | El usuario no tiene rol (p. ej. se registró por Fortify) | "Tu usuario no tiene un rol asignado. Pide uno al administrador." |
+| `AUTH_INVALID_ROLE_ASSIGNMENT` | 422 | El rol y el enlace con el astronauta no cuadran (datos mal cargados) | El detalle de la regla |
+| `UNAUTHENTICATED` | 401 | No viene `Authorization: Bearer` | "Inicia sesión para continuar." |
+| `AUTH_TOKEN_INVALID` | 401 | Firma, `iss`, `aud`, algoritmo o formato inválidos; `jti` revocado; el actor ya no existe o está inactivo | "Sesión no válida. Inicia sesión de nuevo." |
+| `AUTH_TOKEN_EXPIRED` | 401 | `exp` vencido (más de 30 s) → Vue llama a `/refresh` | "La sesión expiró." |
+| `AUTH_REFRESH_INVALID` | 401 | Sin *cookie*, o *refresh* inexistente, vencido o revocado | "Inicia sesión de nuevo." |
+| `AUTH_REFRESH_REUSED` | 401 | *Refresh* ya usado → se revocó toda la familia | "Inicia sesión de nuevo." |
+| `AUTH_ORIGIN_NOT_ALLOWED` | 403 | `/refresh` llamado desde otro `Origin` | "Origen no permitido." |
+| `AUTH_DEVICE_INVALID` | 401 | `client_id` o secreto incorrectos, o dispositivo inactivo | "Credenciales de dispositivo inválidas." |
+| `FORBIDDEN` | 403 | El rol no tiene el permiso, o el recurso no es suyo | "No tienes permiso para esta acción." |
+| `TOO_MANY_REQUESTS` | 429 | Superó el límite (con `Retry-After`) | "Demasiados intentos. Espera un momento." |
 
 ## 8. Seguridad, punto por punto
 
-| Riesgo | Defensa |
-|---|---|
-| Robo del *access token* | Vida de 15 min, en memoria (no `localStorage`), revocable por `jti` |
-| Robo del *refresh token* | *Cookie* `HttpOnly` + `SameSite=Strict`, rotación en cada uso, detección de reuso → revoca la familia |
-| Fuerza bruta en el login | `throttle:login` 5/min por correo+IP; mensaje genérico; `Hash::check` contra un *hash* falso si el correo no existe (mismo tiempo de respuesta) |
-| Cambio de rol o desactivación | El *guard* lee rol y `active` de la base en cada petición: aplica al instante |
-| Secreto del dispositivo filtrado | `RotateDeviceSecret` invalida el anterior; `active = false` lo corta |
-| Un dispositivo que escribe datos de otra misión | `IngestPolicy` (M1) compara `mission_id` del token con el del astronauta |
-| Algoritmo `none` o cambio de algoritmo | `JwtVerifier` acepta **solo** `HS256` (`new Key($secret, 'HS256')`) |
-| Secretos en el repositorio | `JWT_SECRET` y `SIMULADOR_CLIENT_SECRET` solo en `.env` |
+| Riesgo | Defensa | Probado en |
+|---|---|---|
+| Robo del *access token* | Vida de 15 min, en memoria del navegador, revocable por `jti` (*logout*) | `RefreshAndLogoutTest` |
+| Robo del *refresh token* | *Cookie* `HttpOnly` + `SameSite=Strict` + `Path=/api/v1/auth`; rotación en cada uso; reuso → revoca la familia; en la base solo su SHA-256 | `RefreshAndLogoutTest`, `LoginTest` |
+| Dos `/refresh` a la vez con el mismo token | `SELECT … FOR UPDATE` dentro de la transacción | — (diseño) |
+| Fuerza bruta en el login | `throttle:api-login` 5/min por correo+IP; mensaje genérico; *hash* falso si el correo no existe (mismo tiempo) | `LoginTest` |
+| Saber qué correos existen | Misma respuesta exacta para correo inexistente y clave mala | `LoginTest` |
+| Cambio de rol o desactivación | El *guard* lee rol y `active` de la base en cada petición | `GuardTest`, `DeviceTokenTest` |
+| `alg: none`, `HS512`, payload alterado, otro emisor o audiencia | `JwtVerifier`: solo `HS256` + `iss` + `aud` | `JwtTest` |
+| Secreto débil o ausente | `JwtConfig` exige 256 bits; sin secreto no firma | `JwtTest` |
+| CSRF sobre `/refresh` | `SameSite=Strict` + `VerifyOrigin` | `RefreshAndLogoutTest` |
+| Secreto del dispositivo filtrado | Se guarda con `bcrypt`; `active = false` corta su token al instante | `DeviceTokenTest` |
+| Secretos en el repositorio | `JWT_SECRET` y `SIMULADOR_CLIENT_SECRET` solo en `.env`; `phpunit.xml` usa valores **solo de prueba** | — |
 
 ## 9. Pruebas
 
-| Prueba | Verifica |
-|---|---|
-| `LoginTest` | Login correcto (200, token, *cookie*) · contraseña mala (401 genérico) · usuario inactivo (403) · 6.º intento en un minuto (429) |
-| `RefreshTest` | Rotación (el viejo queda usado, el nuevo sirve) · reuso → 401 `AUTH_REFRESH_REUSED` **y** toda la familia revocada · vencido → 401 |
-| `LogoutTest` | Después del *logout*, el *access token* y el *refresh* ya no sirven |
-| `GuardTest` | Token vencido → `AUTH_TOKEN_EXPIRED` · firma alterada · `alg: none` · `aud` ajeno · usuario desactivado después de emitir el token |
-| `DeviceTokenTest` | Credenciales buenas y malas · dispositivo inactivo |
-| `AuthorizationMatrixTest` | **Recorre `config/permissions.php`**: para cada permiso y cada rol, una ruta representativa responde 2xx o 403 según la matriz |
-| `PermissionsMatrixTest` (unit) | Todo permiso usado en un `routes.php` existe en la matriz |
+**81 pruebas del módulo** (más las 55 que ya existían): **136 en verde sobre MySQL**, Pint ✅, PHPStan nivel 7 con 0 errores.
 
-**Ayudas en `tests/TestCase.php`:**
+| Prueba | Tipo | Verifica |
+|---|---|---|
+| `RoleTest` | Unit | Dónde vive cada rol, quién exige astronauta, etiquetas en español |
+| `RoleAssignmentTest` | Unit | Las 9 combinaciones válidas e inválidas de rol + astronauta |
+| `RefreshRotationTest` | Unit | Rotar · reuso → revocar familia · revocado o vencido → rechazar |
+| `TokenClaimsTest` | Unit | Ida y vuelta de los *claims*; `sub` ≠ `typ`, rol desconocido o `exp` faltante → error |
+| `PermissionMatrixTest` | Unit | La matriz real: roles válidos, ningún permiso vacío, reglas clave |
+| `UsersTableTest` | Feature | Columnas en MySQL, `role` como `enum`, `astronaut_id` único, `nullOnDelete`, `expires_at` es `DATETIME` |
+| `JwtTest` | Feature | Firmar/verificar, payload alterado, `alg: none`, `HS512`, `aud` e `iss` ajenos, basura, vencido con y sin tolerancia, secreto ausente o corto |
+| `LoginTest` | Feature | Login correcto (JSON, *cookie*, `last_login_at`), misma respuesta para correo inexistente y clave mala, inactivo, sin rol, validación en español, *throttle* |
+| `GuardTest` | Feature | Sin token, válido, malformado, vencido, desactivado y borrado después del login, cambio de rol al instante, varias peticiones seguidas |
+| `RefreshAndLogoutTest` | Feature | Rotación, **reuso → familia revocada**, sin *cookie*, vencido, `Origin` ajeno y propio, *logout* mata *access* y *refresh* |
+| `DeviceTokenTest` | Feature | Token de máquina con solo `measurements.ingest`, sin *cookie*, secreto hasheado, credenciales malas, inactivo |
+| `AuthorizationMatrixTest` | Feature | **5 roles × 14 permisos** responden 200/403 exactamente como la matriz; `health.read` para cada rol |
+| `SeedersTest` | Feature | Un usuario por rol enlazado a la tripulación, sin duplicar al repetir, y todos pueden autenticarse |
+
+**Ayudas para otras pruebas** (`Identidad/Tests/Support/InteractsWithJwt.php`):
 
 ```php
-$this->actingAsRole('astronaut', astronautId: 2)->getJson('/api/v1/astronauts/2/assessment')->assertOk();
-$this->actingAsRole('astronaut', astronautId: 2)->getJson('/api/v1/astronauts/3/assessment')->assertForbidden();
-$this->actingAsDevice(missionId: 1)->postJson('/api/v1/ingest/readings', $lote)->assertCreated();
+$user  = $this->userWithRole(Role::Astronaut);          // crea misión + astronauta + usuario
+$token = $this->tokenFor($user);                         // JWT firmado de verdad
+$this->getJson('/api/v1/auth/me', $this->bearer($token))->assertOk();
+
+[$device, $secret] = $this->device();                    // dispositivo + secreto en texto plano
 ```
 
 ## 10. Avance
 
-- [ ] `composer require firebase/php-jwt` y `config/jwt.php`
-- [ ] `identidad:jwt-secret`
-- [ ] Migraciones: `users.role` y `users.active` · `devices` · `refresh_tokens`
-- [ ] `JwtIssuer` · `JwtVerifier` · `JwtGuard` · `RevokedTokens`
-- [ ] `Login` · `RefreshSession` (con detección de reuso) · `Logout` · `GetMe`
-- [ ] `IssueDeviceToken` · `identidad:device-create`
-- [ ] Gates desde `config/permissions.php` · *rate limiters*
-- [ ] `UserSeeder` · `DeviceSeeder`
-- [ ] `actingAsRole()` · `actingAsDevice()` en `TestCase`
-- [ ] Pruebas de la sección 9 en verde
-- [ ] Fortify desactivado (sus rutas de sesión no se usan)
+- [x] `composer require firebase/php-jwt` (7.2) y `config/jwt.php`
+- [x] `identidad:jwt-secret`
+- [x] Migraciones: `users` (`role`, `active`, `astronaut_id`, `last_login_at`) · `devices` · `refresh_tokens` (con `down()` probado)
+- [x] `JwtConfig` · `JwtIssuer` · `JwtVerifier` · `JwtGuard` · `RevokedTokens`
+- [x] `Login` · `RefreshSession` (con detección de reuso) · `Logout` · `GetMe`
+- [x] `IssueDeviceToken` · `CreateDevice` · `identidad:device-create`
+- [x] Gates desde `config/permissions.php` + `health.read` · *rate limiters*
+- [x] `UserSeeder` · `DeviceSeeder` (y `MissionSeeder` de M6)
+- [x] Ayudas de prueba `InteractsWithJwt`
+- [x] Pruebas de la sección 9 en verde
+- [ ] CRUD de usuarios y dispositivos por API (fase 6)
+- [ ] Fortify: decidir si se quita el registro público (cuando exista el login de Vue)
 
 ## 11. Cómo quedó hecho
 
+### Las 4 capas, archivo por archivo
+
+| Capa | Archivos |
+|---|---|
+| **Domain** | `Enums/` Role · Location · ActorType · ErrorCode · RotationDecision — `Reglas/` RoleAssignment · RefreshRotation — `ValueObjects/` TokenClaims · PermissionMatrix — `Excepciones/` 10 errores de negocio |
+| **Application** (Service) | Login · RefreshSession · Logout · GetMe · IssueDeviceToken · CreateDevice — apoyo: TokenFactory · SessionIssuer · ActorProfiles · DummyHash — `DTOs/` Credentials · DeviceCredentials · AccessToken · ActorProfile · SessionResult · DeviceTokenResult · NewDevice |
+| **Infrastructure** (Repository) | `Jwt/` JwtConfig · JwtIssuer · JwtVerifier · JwtGuard · RevokedTokens · MissingJwtSecret — `Models/` Device · RefreshToken — `Repositorios/` UserRepository · DeviceRepository · RefreshTokenRepository — AuthCurrentActor |
+| **Http** (API) | `routes.php` — `Controllers/Api/` AuthController · DeviceTokenController — `Requests/` LoginRequest · DeviceTokenRequest — `Resources/` TokenResource · ActorResource — `Middleware/` VerifyOrigin — RefreshCookie |
+| Contratos | Actor · CurrentActor |
+| Base de datos | 3 migraciones · UserSeeder · DeviceSeeder |
+| Fuera del módulo | `App\Models\User` (implementa `Actor`) · `config/jwt.php` · `config/permissions.php` · `config/identidad.php` · `config/auth.php` (*guard* `api`) · `bootstrap/providers.php` · `DatabaseSeeder` |
+
 ### Decisiones técnicas
-_Pendiente._
 
-### Diferencias con este documento
-_Pendiente._
+- **Sin token → `UNAUTHENTICATED`** (general). Con token malo → el `AUTH_*` exacto. El *guard* lanza el error de M0; `auth:api` cubre el caso sin token.
+- **El *guard* recarga al actor en cada petición:** cuesta una consulta por petición, pero un cambio de rol o una desactivación aplica al instante, sin esperar a que venza el token.
+- **`role` es `VARCHAR(30)` + `enum` de PHP:** agregar un rol no exige una migración. Es *nullable* para que el registro de Fortify siga funcionando; un usuario sin rol no entra a la API.
+- **El enlace usuario ↔ astronauta vive en `users.astronaut_id`** (M0), así M0 no depende de M6 para los *claims*. La misión se pide a M6 por `CrewQuery`.
+- **Fechas `DATETIME` en `refresh_tokens` y `devices`:** en MariaDB 10.4 la primera columna `TIMESTAMP NOT NULL` recibiría `ON UPDATE CURRENT_TIMESTAMP` (una prueba lo vigila).
+- **`astronauts.crew_role`** (y no `role`) para el cargo a bordo: así no se confunde con el rol de acceso.
+- **`DummyHash`:** cuando el correo o el `client_id` no existen se compara contra un *hash* falso, para que la respuesta tarde lo mismo.
+- **Los limitadores se llaman `api-login`, `api-refresh` y `api-device`:** Fortify ya usa `login`.
+- **JSON sin escapes** (`JSON_UNESCAPED_UNICODE`): "inválidas" y no "inválidas".
+- **Mensajes de validación en español** dentro de cada `FormRequest`: el proyecto no tiene la carpeta `lang/es`.
 
-### Cómo probarlo a mano
+### Diferencias con el diseño original de este documento
+
+| Antes | Ahora | Por qué |
+|---|---|---|
+| `AUTH_TOKEN_MISSING` | `UNAUTHENTICATED` | Es el que produce `auth:api`; el general ya lo explica |
+| El JSON traía `user` / `device` | Trae `actor` (mismo formato para persona y máquina) | Vue y el simulador leen lo mismo |
+| `throttle:login`, `throttle:device` | `throttle:api-login`, `api-refresh`, `api-device` | Fortify ya usa `login` |
+| `actingAsRole()` en `TestCase` | `InteractsWithJwt` en el módulo | Firma tokens reales; no toca `TestCase` |
+| Nuevos | `AUTH_USER_WITHOUT_ROLE`, `AUTH_ORIGIN_NOT_ALLOWED`, `AUTH_INVALID_ROLE_ASSIGNMENT` | Casos que aparecieron al construir |
+
+### Cómo probarlo
 
 ```powershell
-curl -s -X POST http://localhost:8000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"astro2@astrohealth.test","password":"password"}'
-curl -s http://localhost:8000/api/v1/auth/me -H "Authorization: Bearer <token>"
+php artisan migrate:fresh --seed          # misión, 6 usuarios (uno por rol) y el simulador
+php artisan test --filter=Identidad       # las 81 pruebas del módulo
+
+# A mano (con composer run dev encendido):
+curl -s -X POST http://localhost:8000/api/v1/auth/login -H "Content-Type: application/json" -d "{\"email\":\"astro2@astrohealth.test\",\"password\":\"password\"}"
+curl -s http://localhost:8000/api/v1/auth/me -H "Authorization: Bearer <access_token>"
 ```
+
+| Usuario de prueba (contraseña `password`, solo local) | Rol | Dónde |
+|---|---|---|
+| `admin@astrohealth.test` | Administrador | 🌍 Tierra |
+| `tierra@astrohealth.test` | Médico en Tierra | 🌍 Tierra |
+| `astro1@` · `astro2@` · `astro3@astrohealth.test` | Astronauta | 🚀 Nave |
+| `cmo@astrohealth.test` | Médico de la tripulación | 🚀 Nave |
 
 > 📝 **Documentar siempre:** este documento se actualiza en el mismo *pull request* que cambia el código.

@@ -32,6 +32,10 @@
         <env name="DB_PORT" value="3306" force="true"/>
         <env name="DB_DATABASE" value="astrohealth_testing" force="true"/>
         <env name="DB_URL" value=""/>
+        <!-- Secretos SOLO de prueba (no sirven fuera de la suite) -->
+        <env name="JWT_SECRET" value="base64:MW8QV3YTq3B+GleuB2urIFLRw5Yuf3CZ5441daWn5fM=" force="true"/>
+        <env name="SIMULADOR_CLIENT_ID" value="sim-test" force="true"/>
+        <env name="SIMULADOR_CLIENT_SECRET" value="secreto-de-prueba-del-simulador-0123456789abcdef" force="true"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

@@ -17,6 +17,9 @@ use stdClass;
  */
 final class ApiResponse
 {
+    /** Tildes y barras legibles: "inválidas" y no "inválidas". */
+    private const JSON_FLAGS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+
     public static function ok(mixed $data, string $message = 'ok'): JsonResponse
     {
         return self::success($data, $message, 200);
@@ -48,7 +51,7 @@ final class ApiResponse
                 'total' => $paginator->total(),
                 'last_page' => $paginator->lastPage(),
             ],
-        ], 200);
+        ], 200, [], self::JSON_FLAGS);
     }
 
     /**
@@ -75,7 +78,7 @@ final class ApiResponse
             $body['debug'] = $debug;
         }
 
-        return new JsonResponse($body, $status, $headers);
+        return new JsonResponse($body, $status, $headers, self::JSON_FLAGS);
     }
 
     private static function success(mixed $data, string $message, int $status): JsonResponse
@@ -84,6 +87,6 @@ final class ApiResponse
             $data = $data->resolve();
         }
 
-        return new JsonResponse(['data' => $data, 'message' => $message], $status);
+        return new JsonResponse(['data' => $data, 'message' => $message], $status, [], self::JSON_FLAGS);
     }
 }

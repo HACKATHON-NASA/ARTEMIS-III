@@ -2,9 +2,9 @@
 
 > [← Frontend](../README.md) · Código: `astrohealth/resources/js/modules/Alertas/` · Qué construir: [ficha de M5](../../../../documentacion/modulos/M5-alertas/README.md#6-frontend)
 
-| Estado | Fase | Responsable |
-|---|:---:|---|
-| ⬜ Sin empezar | 4 | |
+| Estado         | Fase | Responsable |
+| -------------- | :--: | ----------- |
+| ⬜ Sin empezar |  4   |             |
 
 Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está en la ficha: aquí no se copia, se enlaza.
 
@@ -13,6 +13,7 @@ Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está e
 **Página:** `pages/Alerts.vue`
 
 **Componentes**
+
 - [ ] RecommendationCard
 - [ ] AlertBanner (global)
 - [ ] GroundLinkModal
@@ -20,19 +21,20 @@ Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está e
 - [ ] AlertItem
 
 **Store**
+
 - [ ] `useAlertsStore`
 
 ## Componentes reales
 
 | Componente | Props | Emite | Notas |
-|---|---|---|---|
-| | | | |
+| ---------- | ----- | ----- | ----- |
+|            |       |       |       |
 
 ## Store y datos
 
 | Acción | Endpoint | Qué guarda |
-|---|---|---|
-| | | |
+| ------ | -------- | ---------- |
+|        |          |            |
 
 ## Accesibilidad y animaciones
 
@@ -52,4 +54,4 @@ _Pendiente._
 
 _Pendiente: una captura por estado (verde, amarillo, rojo, sin datos)._
 
-> 📝 **Documentar siempre:** este documento se actualiza en el mismo *pull request* que cambia el código.
+> 📝 **Documentar siempre:** este documento se actualiza en el mismo _pull request_ que cambia el código.

@@ -2,9 +2,9 @@
 
 > [← Frontend](../README.md) · Código: `astrohealth/resources/js/modules/Registro/` · Qué construir: [ficha de M1](../../../../documentacion/modulos/M1-registro/README.md#6-frontend)
 
-| Estado | Fase | Responsable |
-|---|:---:|---|
-| ⬜ Sin empezar | 2 | |
+| Estado         | Fase | Responsable |
+| -------------- | :--: | ----------- |
+| ⬜ Sin empezar |  2   |             |
 
 Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está en la ficha: aquí no se copia, se enlaza.
 
@@ -13,6 +13,7 @@ Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está e
 **Página:** `pages/Record.vue`
 
 **Componentes**
+
 - [ ] MeasurementForm
 - [ ] MeasurementField
 - [ ] MoodPicker
@@ -20,19 +21,20 @@ Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está e
 - [ ] FlyingValue
 
 **Store**
+
 - [ ] `useMeasurementsStore`
 
 ## Componentes reales
 
 | Componente | Props | Emite | Notas |
-|---|---|---|---|
-| | | | |
+| ---------- | ----- | ----- | ----- |
+|            |       |       |       |
 
 ## Store y datos
 
 | Acción | Endpoint | Qué guarda |
-|---|---|---|
-| | | |
+| ------ | -------- | ---------- |
+|        |          |            |
 
 ## Accesibilidad y animaciones
 
@@ -52,4 +54,4 @@ _Pendiente._
 
 _Pendiente: una captura por estado (verde, amarillo, rojo, sin datos)._
 
-> 📝 **Documentar siempre:** este documento se actualiza en el mismo *pull request* que cambia el código.
+> 📝 **Documentar siempre:** este documento se actualiza en el mismo _pull request_ que cambia el código.

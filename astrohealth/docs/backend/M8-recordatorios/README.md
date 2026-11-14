@@ -2,9 +2,9 @@
 
 > [← Backend](../README.md) · Código: `astrohealth/app/Modules/Recordatorios/` · Qué construir: [ficha de M8](../../../../documentacion/modulos/M8-recordatorios/README.md)
 
-| Estado | Fase | Responsable |
-|---|:---:|---|
-| ⬜ Sin empezar | 5 | Backend |
+| Estado         | Fase | Responsable |
+| -------------- | :--: | ----------- |
+| ⬜ Sin empezar |  5   | Backend     |
 
 **Qué hace:** guarda **la rutina de cada astronauta** (medir la presión, ejercicio, dosímetro, ánimo, sueño), calcula si cada recordatorio está **hecho, pendiente o por venir**, y al cumplirlo publica un evento para que M7 sume puntos.
 
@@ -58,40 +58,40 @@ app/Modules/Recordatorios/
 
 ## 3. Endpoints
 
-| Método | Ruta | Permiso | Respuesta |
-|---|---|---|---|
-| GET | `/api/v1/reminders` | `reminders.manage.own` (o `health.read.any` con `?astronaut_id=`) | 200 los de hoy, ordenados por hora, con `state` |
-| POST | `/api/v1/reminders` | `reminders.manage.own` | 201 |
-| PATCH | `/api/v1/reminders/{id}` | `reminders.manage.own` + `ReminderPolicy` | 200 |
-| DELETE | `/api/v1/reminders/{id}` | `reminders.manage.own` + `ReminderPolicy` | 204 |
-| POST | `/api/v1/reminders/{id}/done` | `reminders.manage.own` + `ReminderPolicy` | 200 · publica `ReminderCompleted` la primera vez del día |
+| Método | Ruta                          | Permiso                                                           | Respuesta                                                |
+| ------ | ----------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------- |
+| GET    | `/api/v1/reminders`           | `reminders.manage.own` (o `health.read.any` con `?astronaut_id=`) | 200 los de hoy, ordenados por hora, con `state`          |
+| POST   | `/api/v1/reminders`           | `reminders.manage.own`                                            | 201                                                      |
+| PATCH  | `/api/v1/reminders/{id}`      | `reminders.manage.own` + `ReminderPolicy`                         | 200                                                      |
+| DELETE | `/api/v1/reminders/{id}`      | `reminders.manage.own` + `ReminderPolicy`                         | 204                                                      |
+| POST   | `/api/v1/reminders/{id}/done` | `reminders.manage.own` + `ReminderPolicy`                         | 200 · publica `ReminderCompleted` la primera vez del día |
 
 > El astronauta **no envía** su `astronaut_id`: sale del token.
 
 ## 4. Contratos y eventos
 
-| Tipo | Nombre | Detalle |
-|---|---|---|
+| Tipo    | Nombre              | Detalle                        |
+| ------- | ------------------- | ------------------------------ |
 | Publica | `ReminderCompleted` | M7: +5 y la insignia `on_time` |
-| Usa | `CrewQuery` (M6) | Que el astronauta exista |
-| Usa | `CurrentActor` (M0) | El astronauta del token |
+| Usa     | `CrewQuery` (M6)    | Que el astronauta exista       |
+| Usa     | `CurrentActor` (M0) | El astronauta del token        |
 
 ## 5. Códigos de error
 
-| Código | HTTP | Cuándo |
-|---|:---:|---|
-| `VALIDATION_FAILED` | 422 | Hora fuera de `HH:MM` o tipo desconocido |
-| `FORBIDDEN` | 403 | Recordatorio de otro astronauta |
-| `REMINDERS_NOT_FOUND` | 404 | No existe |
+| Código                | HTTP | Cuándo                                   |
+| --------------------- | :--: | ---------------------------------------- |
+| `VALIDATION_FAILED`   | 422  | Hora fuera de `HH:MM` o tipo desconocido |
+| `FORBIDDEN`           | 403  | Recordatorio de otro astronauta          |
+| `REMINDERS_NOT_FOUND` | 404  | No existe                                |
 
 ## 6. Pruebas
 
-| Prueba | Verifica |
-|---|---|
+| Prueba                  | Verifica                                                                               |
+| ----------------------- | -------------------------------------------------------------------------------------- |
 | `ReminderStateRuleTest` | 09:00 → el de las 08:00 `due` y el de las 10:00 `upcoming` · día siguiente se reinicia |
-| `CompleteReminderTest` | Primera vez → evento y +5 en M7 · segunda vez → 200 sin evento |
-| `ReminderPolicyTest` | El astronauta 2 no toca los del 3 |
-| `RemindersCrudTest` | Crear, editar, borrar · `25:00` → 422 |
+| `CompleteReminderTest`  | Primera vez → evento y +5 en M7 · segunda vez → 200 sin evento                         |
+| `ReminderPolicyTest`    | El astronauta 2 no toca los del 3                                                      |
+| `RemindersCrudTest`     | Crear, editar, borrar · `25:00` → 422                                                  |
 
 ## 7. Avance
 
@@ -99,11 +99,11 @@ app/Modules/Recordatorios/
 - [ ] `ReminderStateRule`
 - [ ] CRUD + `done` con `ReminderPolicy`
 - [ ] Evento `ReminderCompleted`
-- [ ] `reminders:mark-due` en el *scheduler*
+- [ ] `reminders:mark-due` en el _scheduler_
 - [ ] Pruebas en verde
 
 ## 8. Cómo quedó hecho
 
 _Pendiente._
 
-> 📝 **Documentar siempre:** este documento se actualiza en el mismo *pull request* que cambia el código.
+> 📝 **Documentar siempre:** este documento se actualiza en el mismo _pull request_ que cambia el código.

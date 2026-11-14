@@ -2,9 +2,9 @@
 
 > [← Frontend](../README.md) · Código: `astrohealth/resources/js/modules/Evaluacion/` · Qué construir: [ficha de M2](../../../../documentacion/modulos/M2-evaluacion/README.md#7-frontend)
 
-| Estado | Fase | Responsable |
-|---|:---:|---|
-| ⬜ Sin empezar | 2 | |
+| Estado         | Fase | Responsable |
+| -------------- | :--: | ----------- |
+| ⬜ Sin empezar |  2   |             |
 
 Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está en la ficha: aquí no se copia, se enlaza.
 
@@ -13,23 +13,25 @@ Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está e
 **Página:** `pages/Home.vue (puntaje)`
 
 **Componentes**
+
 - [ ] HealthScore
 - [ ] StatusBadge (global)
 
 **Store**
+
 - [ ] `useAssessmentStore`
 
 ## Componentes reales
 
 | Componente | Props | Emite | Notas |
-|---|---|---|---|
-| | | | |
+| ---------- | ----- | ----- | ----- |
+|            |       |       |       |
 
 ## Store y datos
 
 | Acción | Endpoint | Qué guarda |
-|---|---|---|
-| | | |
+| ------ | -------- | ---------- |
+|        |          |            |
 
 ## Accesibilidad y animaciones
 
@@ -49,4 +51,4 @@ _Pendiente._
 
 _Pendiente: una captura por estado (verde, amarillo, rojo, sin datos)._
 
-> 📝 **Documentar siempre:** este documento se actualiza en el mismo *pull request* que cambia el código.
+> 📝 **Documentar siempre:** este documento se actualiza en el mismo _pull request_ que cambia el código.

@@ -2,9 +2,9 @@
 
 > [← Backend](../README.md) · Código: `astrohealth/app/Modules/Gamificacion/` · Qué construir: [ficha de M7](../../../../documentacion/modulos/M7-gamificacion/README.md)
 
-| Estado | Fase | Responsable |
-|---|:---:|---|
-| ⬜ Sin empezar | 5 | Backend |
+| Estado         | Fase | Responsable |
+| -------------- | :--: | ----------- |
+| ⬜ Sin empezar |  5   | Backend     |
 
 **Qué hace:** escucha lo que pasa (lecturas registradas, recordatorios cumplidos) y lo convierte en **puntos, nivel, racha e insignias**, **sin contar nunca dos veces lo mismo**.
 
@@ -22,14 +22,14 @@ flowchart LR
     A --> B["astronaut_achievements"]
 ```
 
-| `reason` | Puntos | `reference` | Disparador |
-|---|:---:|---|---|
-| `daily_complete` | 10 | `2026-11-14` | `MeasurementQuery::daysWithAllIndicators()` incluye la fecha |
-| `streak_7` | 50 | fecha del 7.º día | `StreakRule` llega a 7 (y a cada múltiplo de 7) |
-| `sleep_7h` | 5 | fecha | Lectura `sleep` ≥ 7 |
-| `exercise` | 15 | fecha | Lectura `exercise_min` ≥ 90 |
-| `reminder` | 5 | `reminder:12:2026-11-14` | `ReminderCompleted` |
-| `badge:<code>` | según la insignia | `code` | Al ganar una insignia |
+| `reason`         |      Puntos       | `reference`              | Disparador                                                   |
+| ---------------- | :---------------: | ------------------------ | ------------------------------------------------------------ |
+| `daily_complete` |        10         | `2026-11-14`             | `MeasurementQuery::daysWithAllIndicators()` incluye la fecha |
+| `streak_7`       |        50         | fecha del 7.º día        | `StreakRule` llega a 7 (y a cada múltiplo de 7)              |
+| `sleep_7h`       |         5         | fecha                    | Lectura `sleep` ≥ 7                                          |
+| `exercise`       |        15         | fecha                    | Lectura `exercise_min` ≥ 90                                  |
+| `reminder`       |         5         | `reminder:12:2026-11-14` | `ReminderCompleted`                                          |
+| `badge:<code>`   | según la insignia | `code`                   | Al ganar una insignia                                        |
 
 > **Idempotente por diseño:** la llave única `(astronaut_id, reason, reference)` + `insertOrIgnore`. Un evento repetido o un lote reenviado por el simulador **no suma de nuevo**.
 
@@ -65,38 +65,38 @@ app/Modules/Gamificacion/
 
 ## 3. Endpoints
 
-| Método | Ruta | Permiso | Respuesta |
-|---|---|---|---|
-| GET | `/api/v1/astronauts/{id}/gamification` | `gamification.read` | 200 puntos, nivel, progreso, racha, insignias, últimos puntos |
-| GET | `/api/v1/leaderboard` | `gamification.read` | 200 ranking de la tripulación |
+| Método | Ruta                                   | Permiso             | Respuesta                                                     |
+| ------ | -------------------------------------- | ------------------- | ------------------------------------------------------------- |
+| GET    | `/api/v1/astronauts/{id}/gamification` | `gamification.read` | 200 puntos, nivel, progreso, racha, insignias, últimos puntos |
+| GET    | `/api/v1/leaderboard`                  | `gamification.read` | 200 ranking de la tripulación                                 |
 
 > Los puntos no son datos de salud: cualquier miembro de la tripulación puede ver el perfil de juego de otro (lo pide el ranking).
 
 ## 4. Contratos y eventos
 
-| Tipo | Nombre | Detalle |
-|---|---|---|
+| Tipo    | Nombre                      | Detalle                                |
+| ------- | --------------------------- | -------------------------------------- |
 | Escucha | `MeasurementsRecorded` (M1) | Día completo, sueño, ejercicio y racha |
-| Escucha | `ReminderCompleted` (M8) | +5 e insignia `on_time` |
-| Usa | `MeasurementQuery` (M1) | `daysWithAllIndicators()` |
-| Usa | `CrewQuery` (M6) | Nombres y avatares del ranking |
+| Escucha | `ReminderCompleted` (M8)    | +5 e insignia `on_time`                |
+| Usa     | `MeasurementQuery` (M1)     | `daysWithAllIndicators()`              |
+| Usa     | `CrewQuery` (M6)            | Nombres y avatares del ranking         |
 
 ## 5. Pruebas
 
-| Prueba | Verifica |
-|---|---|
-| `AwardPointsTest` | Completar el día → +10 · el 7.º día seguido → +10, +50 y `orbit_7` |
+| Prueba            | Verifica                                                              |
+| ----------------- | --------------------------------------------------------------------- |
+| `AwardPointsTest` | Completar el día → +10 · el 7.º día seguido → +10, +50 y `orbit_7`    |
 | `IdempotencyTest` | El mismo evento dos veces → una sola fila · un lote reenviado no suma |
-| `LevelRuleTest` | 95 + 5 → nivel 2, progreso 0 |
-| `StreakRuleTest` | Racha que se corta · hoy incompleto cuenta hasta ayer |
-| `LeaderboardTest` | Orden por puntos, empate por quien llegó primero |
+| `LevelRuleTest`   | 95 + 5 → nivel 2, progreso 0                                          |
+| `StreakRuleTest`  | Racha que se corta · hoy incompleto cuenta hasta ayer                 |
+| `LeaderboardTest` | Orden por puntos, empate por quien llegó primero                      |
 
 ## 6. Avance
 
 - [ ] Migraciones + `AchievementSeeder`
 - [ ] Reglas `LevelRule`, `StreakRule`, `AchievementRules`
 - [ ] `GamificationService::award()` idempotente
-- [ ] Los 2 *listeners*
+- [ ] Los 2 _listeners_
 - [ ] Endpoints de perfil y ranking
 - [ ] Pruebas en verde
 
@@ -104,4 +104,4 @@ app/Modules/Gamificacion/
 
 _Pendiente._
 
-> 📝 **Documentar siempre:** este documento se actualiza en el mismo *pull request* que cambia el código.
+> 📝 **Documentar siempre:** este documento se actualiza en el mismo _pull request_ que cambia el código.

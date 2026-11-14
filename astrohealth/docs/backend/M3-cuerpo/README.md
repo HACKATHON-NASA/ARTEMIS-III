@@ -2,9 +2,9 @@
 
 > [← Backend](../README.md) · Código: `astrohealth/app/Modules/Cuerpo/` · Qué construir: [ficha de M3](../../../../documentacion/modulos/M3-cuerpo/README.md)
 
-| Estado | Fase | Responsable |
-|---|:---:|---|
-| ⬜ Sin empezar | 3 | Backend |
+| Estado         | Fase | Responsable |
+| -------------- | :--: | ----------- |
+| ⬜ Sin empezar |  3   | Backend     |
 
 **Qué hace:** le da al cuerpo SVG lo que necesita. El catálogo de las 9 zonas (función y riesgo espacial) y el **estado actual de cada zona** con los valores que lo explican. No evalúa de nuevo: usa los estados que M1 ya guardó.
 
@@ -49,32 +49,32 @@ app/Modules/Cuerpo/
 
 ## 3. Endpoints
 
-| Método | Ruta | Permiso | Respuesta |
-|---|---|---|---|
-| GET | `/api/v1/body-parts` | `crew.read` | 200 las 9 zonas con `function_text`, `space_risk_text`, `hrp_hazard` e `indicators` |
-| GET | `/api/v1/astronauts/{id}/body-status` | `can:health.read,id` | 200 `{zona: {status, values[]}}` ([ejemplo](../../../../documentacion/modulos/M3-cuerpo/README.md#4-api)) |
+| Método | Ruta                                  | Permiso              | Respuesta                                                                                                 |
+| ------ | ------------------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/v1/body-parts`                  | `crew.read`          | 200 las 9 zonas con `function_text`, `space_risk_text`, `hrp_hazard` e `indicators`                       |
+| GET    | `/api/v1/astronauts/{id}/body-status` | `can:health.read,id` | 200 `{zona: {status, values[]}}` ([ejemplo](../../../../documentacion/modulos/M3-cuerpo/README.md#4-api)) |
 
 ## 4. Contratos y eventos
 
-| Tipo | Nombre | Detalle |
-|---|---|---|
-| Usa | `MeasurementQuery` (M1) | Las últimas mediciones con su estado |
-| Usa | `IndicatorCatalog` (M1) | Qué indicador va en qué zona |
+| Tipo | Nombre                  | Detalle                              |
+| ---- | ----------------------- | ------------------------------------ |
+| Usa  | `MeasurementQuery` (M1) | Las últimas mediciones con su estado |
+| Usa  | `IndicatorCatalog` (M1) | Qué indicador va en qué zona         |
 
 ## 5. Códigos de error
 
-| Código | HTTP | Cuándo |
-|---|:---:|---|
-| `NOT_FOUND` | 404 | El astronauta no existe |
-| `FORBIDDEN` | 403 | Un astronauta pide el cuerpo de otro |
+| Código      | HTTP | Cuándo                               |
+| ----------- | :--: | ------------------------------------ |
+| `NOT_FOUND` | 404  | El astronauta no existe              |
+| `FORBIDDEN` | 403  | Un astronauta pide el cuerpo de otro |
 
 ## 6. Pruebas
 
-| Prueba | Verifica |
-|---|---|
-| `WorstStatusTest` | Todas las combinaciones, incluido `null` |
-| `BodyStatusTest` | FC verde + presión roja → `heart: red` · sin sueño ni ánimo → `brain: null` · astronauta 2 pide al 3 → 403 |
-| `BodyPartsTest` | 9 zonas con sus textos |
+| Prueba            | Verifica                                                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| `WorstStatusTest` | Todas las combinaciones, incluido `null`                                                                   |
+| `BodyStatusTest`  | FC verde + presión roja → `heart: red` · sin sueño ni ánimo → `brain: null` · astronauta 2 pide al 3 → 403 |
+| `BodyPartsTest`   | 9 zonas con sus textos                                                                                     |
 
 ## 7. Avance
 
@@ -88,4 +88,4 @@ app/Modules/Cuerpo/
 
 _Pendiente._
 
-> 📝 **Documentar siempre:** este documento se actualiza en el mismo *pull request* que cambia el código.
+> 📝 **Documentar siempre:** este documento se actualiza en el mismo _pull request_ que cambia el código.
