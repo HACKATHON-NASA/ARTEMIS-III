@@ -37,6 +37,8 @@ return [
 
         'paths' => [
             resource_path('js/pages'),
+            // Páginas de módulo: "Identidad/Pages/Login" → js/modules/Identidad/Pages/Login.vue
+            resource_path('js/modules'),
         ],
 
         'extensions' => [

@@ -28,6 +28,13 @@ abstract class ModuleServiceProvider extends ServiceProvider
         if (is_file($routes) && ! $this->app->routesAreCached()) {
             Route::middleware('api')->prefix('api/v1')->group($routes);
         }
+
+        // Pantallas (Inertia) del módulo, con el grupo "web".
+        $webRoutes = $this->modulePath('web.php');
+
+        if (is_file($webRoutes) && ! $this->app->routesAreCached()) {
+            Route::middleware('web')->group($webRoutes);
+        }
     }
 
     protected function modulePath(string $path = ''): string
