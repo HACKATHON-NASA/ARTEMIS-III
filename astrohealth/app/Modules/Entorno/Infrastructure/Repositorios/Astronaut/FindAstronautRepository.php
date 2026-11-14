@@ -2,13 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Entorno\Infrastructure\Repositorios;
+namespace App\Modules\Entorno\Infrastructure\Repositorios\Astronaut;
 
 use App\Modules\Entorno\Contratos\CrewMember;
 use App\Modules\Entorno\Contratos\CrewQuery;
 use App\Modules\Entorno\Infrastructure\Models\Astronaut;
 
-final class AstronautRepository implements CrewQuery
+/**
+ * BUSCAR astronautas (tabla astronauts). Solo lectura. Implementa el contrato CrewQuery.
+ */
+final class FindAstronautRepository implements CrewQuery
 {
     public function exists(int $astronautId): bool
     {
@@ -27,12 +30,7 @@ final class AstronautRepository implements CrewQuery
         return array_values(Astronaut::query()
             ->orderBy('id')
             ->get()
-            ->map(fn (Astronaut $astronaut): CrewMember => new CrewMember(
-                id: $astronaut->id,
-                missionId: $astronaut->mission_id,
-                name: $astronaut->name,
-                crewRole: $astronaut->crew_role,
-            ))
+            ->map(fn (Astronaut $astronaut): CrewMember => AstronautMapper::toCrewMember($astronaut))
             ->all());
     }
 }

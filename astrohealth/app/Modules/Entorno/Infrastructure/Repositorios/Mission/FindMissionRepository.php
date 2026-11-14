@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Entorno\Infrastructure\Repositorios;
+namespace App\Modules\Entorno\Infrastructure\Repositorios\Mission;
 
 use App\Modules\Entorno\Contratos\MissionQuery;
 use App\Modules\Entorno\Infrastructure\Models\Mission;
 
-final class MissionRepository implements MissionQuery
+/**
+ * BUSCAR misiones (tabla missions). Solo lectura. Implementa el contrato MissionQuery.
+ */
+final class FindMissionRepository implements MissionQuery
 {
     public function exists(int $missionId): bool
     {

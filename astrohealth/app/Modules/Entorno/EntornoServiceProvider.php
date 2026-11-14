@@ -6,8 +6,8 @@ namespace App\Modules\Entorno;
 
 use App\Modules\Entorno\Contratos\CrewQuery;
 use App\Modules\Entorno\Contratos\MissionQuery;
-use App\Modules\Entorno\Infrastructure\Repositorios\AstronautRepository;
-use App\Modules\Entorno\Infrastructure\Repositorios\MissionRepository;
+use App\Modules\Entorno\Infrastructure\Repositorios\Astronaut\FindAstronautRepository;
+use App\Modules\Entorno\Infrastructure\Repositorios\Mission\FindMissionRepository;
 use App\Shared\ModuleServiceProvider;
 
 /**
@@ -22,7 +22,7 @@ final class EntornoServiceProvider extends ModuleServiceProvider
 
     public function register(): void
     {
-        $this->app->bind(CrewQuery::class, AstronautRepository::class);
-        $this->app->bind(MissionQuery::class, MissionRepository::class);
+        $this->app->bind(CrewQuery::class, FindAstronautRepository::class);
+        $this->app->bind(MissionQuery::class, FindMissionRepository::class);
     }
 }

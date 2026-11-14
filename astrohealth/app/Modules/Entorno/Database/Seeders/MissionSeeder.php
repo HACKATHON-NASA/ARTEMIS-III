@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Entorno\Database\Seeders;
 
-use App\Modules\Entorno\Infrastructure\Models\Mission;
+use App\Modules\Entorno\Infrastructure\Repositorios\Astronaut\UpsertAstronautRepository;
+use App\Modules\Entorno\Infrastructure\Repositorios\Mission\UpsertMissionRepository;
 use Illuminate\Database\Seeder;
 
 /**
@@ -21,22 +22,17 @@ final class MissionSeeder extends Seeder
         ['name' => 'Lucas Ferreira', 'crew_role' => 'Médico de la tripulación'],
     ];
 
-    public function run(): void
+    public function run(UpsertMissionRepository $upsertMission, UpsertAstronautRepository $upsertAstronaut): void
     {
-        $mission = Mission::query()->firstOrCreate(
-            ['name' => 'Ares-1'],
-            [
-                'environment' => 'mars',
-                'start_date' => now()->subDays(23)->toDateString(),
-                'day_count' => 30,
-            ],
+        $missionId = $upsertMission->firstOrCreate(
+            name: 'Ares-1',
+            environment: 'mars',
+            startDate: now()->subDays(23)->toDateString(),
+            dayCount: 30,
         );
 
         foreach (self::CREW as $member) {
-            $mission->astronauts()->firstOrCreate(
-                ['name' => $member['name']],
-                ['crew_role' => $member['crew_role']],
-            );
+            $upsertAstronaut->firstOrCreate($missionId, $member['name'], $member['crew_role']);
         }
     }
 }
