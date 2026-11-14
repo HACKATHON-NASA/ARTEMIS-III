@@ -37,9 +37,10 @@ onMounted(async () => {
 <template>
     <Head title="Iniciar sesión" />
 
+    <!-- A todo el ancho y el alto de la pantalla (dvh: respeta la barra del navegador en el celular). -->
     <main
         ref="root"
-        class="relative min-h-svh overflow-hidden bg-[#020611] text-white"
+        class="relative min-h-dvh overflow-hidden bg-[#020611] text-white"
     >
         <SpaceBackground />
         <Starfield />
@@ -49,9 +50,11 @@ onMounted(async () => {
         />
 
         <div
-            class="relative z-10 mx-auto grid min-h-svh w-full max-w-7xl grid-cols-1 content-between gap-10 px-5 py-8 sm:px-10 lg:grid-cols-[1fr_minmax(0,540px)] lg:content-center lg:gap-16 lg:px-16 lg:py-24"
+            class="relative z-10 grid min-h-dvh w-full grid-cols-1 content-between gap-10 px-5 py-8 sm:px-10 lg:grid-cols-[1fr_minmax(0,540px)] lg:content-center lg:gap-16 lg:px-[6vw] lg:py-[clamp(3.5rem,9vh,6rem)]"
         >
-            <BrandHeader class="lg:absolute lg:top-14 lg:left-16" />
+            <BrandHeader
+                class="lg:absolute lg:top-[clamp(2rem,6vh,4rem)] lg:left-[6vw]"
+            />
 
             <LoginCard>
                 <LoginForm @success="enter" @failure="motion.shake()" />

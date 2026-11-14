@@ -31,6 +31,12 @@ export default defineConfig({
             formVariants: true,
         }),
     ]),
+    // Se preempaquetan al arrancar `composer run dev`. Si no, una librería que solo
+    // usan páginas cargadas después (GSAP en la pantalla de acceso) responde
+    // 504 "Outdated Optimize Dep" y la página queda sin animaciones.
+    optimizeDeps: {
+        include: ['gsap', 'pinia'],
+    },
     server: {
         watch: {
             ignored: [
