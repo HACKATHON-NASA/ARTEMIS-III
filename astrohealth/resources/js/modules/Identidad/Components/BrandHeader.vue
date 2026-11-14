@@ -41,7 +41,6 @@ import logoColor from '../../../../images/marca/logo-color.png';
 @keyframes brand-glow {
     50% {
         filter: drop-shadow(0 0 28px rgb(56 152 255 / 0.6));
-        transform: translateY(-3px) rotate(-2deg);
     }
 }
 

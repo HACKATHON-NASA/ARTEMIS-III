@@ -102,27 +102,26 @@ Se definen **una sola vez** como variables CSS en `resources/css/app.css` (`--st
 npm install pinia chart.js vue-chartjs gsap canvas-confetti
 ```
 
-## 5. Animaciones: fluidas, con profundidad y de calidad
+## 5. Animaciones: pocas, con sentido y de calidad
 
-La app se siente **viva y en 3D**, sin efectos de relleno. El ejemplo de referencia es la pantalla de acceso (`modules/Identidad/`).
+**Decisión del equipo (2026-11-14):** nada de efectos "suaves" de relleno. Se anima **solo lo que dice algo** de la salud o de la acción del usuario. El ejemplo de referencia es la pantalla de acceso (`modules/Identidad/`).
 
-| Técnica | Cómo | Ejemplo |
-|---|---|---|
-| **Coreografía de entrada** | Una línea de tiempo de GSAP por pantalla, en un *composable* (`use<Pantalla>Motion`). Las piezas se marcan con `data-intro="…"` y entran en orden | `useLoginMotion`: el espacio se acerca, la marca entra y la tarjeta aterriza girando en 3D |
-| **Profundidad (paralaje)** | Capas que se mueven distinto con el puntero según su "distancia" | `usePointerParallax`: fondo lejano (poco) y estrellas cercanas (más) |
-| **Inclinación 3D** | `rotationX`/`rotationY` con inercia (`gsap.quickTo`) y un brillo que sigue al puntero | `useTilt3d` en la tarjeta de acceso |
-| **Respuesta a acciones** | El error "niega" (temblor), el éxito tiene salida con viaje de cámara | `shake()` y `exit()` |
-| **Detalles vivos** | Bucles lentos y discretos: pulso del electrocardiograma, estrellas que titilan, flotación | `HeartbeatLine`, `Starfield` |
+| Sí | No |
+|---|---|
+| Lo que transmite **signos vitales**: el electrocardiograma (`HeartbeatLine`), el pulso de una zona del cuerpo en amarillo o rojo, la señal Tierra ↔ nave | Mover la imagen de fondo (paralaje, deriva de cámara, estrellas que se desplazan) |
+| Un **fundido corto** (≈0,6 s) al entrar a una pantalla y al salir | Tarjetas o recuadros que giran, se inclinan en 3D o "aterrizan" |
+| Respuesta clara a una acción: el valor que "vuela" al órgano (M1), el confeti al ganar una insignia (M7) | Elementos que flotan o se balancean sin motivo |
+
+En la pantalla de acceso, los campos van **directo sobre el fondo**, sin tarjeta ni recuadro.
 
 **Reglas de calidad:**
 
-- Se anima con `transform`, `opacity` y `filter` (GPU), nunca con `width`, `top` ni `left`.
-- *Easing* con carácter (`expo.out`, `power3`): nada lineal salvo los bucles.
-- La interfaz responde en 150–400 ms. Las entradas de pantalla y los viajes de cámara pueden durar hasta ~2,5 s, pero **nunca bloquean**: se puede escribir mientras la tarjeta aterriza.
-- Si el elemento entra con una animación y además se mueve con el puntero, van en **dos capas** (externa: entrada; interna: inclinación) para que no se pisen.
-- Todo bucle o *listener* se limpia al desmontar (`onBeforeUnmount`, `gsap.context().revert()`).
-- Se respeta `prefers-reduced-motion`: sin paralaje, inclinación ni bucles; solo un *fade* corto. En pantallas táctiles no se sigue al puntero.
-- `backdrop-filter` no se combina con `transform-style: preserve-3d` (Chromium deja de pintarlo).
+- Cada pantalla tiene su *composable* de movimiento (`use<Pantalla>Motion`) con GSAP; las piezas se marcan con `data-intro="…"`.
+- Se anima con `transform` y `opacity` (GPU), nunca con `width`, `top` ni `left`.
+- La interfaz responde en 150–400 ms. Nada bloquea: se puede escribir mientras la pantalla aparece.
+- Todo bucle se limpia al desmontar (`onBeforeUnmount`, `gsap.context().revert()`).
+- Se respeta `prefers-reduced-motion`: sin bucles ni fundidos.
+- Las librerías de animación van en `optimizeDeps.include` de `vite.config.ts`; si no, Vite responde 504 al cargarlas por primera vez y la pantalla queda sin animación.
 
 ## 6. Responsivo
 

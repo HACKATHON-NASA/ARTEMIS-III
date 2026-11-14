@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * El casco de astronauta de la tarjeta, en línea fina, con dos destellos.
- * Flota despacio y los destellos titilan (sin movimiento si el sistema lo pide).
+ * El casco de astronauta del formulario, en línea fina, con dos destellos
+ * que titilan (quietos si el sistema pide reducir movimiento).
  */
 </script>
 
@@ -32,10 +32,6 @@
 </template>
 
 <style scoped>
-.helmet {
-    animation: helmet-float 7s ease-in-out infinite;
-}
-
 .sparkles path {
     transform-box: fill-box;
     transform-origin: center;
@@ -44,12 +40,6 @@
 
 .sparkles .sparkle-late {
     animation-delay: 1.4s;
-}
-
-@keyframes helmet-float {
-    50% {
-        transform: translateY(-6px) rotate(1.5deg);
-    }
 }
 
 @keyframes sparkle {
@@ -65,7 +55,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .helmet,
     .sparkles path {
         animation: none;
     }
