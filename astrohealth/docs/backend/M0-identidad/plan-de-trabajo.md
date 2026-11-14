@@ -79,7 +79,7 @@ flowchart LR
     P11 --> P12["12 · Cierre"]
 ```
 
-### Paso 0 · Rama y línea base
+### Paso 0 · Rama y línea base ✅
 
 | | |
 |---|---|
@@ -87,7 +87,9 @@ flowchart LR
 | **Comprobar** | `php artisan test` → 40 en verde |
 | **Listo cuando** | La rama existe y la línea base está anotada |
 
-### Paso 1 · Shared: formato JSON y errores
+### Paso 1 · Shared: formato JSON y errores ✅
+
+> Terminado el 2026-11-14: 55 pruebas en verde (40 + 15), Pint ✅, PHPStan sin errores nuevos. Detalle en [Shared · cómo quedó hecho](../shared.md#7-cómo-quedó-hecho).
 
 Sin esto, cada respuesta saldría distinta. **Todo lo demás se apoya aquí.**
 
@@ -97,11 +99,11 @@ Sin esto, cada respuesta saldría distinta. **Todo lo demás se apoya aquí.**
 | Shared | `app/Shared/Http/GeneralCode.php` | Los códigos generales (`VALIDATION_FAILED`, `NOT_FOUND`…) |
 | Shared | `app/Shared/Excepciones/BusinessError.php` | La base de los errores de negocio: `code()`, `httpStatus()` |
 | Shared | `app/Shared/ModuleServiceProvider.php` | Carga el `routes.php` del módulo con el prefijo `api/v1` y el grupo `api`, y sus migraciones |
-| Shared | `app/Shared/Persistencia/Transaction.php` · `MysqlTransaction.php` | Transacciones sin `DB::` en los casos de uso |
+| Shared | `app/Shared/Persistencia/Transaction.php` · `DatabaseTransaction.php` | Transacciones sin `DB::` en los casos de uso |
 | Config | `bootstrap/app.php` → `withExceptions` | Convierte toda excepción de `api/*` al formato de error ([tabla](../shared.md#3-manejador-de-errores-bootstrapappphp)) |
 | Config | `phpunit.xml` | Suma la *testsuite* `Modules` → `app/Modules/*/Tests` |
 
-**Pruebas:** `tests/Feature/ApiErrorFormatTest.php`. Una ruta de prueba que responde 404, 422, `BusinessError` y 500, y verifica la forma exacta `{data: null, message, error_code, errors}`.
+**Pruebas:** `tests/Feature/Shared/ApiErrorFormatTest.php`. Una ruta de prueba que responde 404, 422, `BusinessError` y 500, y verifica la forma exacta `{data: null, message, error_code, errors}`.
 
 **Listo cuando:** las 40 pruebas + las nuevas pasan y `GET /api/v1/no-existe` responde `{"data":null,"message":"…","error_code":"NOT_FOUND","errors":{}}`.
 

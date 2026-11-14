@@ -54,7 +54,7 @@ Las listas que pueden crecer van paginadas, con `meta`:
 | `errors` | Solo en errores | Los errores por campo, o `{}` si no son de un campo |
 | `meta` | Solo en listas paginadas | Los datos de paginación |
 
-**Cómo se construye:** los controladores usan `App\Shared\Http\ApiResponse`. Los errores salen solos: el manejador de `bootstrap/app.php` convierte las validaciones, las excepciones de negocio (`BusinessError`) y los errores inesperados al formato de arriba. **Nadie arma un JSON a mano.**
+**Cómo se construye:** los controladores usan `App\Shared\Http\ApiResponse` y los errores los arma `App\Shared\Http\ApiExceptionRenderer`. Los errores salen solos: el manejador de `bootstrap/app.php` convierte las validaciones, las excepciones de negocio (`BusinessError`) y los errores inesperados al formato de arriba. **Nadie arma un JSON a mano.**
 
 ## 4. Códigos de error
 
@@ -62,13 +62,17 @@ Las listas que pueden crecer van paginadas, con `meta`:
 
 | Código | HTTP | Cuándo |
 |---|:---:|---|
+| `BAD_REQUEST` | 400 | La petición está mal formada |
 | `UNAUTHENTICATED` | 401 | Sin token (los detalles, con los códigos `AUTH_*` de M0) |
 | `FORBIDDEN` | 403 | Con token, pero su rol no tiene el permiso o el recurso no es suyo |
 | `NOT_FOUND` | 404 | No existe |
+| `METHOD_NOT_ALLOWED` | 405 | El método HTTP no existe en esa ruta |
 | `CONFLICT` | 409 | La acción choca con el estado actual |
+| `PAYLOAD_TOO_LARGE` | 413 | El cuerpo es demasiado grande |
 | `VALIDATION_FAILED` | 422 | La entrada no pasa el `FormRequest` |
 | `TOO_MANY_REQUESTS` | 429 | Demasiadas peticiones |
 | `INTERNAL_ERROR` | 500 | Error no previsto. Responde "Ocurrió un error inesperado." |
+| `SERVICE_UNAVAILABLE` | 503 | Mantenimiento |
 
 **De cada módulo** (enum `Domain/Enums/ErrorCode` del módulo):
 

@@ -87,8 +87,9 @@ ARTEMIS III/
 │   │   │   ├── ModuleServiceProvider.php     # Base de los providers: carga routes.php y migraciones
 │   │   │   ├── Http/ApiResponse.php           # Construye el JSON de la API
 │   │   │   ├── Http/Middleware/               # Middleware común
+│   │   │   ├── Http/ApiExceptionRenderer.php  # Excepción → formato de error único
 │   │   │   ├── Excepciones/BusinessError.php  # Base de los errores de negocio
-│   │   │   └── Persistencia/Transaction.php   # Transacciones sin tocar DB:: en los servicios
+│   │   │   └── Persistencia/Transaction.php   # Transacciones sin tocar DB:: (DatabaseTransaction)
 │   │   ├── Models/User.php         # Del starter kit; su dueño es M0 (role, active, astronaut_id)
 │   │   └── Providers/
 │   ├── bootstrap/

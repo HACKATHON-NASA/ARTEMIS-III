@@ -2,6 +2,8 @@
 
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Shared\Http\ApiExceptionRenderer;
+use App\Shared\Http\Middleware\ForceJsonResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -22,9 +24,21 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        // API /api/v1 (las rutas las registra cada módulo con ModuleServiceProvider).
+        $middleware->api(prepend: [
+            ForceJsonResponse::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
+        );
+
+        // Formato de error único de la API: {data: null, message, error_code, errors}.
+        $exceptions->render(
+            fn (Throwable $e, Request $request) => $request->is('api/*')
+                ? app(ApiExceptionRenderer::class)->render($e)
+                : null,
         );
     })->create();

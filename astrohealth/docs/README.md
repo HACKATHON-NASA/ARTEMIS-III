@@ -24,7 +24,7 @@ docs/
 
 | | Módulo | Fase | Backend | Base de datos | Frontend |
 |:---:|---|:---:|---|---|---|
-| 🧱 | Shared · piezas comunes | 1 | [⬜](backend/shared.md) | — | — |
+| 🧱 | Shared · piezas comunes | 1 | [✅](backend/shared.md) | — | — |
 | 🔐 | M0 · Identidad y acceso (JWT y roles) | 1 | [⬜](backend/M0-identidad/README.md) | [⬜](database/M0-identidad/README.md) | [⬜](frontend/M0-identidad/README.md) |
 | 🩺 | M1 · Registro de indicadores | 2 | [⬜](backend/M1-registro/README.md) | [⬜](database/M1-registro/README.md) | [⬜](frontend/M1-registro/README.md) |
 | 🚦 | M2 · Motor de evaluación | 2 | [⬜](backend/M2-evaluacion/README.md) | [⬜](database/M2-evaluacion/README.md) | [⬜](frontend/M2-evaluacion/README.md) |
