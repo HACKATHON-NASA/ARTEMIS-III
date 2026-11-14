@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { LayoutGrid, ShieldCheck } from '@lucide/vue';
+import { HeartPulse, LayoutGrid, ShieldCheck } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -14,7 +14,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { admin, dashboard } from '@/routes';
+import { admin, dashboard, inicio } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { NavItem } from '@/types';
 
@@ -25,6 +25,9 @@ import type { NavItem } from '@/types';
 const auth = useAuthStore();
 
 const mainNavItems = computed<NavItem[]>(() => [
+    ...(auth.actor?.astronaut_id
+        ? [{ title: 'Inicio', href: inicio(), icon: HeartPulse }]
+        : []),
     { title: 'Dashboard', href: dashboard(), icon: LayoutGrid },
     ...(auth.can('users.manage')
         ? [{ title: 'Administración', href: admin(), icon: ShieldCheck }]

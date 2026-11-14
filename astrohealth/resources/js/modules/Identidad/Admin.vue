@@ -11,7 +11,7 @@ import DeviceFormDialog from './Components/Admin/DeviceFormDialog.vue';
 import DevicesPanel from './Components/Admin/DevicesPanel.vue';
 import UserFormDialog from './Components/Admin/UserFormDialog.vue';
 import UsersPanel from './Components/Admin/UsersPanel.vue';
-import { useAdminMotion } from './Composables/useAdminMotion';
+import { useReveal } from '@/composables/useReveal';
 import { useAdminStore } from './Stores/useAdminStore';
 import type { ManagedDevice, ManagedUser, UserFormData } from './Types/admin';
 
@@ -27,7 +27,7 @@ defineOptions({
 const auth = useAuthStore();
 const store = useAdminStore();
 const root = ref<HTMLElement | null>(null);
-const motion = useAdminMotion(root);
+const { reveal } = useReveal(root);
 
 const userDialog = ref(false);
 const editing = ref<ManagedUser | null>(null);
@@ -77,7 +77,7 @@ onMounted(async () => {
 
     await store.load();
     await nextTick();
-    motion.reveal();
+    reveal();
 });
 </script>
 

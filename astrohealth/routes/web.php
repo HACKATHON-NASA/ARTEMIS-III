@@ -13,3 +13,7 @@ use Illuminate\Support\Facades\Route;
 Route::redirect('/', '/acceso')->name('home');
 
 Route::inertia('dashboard', 'Dashboard/Dashboard')->name('dashboard');
+
+// Inicio del astronauta: cuerpo (M3) + puntaje (M2) + alertas (M5) + rutina (M8).
+// Pasa a app/Modules/Cuerpo/web.php cuando exista el backend de M3.
+Route::inertia('inicio', 'Cuerpo/Home')->name('inicio');
