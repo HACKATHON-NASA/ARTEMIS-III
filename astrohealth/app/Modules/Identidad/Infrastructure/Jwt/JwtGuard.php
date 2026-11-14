@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\Identidad\Infrastructure\Jwt;
 
 use App\Modules\Identidad\Contratos\Actor;
-use App\Modules\Identidad\Domain\Enums\ActorType;
 use App\Modules\Identidad\Domain\Excepciones\TokenExpired;
 use App\Modules\Identidad\Domain\Excepciones\TokenInvalid;
 use App\Modules\Identidad\Domain\ValueObjects\TokenClaims;
-use App\Modules\Identidad\Infrastructure\Repositorios\DeviceRepository;
-use App\Modules\Identidad\Infrastructure\Repositorios\UserRepository;
+use App\Modules\Identidad\Infrastructure\Repositorios\Actor\FindActorRepository;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
@@ -35,8 +33,7 @@ final class JwtGuard implements Guard
     public function __construct(
         private readonly JwtVerifier $verifier,
         private readonly RevokedTokens $revokedTokens,
-        private readonly UserRepository $users,
-        private readonly DeviceRepository $devices,
+        private readonly FindActorRepository $actors,
         private Request $request,
     ) {}
 
@@ -64,10 +61,7 @@ final class JwtGuard implements Guard
             throw new TokenInvalid;
         }
 
-        $actor = match ($claims->type) {
-            ActorType::User => $this->users->findById($claims->actorId),
-            ActorType::Device => $this->devices->findById($claims->actorId),
-        };
+        $actor = $this->actors->find($claims->type, $claims->actorId);
 
         if (! $actor instanceof Actor || ! $actor->actorIsActive() || $actor->actorRole() === null) {
             throw new TokenInvalid;

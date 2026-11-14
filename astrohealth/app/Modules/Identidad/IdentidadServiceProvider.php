@@ -14,8 +14,7 @@ use App\Modules\Identidad\Infrastructure\Jwt\JwtConfig;
 use App\Modules\Identidad\Infrastructure\Jwt\JwtGuard;
 use App\Modules\Identidad\Infrastructure\Jwt\JwtVerifier;
 use App\Modules\Identidad\Infrastructure\Jwt\RevokedTokens;
-use App\Modules\Identidad\Infrastructure\Repositorios\DeviceRepository;
-use App\Modules\Identidad\Infrastructure\Repositorios\UserRepository;
+use App\Modules\Identidad\Infrastructure\Repositorios\Actor\FindActorRepository;
 use App\Shared\ModuleServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -64,8 +63,7 @@ final class IdentidadServiceProvider extends ModuleServiceProvider
             $guard = new JwtGuard(
                 $app->make(JwtVerifier::class),
                 $app->make(RevokedTokens::class),
-                $app->make(UserRepository::class),
-                $app->make(DeviceRepository::class),
+                $app->make(FindActorRepository::class),
                 $app->make(Request::class),
             );
 

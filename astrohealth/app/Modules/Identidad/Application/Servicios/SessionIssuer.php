@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Identidad\Application;
+namespace App\Modules\Identidad\Application\Servicios;
 
-use App\Models\User;
 use App\Modules\Identidad\Application\DTOs\SessionResult;
+use App\Modules\Identidad\Domain\Entidades\UserAccount;
 use App\Modules\Identidad\Infrastructure\Jwt\JwtConfig;
-use App\Modules\Identidad\Infrastructure\Repositorios\RefreshTokenRepository;
+use App\Modules\Identidad\Infrastructure\Repositorios\RefreshToken\InsertRefreshTokenRepository;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 
@@ -18,18 +18,18 @@ use Illuminate\Support\Str;
 final readonly class SessionIssuer
 {
     public function __construct(
-        private RefreshTokenRepository $refreshTokens,
+        private InsertRefreshTokenRepository $insertRefreshToken,
         private TokenFactory $tokens,
         private ActorProfiles $profiles,
         private JwtConfig $config,
     ) {}
 
-    public function start(User $user, ?string $ip, ?string $userAgent, ?string $familyId = null): SessionResult
+    public function start(UserAccount $user, ?string $ip, ?string $userAgent, ?string $familyId = null): SessionResult
     {
         $plain = bin2hex(random_bytes(32));
         $expiresAt = CarbonImmutable::now()->addMinutes($this->config->refreshTtlMinutes);
 
-        $this->refreshTokens->create(
+        $this->insertRefreshToken->insert(
             userId: $user->id,
             familyId: $familyId ?? (string) Str::uuid(),
             tokenHash: self::hash($plain),
@@ -38,9 +38,10 @@ final readonly class SessionIssuer
             userAgent: $userAgent,
         );
 
-        $access = $this->tokens->accessFor($user);
+        $identity = $user->identity();
+        $access = $this->tokens->accessFor($identity);
 
-        return new SessionResult($access, $plain, $expiresAt, $this->profiles->of($user, $access->claims->missionId));
+        return new SessionResult($access, $plain, $expiresAt, $this->profiles->of($identity, $access->claims->missionId));
     }
 
     public static function hash(#[\SensitiveParameter] string $plainRefreshToken): string

@@ -107,22 +107,27 @@ Las carpetas **ya están creadas** en los 8 módulos. Una carpeta que el módulo
 ```
 astrohealth/app/Modules/Registro/
 ├── RegistroServiceProvider.php     # Rutas, migraciones, listeners y bindings de contratos
-├── routes.php                      # Prefijo /api/v1, middleware web + auth
+├── routes.php                      # Prefijo /api/v1, grupo api + auth:api (JWT) + can:<permiso>
 ├── Contratos/                      # API PÚBLICA: interfaces y DTOs que usan otros módulos
 ├── Domain/                         # Reglas puras, sin base de datos ni HTTP
 │   ├── Enums/                      # Valores cerrados (IndicatorCode, Status) y códigos de error
+│   ├── Entidades/                  # Lo que devuelven los repositorios (clases readonly, sin Eloquent)
 │   ├── Reglas/                     # Cálculos y validaciones puras
 │   ├── Eventos/                    # Eventos que publica el módulo (públicos)
 │   ├── ValueObjects/
 │   └── Excepciones/                # Errores de negocio (heredan de BusinessError)
 ├── Application/                    # Casos de uso: una clase por acción
+│   ├── Servicios/                  # Piezas de apoyo que comparten varios casos de uso
 │   └── DTOs/
 ├── Infrastructure/                 # Lo ÚNICO que toca la base de datos o servicios externos
-│   ├── Repositorios/
+│   ├── Repositorios/<Tabla>/       # UN archivo por operación (sección 6)
+│   │   ├── Find<Tabla>Repository.php    · Insert<Tabla>Repository.php
+│   │   ├── Update<Tabla>Repository.php  · Delete<Tabla>Repository.php
+│   │   └── <Tabla>Mapper.php            # Modelo Eloquent → entidad de Domain
 │   ├── Models/                     # Modelos Eloquent de sus tablas
 │   └── Listeners/                  # Reacciones a eventos de otros módulos
 ├── Http/
-│   ├── Controllers/Api/            # Devuelven el JSON de la API
+│   ├── Controllers/Api/            # Devuelven el JSON de la API. Uno por acción (__invoke)
 │   ├── Controllers/Web/            # Devuelven páginas Inertia
 │   ├── Requests/                   # Validación de entrada
 │   ├── Resources/                  # Forma de "data"
@@ -178,12 +183,24 @@ flowchart TB
 
 ### Infrastructure
 - Es **la única** capa que toca MySQL o hace llamadas HTTP hacia afuera (Python).
-- Hay repositorios por agregado, con métodos que dicen lo que hacen: `latestByAstronaut()`, `seriesFor()`, `save()`. Nunca un `query()` genérico.
+- **Un repositorio por operación**, agrupados por tabla en `Repositorios/<Tabla>/`:
+
+  | Archivo | Solo hace | Ejemplo de métodos |
+  |---|---|---|
+  | `Find<Tabla>Repository` | Buscar (solo lectura) | `findById()`, `findByEmail()`, `latestByAstronaut()` |
+  | `Insert<Tabla>Repository` | Insertar | `insert()`, `insertMany()` |
+  | `Update<Tabla>Repository` | Actualizar | `markUsed()`, `revokeFamily()` |
+  | `Delete<Tabla>Repository` | Eliminar | `deleteExpired()` |
+  | `Upsert<Tabla>Repository` | Insertar o actualizar (seeders, idempotencia) | `upsertByEmail()` |
+
+  Un archivo se crea **solo si el módulo necesita esa operación**: no hay repositorios vacíos. Los métodos dicen lo que hacen; nunca un `query()` genérico.
+- Los repositorios devuelven **entidades de `Domain/Entidades/`** (clases `readonly`), **nunca modelos Eloquent**. El `<Tabla>Mapper` hace la conversión. Así `Application` no conoce Eloquent.
+- Única excepción: un repositorio que alimenta a Laravel por dentro (por ejemplo, el *guard* de M0 necesita un `Authenticatable`) puede devolver el modelo, solo hacia otra clase de `Infrastructure`. Se documenta en el archivo.
 - Los contratos hacia otros módulos devuelven **DTOs**, no modelos Eloquent.
 - Un módulo **solo** consulta **sus** tablas ([dueño de cada tabla](02-base-de-datos.md#1-dueño-de-cada-tabla)).
 
 ### Http
-- El controlador es delgado: `Request → caso de uso → Resource → ApiResponse`. Cada método tiene pocas líneas.
+- **Un controlador por acción** (`__invoke`): `LoginController`, `MeController`. Es delgado: `Request → caso de uso → Resource → ApiResponse`.
 - El `FormRequest` valida el formato y los rangos físicamente posibles. Las reglas del negocio van en `Application` o en `Domain`.
 - Toda respuesta de `/api/v1` sale con `ApiResponse` y el [formato JSON único](01-api-y-json.md).
 
@@ -209,7 +226,9 @@ flowchart LR
 |---|---|---|
 | Módulo (carpeta) | `PascalCase`, en español, sin tildes | `Gamificacion` |
 | Caso de uso | Verbo + objeto, método `execute()` | `RecordMeasurements::execute()` |
-| Repositorio | `<Agregado>Repository` (se divide en `Read`/`Write` si crece) | `MeasurementRepository` |
+| Repositorio | `<Operación><Tabla>Repository`, uno por operación (`Find`, `Insert`, `Update`, `Delete`, `Upsert`) | `FindMeasurementRepository`, `InsertMeasurementRepository` |
+| Entidad | Lo que es, sin sufijo, en `Domain/Entidades/` | `UserAccount`, `Measurement` |
+| *Mapper* | `<Tabla>Mapper::toEntity()` | `MeasurementMapper` |
 | Contrato | Lo que ofrece, sin `Interface` | `Evaluator`, `MissionQuery` |
 | DTO | `<Cosa>Data` (entrada) · `<Cosa>Result` (salida) | `MeasurementData`, `AssessmentResult` |
 | Evento | Hecho en pasado | `MeasurementsRecorded`, `ReminderCompleted` |
@@ -224,7 +243,7 @@ flowchart LR
 | *Store* Pinia | `use<Cosa>Store` | `useMeasurementsStore` |
 | Clases PHP | `final`, con tipos declarados | `final class RecordMeasurements` |
 
-**Límites de tamaño:** una clase o un componente debería quedar por debajo de 300 líneas, y por encima de 500 hay que revisarlo. Un método, por debajo de 30 líneas. Un método de controlador, por debajo de 15.
+**Límites de tamaño:** una clase o un componente debería quedar por debajo de 300 líneas. **Ningún archivo pasa de 500 líneas:** si crece, se divide por responsabilidad. Un método, por debajo de 30 líneas. Un controlador, por debajo de 15.
 
 ## 9. Seguridad
 
@@ -281,7 +300,7 @@ sequenceDiagram
     participant S as RecordMeasurements (M1)
     participant E as Evaluator (contrato M2)
     participant P as Python /evaluate
-    participant W as MeasurementRepository (M1)
+    participant W as InsertMeasurementRepository (M1)
     participant A as OnMeasurementsRecorded (M5)
     participant G as OnMeasurementsRecorded (M7)
     V->>C: POST /api/v1/measurements
@@ -289,7 +308,7 @@ sequenceDiagram
     S->>E: evaluate(bp_sys, 148, mars)
     E->>P: POST /evaluate
     P-->>E: { status: "red" } (si cae: respaldo con thresholds)
-    S->>W: save(...) dentro de Transaction
+    S->>W: insertMany(...) dentro de Transaction
     S-->>C: RecordResult
     C-->>V: 201 { data: [...], message: "ok" }
     Note over S,G: después del commit: MeasurementsRecorded
@@ -304,6 +323,6 @@ sequenceDiagram
 | 3 | Http | `Registro/Http/Controllers/Api/MeasurementController.php` |
 | 4 | Application | `Registro/Application/RecordMeasurements.php` |
 | 5 | Contrato | `Evaluacion/Contratos/Evaluator.php` → `Evaluacion/Infrastructure/Clients/PythonEvaluator.php` |
-| 6 | Infrastructure | `Registro/Infrastructure/Repositorios/MeasurementRepository.php` |
+| 6 | Infrastructure | `Registro/Infrastructure/Repositorios/Measurement/InsertMeasurementRepository.php` |
 | 7 | Evento | `Registro/Domain/Eventos/MeasurementsRecorded.php` |
 | 8 | *Listeners* | `Alertas/Infrastructure/Listeners/OnMeasurementsRecorded.php` y `Gamificacion/Infrastructure/Listeners/OnMeasurementsRecorded.php` |

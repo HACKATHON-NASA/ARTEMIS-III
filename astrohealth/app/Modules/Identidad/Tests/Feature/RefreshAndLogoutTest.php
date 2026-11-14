@@ -141,6 +141,22 @@ final class RefreshAndLogoutTest extends TestCase
         $this->refresh($session['refresh'])->assertUnauthorized();
     }
 
+    public function test_a_logged_out_token_stays_dead_during_the_clock_leeway(): void
+    {
+        $session = $this->login();
+
+        $this->postJson('/api/v1/auth/logout', [], $this->bearer($session['access']))->assertNoContent();
+
+        // Pasó el exp (15 min), pero sigue dentro de la tolerancia de relojes (30 s):
+        // el verificador aún aceptaría la firma, así que la revocación debe seguir viva.
+        $this->travel(15)->minutes();
+        $this->travel(10)->seconds();
+
+        $this->getJson('/api/v1/auth/me', $this->bearer($session['access']))
+            ->assertUnauthorized()
+            ->assertJsonPath('error_code', 'AUTH_TOKEN_INVALID');
+    }
+
     public function test_logout_requires_a_token(): void
     {
         $this->postJson('/api/v1/auth/logout')->assertUnauthorized();

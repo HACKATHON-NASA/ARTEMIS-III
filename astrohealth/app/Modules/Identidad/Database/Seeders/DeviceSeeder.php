@@ -6,7 +6,7 @@ namespace App\Modules\Identidad\Database\Seeders;
 
 use App\Modules\Entorno\Contratos\CrewQuery;
 use App\Modules\Identidad\Application\CreateDevice;
-use App\Modules\Identidad\Infrastructure\Repositorios\DeviceRepository;
+use App\Modules\Identidad\Infrastructure\Repositorios\Device\FindDeviceRepository;
 use Illuminate\Database\Seeder;
 
 /**
@@ -16,7 +16,7 @@ use Illuminate\Database\Seeder;
  */
 final class DeviceSeeder extends Seeder
 {
-    public function run(CreateDevice $createDevice, DeviceRepository $devices, CrewQuery $crew): void
+    public function run(CreateDevice $createDevice, FindDeviceRepository $findDevice, CrewQuery $crew): void
     {
         $clientId = config('identidad.simulator_device.client_id');
         $secret = config('identidad.simulator_device.client_secret');
@@ -27,7 +27,7 @@ final class DeviceSeeder extends Seeder
             return;
         }
 
-        if ($devices->findByClientId($clientId) !== null) {
+        if ($findDevice->findByClientId($clientId) !== null) {
             return;
         }
 

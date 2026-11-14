@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Identidad\Application;
+namespace App\Modules\Identidad\Application\Servicios;
 
-use App\Models\User;
 use App\Modules\Identidad\Application\DTOs\ActorProfile;
-use App\Modules\Identidad\Contratos\Actor;
 use App\Modules\Identidad\Domain\Excepciones\UserWithoutRole;
+use App\Modules\Identidad\Domain\ValueObjects\ActorIdentity;
 use App\Modules\Identidad\Domain\ValueObjects\PermissionMatrix;
 
 /**
@@ -17,17 +16,17 @@ final readonly class ActorProfiles
 {
     public function __construct(private PermissionMatrix $permissions) {}
 
-    public function of(Actor $actor, ?int $missionId): ActorProfile
+    public function of(ActorIdentity $actor, ?int $missionId): ActorProfile
     {
-        $role = $actor->actorRole() ?? throw new UserWithoutRole;
+        $role = $actor->role ?? throw new UserWithoutRole;
 
         return new ActorProfile(
-            type: $actor->actorType(),
-            id: $actor->actorId(),
-            name: $actor->actorName(),
-            email: $actor instanceof User ? $actor->email : null,
+            type: $actor->type,
+            id: $actor->id,
+            name: $actor->name,
+            email: $actor->email,
             role: $role,
-            astronautId: $actor->actorAstronautId(),
+            astronautId: $actor->astronautId,
             missionId: $missionId,
             permissions: $this->permissions->permissionsFor($role),
         );

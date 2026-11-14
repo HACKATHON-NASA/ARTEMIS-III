@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Identidad\Application;
+namespace App\Modules\Identidad\Application\Servicios;
 
 use App\Modules\Entorno\Contratos\CrewQuery;
 use App\Modules\Identidad\Application\DTOs\AccessToken;
-use App\Modules\Identidad\Contratos\Actor;
 use App\Modules\Identidad\Domain\Excepciones\UserWithoutRole;
+use App\Modules\Identidad\Domain\ValueObjects\ActorIdentity;
 use App\Modules\Identidad\Domain\ValueObjects\TokenClaims;
 use App\Modules\Identidad\Infrastructure\Jwt\JwtConfig;
 use App\Modules\Identidad\Infrastructure\Jwt\JwtIssuer;
-use App\Modules\Identidad\Infrastructure\Models\Device;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 
@@ -26,16 +25,16 @@ final readonly class TokenFactory
         private CrewQuery $crew,
     ) {}
 
-    public function accessFor(Actor $actor): AccessToken
+    public function accessFor(ActorIdentity $actor): AccessToken
     {
-        $role = $actor->actorRole() ?? throw new UserWithoutRole;
+        $role = $actor->role ?? throw new UserWithoutRole;
         $now = CarbonImmutable::now()->getTimestamp();
 
         $claims = new TokenClaims(
-            type: $actor->actorType(),
-            actorId: $actor->actorId(),
+            type: $actor->type,
+            actorId: $actor->id,
             role: $role,
-            astronautId: $actor->actorAstronautId(),
+            astronautId: $actor->astronautId,
             missionId: $this->missionOf($actor),
             jti: (string) Str::uuid(),
             issuedAt: $now,
@@ -47,14 +46,12 @@ final readonly class TokenFactory
     }
 
     /** La misión del actor: la del dispositivo, o la del astronauta enlazado (M6). */
-    public function missionOf(Actor $actor): ?int
+    public function missionOf(ActorIdentity $actor): ?int
     {
-        if ($actor instanceof Device) {
-            return $actor->mission_id;
+        if ($actor->missionId !== null) {
+            return $actor->missionId;
         }
 
-        $astronautId = $actor->actorAstronautId();
-
-        return $astronautId === null ? null : $this->crew->missionOf($astronautId);
+        return $actor->astronautId === null ? null : $this->crew->missionOf($actor->astronautId);
     }
 }

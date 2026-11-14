@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Identidad\Application;
+namespace App\Modules\Identidad\Application\Servicios;
 
 use Illuminate\Contracts\Hashing\Hasher;
 

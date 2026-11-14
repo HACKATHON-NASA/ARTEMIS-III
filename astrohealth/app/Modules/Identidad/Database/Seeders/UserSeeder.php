@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Identidad\Database\Seeders;
 
-use App\Models\User;
 use App\Modules\Entorno\Contratos\CrewQuery;
 use App\Modules\Identidad\Domain\Enums\Role;
 use App\Modules\Identidad\Domain\Reglas\RoleAssignment;
+use App\Modules\Identidad\Infrastructure\Repositorios\User\UpsertUserRepository;
 use Illuminate\Database\Seeder;
 use RuntimeException;
 
@@ -17,7 +17,7 @@ use RuntimeException;
  */
 final class UserSeeder extends Seeder
 {
-    public function run(CrewQuery $crew): void
+    public function run(CrewQuery $crew, UpsertUserRepository $upsertUser): void
     {
         if (app()->isProduction()) {
             $this->command->warn('UserSeeder no crea usuarios de demo en producción.');
@@ -43,16 +43,12 @@ final class UserSeeder extends Seeder
         foreach ($users as $data) {
             RoleAssignment::assert($data['role'], $data['astronaut_id']);
 
-            User::query()->updateOrCreate(
-                ['email' => $data['email']],
-                [
-                    'name' => $data['name'],
-                    'password' => 'password',
-                    'role' => $data['role'],
-                    'astronaut_id' => $data['astronaut_id'],
-                    'active' => true,
-                    'email_verified_at' => now(),
-                ],
+            $upsertUser->upsertByEmail(
+                email: $data['email'],
+                name: $data['name'],
+                password: 'password',
+                role: $data['role'],
+                astronautId: $data['astronaut_id'],
             );
         }
     }

@@ -8,7 +8,8 @@ use App\Models\User;
 use App\Modules\Entorno\Infrastructure\Models\Astronaut;
 use App\Modules\Entorno\Infrastructure\Models\Mission;
 use App\Modules\Identidad\Application\CreateDevice;
-use App\Modules\Identidad\Application\TokenFactory;
+use App\Modules\Identidad\Application\Servicios\ActorIdentityLoader;
+use App\Modules\Identidad\Application\Servicios\TokenFactory;
 use App\Modules\Identidad\Contratos\Actor;
 use App\Modules\Identidad\Domain\Enums\Role;
 use App\Modules\Identidad\Infrastructure\Models\Device;
@@ -55,7 +56,11 @@ trait InteractsWithJwt
 
     protected function tokenFor(Actor $actor): string
     {
-        return app(TokenFactory::class)->accessFor($actor)->token;
+        $identity = app(ActorIdentityLoader::class)->load($actor->actorType(), $actor->actorId());
+
+        $this->assertNotNull($identity, 'El actor de la prueba no existe en la base.');
+
+        return app(TokenFactory::class)->accessFor($identity)->token;
     }
 
     /**

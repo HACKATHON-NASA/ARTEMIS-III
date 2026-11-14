@@ -6,8 +6,12 @@ namespace App\Modules\Identidad\Application;
 
 use App\Modules\Identidad\Application\DTOs\DeviceCredentials;
 use App\Modules\Identidad\Application\DTOs\DeviceTokenResult;
+use App\Modules\Identidad\Application\Servicios\ActorProfiles;
+use App\Modules\Identidad\Application\Servicios\DummyHash;
+use App\Modules\Identidad\Application\Servicios\TokenFactory;
 use App\Modules\Identidad\Domain\Excepciones\InvalidDeviceCredentials;
-use App\Modules\Identidad\Infrastructure\Repositorios\DeviceRepository;
+use App\Modules\Identidad\Infrastructure\Repositorios\Device\FindDeviceRepository;
+use App\Modules\Identidad\Infrastructure\Repositorios\Device\UpdateDeviceRepository;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Hashing\Hasher;
 
@@ -18,7 +22,8 @@ use Illuminate\Contracts\Hashing\Hasher;
 final readonly class IssueDeviceToken
 {
     public function __construct(
-        private DeviceRepository $devices,
+        private FindDeviceRepository $findDevice,
+        private UpdateDeviceRepository $updateDevice,
         private TokenFactory $tokens,
         private ActorProfiles $profiles,
         private Hasher $hasher,
@@ -29,7 +34,7 @@ final readonly class IssueDeviceToken
      */
     public function execute(DeviceCredentials $credentials): DeviceTokenResult
     {
-        $device = $this->devices->findByClientId($credentials->clientId);
+        $device = $this->findDevice->findByClientId($credentials->clientId);
 
         if ($device === null) {
             DummyHash::check($this->hasher, $credentials->clientSecret);
@@ -37,14 +42,15 @@ final readonly class IssueDeviceToken
             throw new InvalidDeviceCredentials;
         }
 
-        if (! $this->hasher->check($credentials->clientSecret, $device->secret_hash) || ! $device->actorIsActive()) {
+        if (! $this->hasher->check($credentials->clientSecret, $device->secretHash) || ! $device->active) {
             throw new InvalidDeviceCredentials;
         }
 
-        $this->devices->touchLastSeen($device, CarbonImmutable::now());
+        $this->updateDevice->touchLastSeen($device->id, CarbonImmutable::now());
 
-        $access = $this->tokens->accessFor($device);
+        $identity = $device->identity();
+        $access = $this->tokens->accessFor($identity);
 
-        return new DeviceTokenResult($access, $this->profiles->of($device, $access->claims->missionId));
+        return new DeviceTokenResult($access, $this->profiles->of($identity, $access->claims->missionId));
     }
 }

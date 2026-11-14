@@ -7,7 +7,8 @@ namespace App\Modules\Identidad\Application;
 use App\Modules\Entorno\Contratos\CrewQuery;
 use App\Modules\Entorno\Contratos\MissionQuery;
 use App\Modules\Identidad\Application\DTOs\NewDevice;
-use App\Modules\Identidad\Infrastructure\Repositorios\DeviceRepository;
+use App\Modules\Identidad\Infrastructure\Repositorios\Device\FindDeviceRepository;
+use App\Modules\Identidad\Infrastructure\Repositorios\Device\InsertDeviceRepository;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -21,7 +22,8 @@ final readonly class CreateDevice
     private const MIN_SECRET_LENGTH = 32;
 
     public function __construct(
-        private DeviceRepository $devices,
+        private FindDeviceRepository $findDevice,
+        private InsertDeviceRepository $insertDevice,
         private MissionQuery $missions,
         private CrewQuery $crew,
         private Hasher $hasher,
@@ -47,7 +49,7 @@ final readonly class CreateDevice
 
         $clientId ??= 'dev-'.Str::lower(Str::random(12));
 
-        if ($this->devices->findByClientId($clientId) !== null) {
+        if ($this->findDevice->findByClientId($clientId) !== null) {
             throw new InvalidArgumentException("Ya existe un dispositivo con client_id \"{$clientId}\".");
         }
 
@@ -57,8 +59,8 @@ final readonly class CreateDevice
             throw new InvalidArgumentException('El secreto del dispositivo debe tener al menos '.self::MIN_SECRET_LENGTH.' caracteres.');
         }
 
-        $device = $this->devices->create($missionId, $astronautId, $name, $clientId, $this->hasher->make($clientSecret));
+        $device = $this->insertDevice->insert($missionId, $astronautId, $name, $clientId, $this->hasher->make($clientSecret));
 
-        return new NewDevice($device->id, $device->name, $device->mission_id, $device->astronaut_id, $device->client_id, $clientSecret);
+        return new NewDevice($device->id, $device->name, $device->missionId, $device->astronautId, $device->clientId, $clientSecret);
     }
 }

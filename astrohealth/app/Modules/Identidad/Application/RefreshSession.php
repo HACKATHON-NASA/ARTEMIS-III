@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Modules\Identidad\Application;
 
 use App\Modules\Identidad\Application\DTOs\SessionResult;
+use App\Modules\Identidad\Application\Servicios\SessionIssuer;
 use App\Modules\Identidad\Domain\Enums\RotationDecision;
 use App\Modules\Identidad\Domain\Excepciones\RefreshTokenInvalid;
 use App\Modules\Identidad\Domain\Excepciones\RefreshTokenReused;
 use App\Modules\Identidad\Domain\Reglas\RefreshRotation;
-use App\Modules\Identidad\Infrastructure\Repositorios\RefreshTokenRepository;
-use App\Modules\Identidad\Infrastructure\Repositorios\UserRepository;
+use App\Modules\Identidad\Infrastructure\Repositorios\RefreshToken\FindRefreshTokenRepository;
+use App\Modules\Identidad\Infrastructure\Repositorios\RefreshToken\UpdateRefreshTokenRepository;
+use App\Modules\Identidad\Infrastructure\Repositorios\User\FindUserRepository;
 use App\Shared\Persistencia\Transaction;
 use Carbon\CarbonImmutable;
 
@@ -25,8 +27,9 @@ use Carbon\CarbonImmutable;
 final readonly class RefreshSession
 {
     public function __construct(
-        private RefreshTokenRepository $refreshTokens,
-        private UserRepository $users,
+        private FindRefreshTokenRepository $findRefreshToken,
+        private UpdateRefreshTokenRepository $updateRefreshToken,
+        private FindUserRepository $findUser,
         private SessionIssuer $sessions,
         private Transaction $transaction,
     ) {}
@@ -55,17 +58,17 @@ final readonly class RefreshSession
 
     private function rotate(#[\SensitiveParameter] string $plainRefreshToken, ?string $ip, ?string $userAgent): SessionResult|RotationDecision
     {
-        $record = $this->refreshTokens->findByHashForUpdate(SessionIssuer::hash($plainRefreshToken));
+        $record = $this->findRefreshToken->findByHashForUpdate(SessionIssuer::hash($plainRefreshToken));
 
         if ($record === null) {
             return RotationDecision::Reject;
         }
 
         $now = CarbonImmutable::now();
-        $decision = RefreshRotation::decide($record->used_at, $record->revoked_at, $record->expires_at, $now);
+        $decision = RefreshRotation::decide($record->usedAt, $record->revokedAt, $record->expiresAt, $now);
 
         if ($decision === RotationDecision::RevokeFamily) {
-            $this->refreshTokens->revokeFamily($record->family_id, $now);
+            $this->updateRefreshToken->revokeFamily($record->familyId, $now);
 
             return $decision;
         }
@@ -74,16 +77,16 @@ final readonly class RefreshSession
             return $decision;
         }
 
-        $user = $this->users->findById($record->user_id);
+        $user = $this->findUser->findById($record->userId);
 
-        if ($user === null || ! $user->actorIsActive() || $user->actorRole() === null) {
-            $this->refreshTokens->revokeFamily($record->family_id, $now);
+        if ($user === null || ! $user->identity()->canUseApi()) {
+            $this->updateRefreshToken->revokeFamily($record->familyId, $now);
 
             return RotationDecision::Reject;
         }
 
-        $this->refreshTokens->markUsed($record, $now);
+        $this->updateRefreshToken->markUsed($record->id, $now);
 
-        return $this->sessions->start($user, $ip, $userAgent, $record->family_id);
+        return $this->sessions->start($user, $ip, $userAgent, $record->familyId);
     }
 }

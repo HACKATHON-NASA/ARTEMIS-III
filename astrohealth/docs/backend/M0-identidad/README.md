@@ -175,12 +175,16 @@ app/Modules/Identidad/
 │   ├── Jwt/JwtIssuer.php             # firebase/php-jwt: encode
 │   ├── Jwt/JwtVerifier.php           # decode + iss/aud/nbf/exp + leeway
 │   ├── Jwt/JwtGuard.php              # implementa Illuminate\Contracts\Auth\Guard
-│   ├── Jwt/RevokedTokens.php         # lista de jti revocados en caché hasta su exp
+│   ├── Jwt/RevokedTokens.php         # lista de jti revocados en caché hasta su exp + leeway
 │   ├── Models/Device.php             # implementa Authenticatable + Actor
 │   ├── Models/RefreshToken.php
-│   └── Repositorios/UserRepository.php · DeviceRepository.php · RefreshTokenRepository.php
+│   └── Repositorios/                 # UN archivo por operación (Find · Insert · Update · Upsert)
+│       ├── User/FindUserRepository.php · UpdateUserRepository.php · UpsertUserRepository.php · UserMapper.php
+│       ├── Device/FindDeviceRepository.php · InsertDeviceRepository.php · UpdateDeviceRepository.php · DeviceMapper.php
+│       ├── RefreshToken/FindRefreshTokenRepository.php · InsertRefreshTokenRepository.php · UpdateRefreshTokenRepository.php · RefreshTokenMapper.php
+│       └── Actor/FindActorRepository.php   # el único que devuelve el modelo: lo necesita el guard
 ├── Http/
-│   ├── Controllers/Api/AuthController.php         # login · refresh · logout · me
+│   ├── Controllers/Api/LoginController.php · RefreshController.php · LogoutController.php · MeController.php
 │   ├── Controllers/Api/DeviceTokenController.php
 │   ├── Controllers/Api/UserController.php · DeviceController.php
 │   ├── Requests/LoginRequest.php · DeviceTokenRequest.php · StoreUserRequest.php · StoreDeviceRequest.php
@@ -320,7 +324,7 @@ SIMULADOR_CLIENT_SECRET=   # lo usa DeviceSeeder en local; en producción: ident
 
 ## 9. Pruebas
 
-**81 pruebas del módulo** (más las 55 que ya existían): **136 en verde sobre MySQL**, Pint ✅, PHPStan nivel 7 con 0 errores.
+**82 pruebas del módulo** (más las 55 que ya existían): **137 en verde sobre MySQL**, Pint ✅, PHPStan nivel 7 con 0 errores.
 
 | Prueba | Tipo | Verifica |
 |---|---|---|
@@ -369,10 +373,10 @@ $this->getJson('/api/v1/auth/me', $this->bearer($token))->assertOk();
 
 | Capa | Archivos |
 |---|---|
-| **Domain** | `Enums/` Role · Location · ActorType · ErrorCode · RotationDecision — `Reglas/` RoleAssignment · RefreshRotation — `ValueObjects/` TokenClaims · PermissionMatrix — `Excepciones/` 10 errores de negocio |
-| **Application** (Service) | Login · RefreshSession · Logout · GetMe · IssueDeviceToken · CreateDevice — apoyo: TokenFactory · SessionIssuer · ActorProfiles · DummyHash — `DTOs/` Credentials · DeviceCredentials · AccessToken · ActorProfile · SessionResult · DeviceTokenResult · NewDevice |
-| **Infrastructure** (Repository) | `Jwt/` JwtConfig · JwtIssuer · JwtVerifier · JwtGuard · RevokedTokens · MissingJwtSecret — `Models/` Device · RefreshToken — `Repositorios/` UserRepository · DeviceRepository · RefreshTokenRepository — AuthCurrentActor |
-| **Http** (API) | `routes.php` — `Controllers/Api/` AuthController · DeviceTokenController — `Requests/` LoginRequest · DeviceTokenRequest — `Resources/` TokenResource · ActorResource — `Middleware/` VerifyOrigin — RefreshCookie |
+| **Domain** | `Enums/` Role · Location · ActorType · ErrorCode · RotationDecision — `Entidades/` UserAccount · DeviceAccount · StoredRefreshToken — `Reglas/` RoleAssignment · RefreshRotation — `ValueObjects/` TokenClaims · PermissionMatrix · ActorIdentity — `Excepciones/` 10 errores de negocio |
+| **Application** (Service) | Login · RefreshSession · Logout · GetMe · IssueDeviceToken · CreateDevice — `Servicios/` TokenFactory · SessionIssuer · ActorProfiles · ActorIdentityLoader · DummyHash — `DTOs/` Credentials · DeviceCredentials · AccessToken · ActorProfile · SessionResult · DeviceTokenResult · NewDevice |
+| **Infrastructure** (Repository) | `Jwt/` JwtConfig · JwtIssuer · JwtVerifier · JwtGuard · RevokedTokens · MissingJwtSecret — `Models/` Device · RefreshToken — `Repositorios/` un archivo por operación: `User/` Find · Update · Upsert — `Device/` Find · Insert · Update — `RefreshToken/` Find · Insert · Update — `Actor/` Find — AuthCurrentActor |
+| **Http** (API) | `routes.php` — `Controllers/Api/` LoginController · RefreshController · LogoutController · MeController · DeviceTokenController (uno por acción) — `Requests/` LoginRequest · DeviceTokenRequest — `Resources/` TokenResource · ActorResource — `Middleware/` VerifyOrigin — RefreshCookie |
 | Contratos | Actor · CurrentActor |
 | Base de datos | 3 migraciones · UserSeeder · DeviceSeeder |
 | Fuera del módulo | `App\Models\User` (implementa `Actor`) · `config/jwt.php` · `config/permissions.php` · `config/identidad.php` · `config/auth.php` (*guard* `api`) · `bootstrap/providers.php` · `DatabaseSeeder` |
@@ -386,6 +390,9 @@ $this->getJson('/api/v1/auth/me', $this->bearer($token))->assertOk();
 - **Fechas `DATETIME` en `refresh_tokens` y `devices`:** en MariaDB 10.4 la primera columna `TIMESTAMP NOT NULL` recibiría `ON UPDATE CURRENT_TIMESTAMP` (una prueba lo vigila).
 - **`astronauts.crew_role`** (y no `role`) para el cargo a bordo: así no se confunde con el rol de acceso.
 - **`DummyHash`:** cuando el correo o el `client_id` no existen se compara contra un *hash* falso, para que la respuesta tarde lo mismo.
+- **Un repositorio por operación** (`Find…`, `Insert…`, `Update…`, `Upsert…`), agrupados por tabla. Devuelven **entidades de `Domain/Entidades`**, nunca modelos Eloquent: Application no conoce Eloquent. La conversión la hace el `…Mapper` de cada tabla. La única excepción es `FindActorRepository`, que devuelve el modelo porque el *guard* y los Gates de Laravel necesitan un `Authenticatable`; solo lo usa `JwtGuard`.
+- **`ActorIdentity`** (Domain) es lo que Application usa para firmar tokens y armar el perfil, sea persona o máquina.
+- **La revocación dura `exp + leeway`:** el verificador acepta 30 s de tolerancia después del `exp`, así que el `jti` revocado se recuerda ese tiempo extra (prueba `test_a_logged_out_token_stays_dead_during_the_clock_leeway`).
 - **Los limitadores se llaman `api-login`, `api-refresh` y `api-device`:** Fortify ya usa `login`.
 - **JSON sin escapes** (`JSON_UNESCAPED_UNICODE`): "inválidas" y no "inválidas".
 - **Mensajes de validación en español** dentro de cada `FormRequest`: el proyecto no tiene la carpeta `lang/es`.
@@ -399,12 +406,14 @@ $this->getJson('/api/v1/auth/me', $this->bearer($token))->assertOk();
 | `throttle:login`, `throttle:device` | `throttle:api-login`, `api-refresh`, `api-device` | Fortify ya usa `login` |
 | `actingAsRole()` en `TestCase` | `InteractsWithJwt` en el módulo | Firma tokens reales; no toca `TestCase` |
 | Nuevos | `AUTH_USER_WITHOUT_ROLE`, `AUTH_ORIGIN_NOT_ALLOWED`, `AUTH_INVALID_ROLE_ASSIGNMENT` | Casos que aparecieron al construir |
+| `UserRepository` · `DeviceRepository` · `RefreshTokenRepository` | Un repositorio por operación, que devuelve entidades | Separación de responsabilidades (ARCHITECTURE §6 y §8) |
+| `AuthController` con 4 acciones | `LoginController` · `RefreshController` · `LogoutController` · `MeController` | Un controlador por acción |
 
 ### Cómo probarlo
 
 ```powershell
 php artisan migrate:fresh --seed          # misión, 6 usuarios (uno por rol) y el simulador
-php artisan test --filter=Identidad       # las 81 pruebas del módulo
+php artisan test --filter=Identidad       # las 82 pruebas del módulo
 
 # A mano (con composer run dev encendido):
 curl -s -X POST http://localhost:8000/api/v1/auth/login -H "Content-Type: application/json" -d "{\"email\":\"astro2@astrohealth.test\",\"password\":\"password\"}"
