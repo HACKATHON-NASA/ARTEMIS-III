@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import spaceSmall from '../../../../images/fondos/espacio-principal-960.webp';
-import spaceLarge from '../../../../images/fondos/espacio-principal.webp';
+import spaceSmall from '../../../../../images/fondos/espacio-principal-960.webp';
+import spaceLarge from '../../../../../images/fondos/espacio-principal.webp';
 
 /**
  * El fondo: astronauta, Tierra y Luna, quieto y a pantalla completa en

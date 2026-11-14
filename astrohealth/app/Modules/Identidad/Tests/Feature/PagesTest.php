@@ -25,6 +25,15 @@ final class PagesTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component('Identidad/Login'));
     }
 
+    public function test_the_admin_page_is_the_identidad_module_principal(): void
+    {
+        // La página es una cáscara: el permiso users.manage lo comprueban la
+        // pantalla (al cargar) y, cuando existan, /api/v1/users y /devices.
+        $this->get('/admin')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Identidad/Admin'));
+    }
+
     public function test_app_pages_do_not_depend_on_a_server_session(): void
     {
         // Sin cookie de sesión no hay redirección del servidor: la página pide

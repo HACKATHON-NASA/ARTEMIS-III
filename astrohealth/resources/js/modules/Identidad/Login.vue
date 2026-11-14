@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
-import { dashboard } from '@/routes';
+import { admin, dashboard } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
-import BrandHeader from './Components/BrandHeader.vue';
-import HeartbeatLine from './Components/HeartbeatLine.vue';
-import LoginForm from './Components/LoginForm.vue';
-import LoginPanel from './Components/LoginPanel.vue';
-import SpaceBackground from './Components/SpaceBackground.vue';
+import BrandHeader from './Components/Acceso/BrandHeader.vue';
+import HeartbeatLine from './Components/Acceso/HeartbeatLine.vue';
+import LoginForm from './Components/Acceso/LoginForm.vue';
+import LoginPanel from './Components/Acceso/LoginPanel.vue';
+import SpaceBackground from './Components/Acceso/SpaceBackground.vue';
 import { useLoginMotion } from './Composables/useLoginMotion';
 
 /**
@@ -18,9 +18,10 @@ const root = ref<HTMLElement | null>(null);
 const auth = useAuthStore();
 const motion = useLoginMotion(root);
 
+/** Cada quien entra a su pantalla: administración a /admin, el resto al panel. */
 async function enter(): Promise<void> {
     await motion.exit();
-    router.visit(dashboard());
+    router.visit(auth.can('users.manage') ? admin() : dashboard());
 }
 
 onMounted(async () => {

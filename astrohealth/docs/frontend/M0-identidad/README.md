@@ -18,13 +18,42 @@ Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está e
 - [x] `lib/api.ts`: el único cliente HTTP. Bearer, devuelve `data`, `ApiError` y un reintento con `/auth/refresh` ante `AUTH_TOKEN_EXPIRED`
 - [x] Restaurar la sesión al recargar: `AppLayout` llama a `ensureSession()` (usa la _cookie_ del _refresh_)
 - [x] Guarda de navegación: toda página con `AppLayout` exige sesión; sin sesión → `/acceso`
-- [ ] Sin permiso → ocultar o redirigir (con `can()`, cuando existan las pantallas de los módulos)
+- [x] Sin permiso → ocultar y redirigir: el menú solo muestra "Administración" con `can('users.manage')` y `/admin` manda al panel a quien no lo tenga
+- [x] Al iniciar sesión, administración entra a `/admin`; los demás, a `/dashboard`
 
 **Componentes**
 
 - [x] Formulario de login (correo, contraseña, errores de campo y `AUTH_INVALID_CREDENTIALS` / `TOO_MANY_REQUESTS`)
 - [x] Menú de usuario (`NavUser`, `UserMenuContent`, `UserInfo`): nombre, rol y cerrar sesión
-- [ ] `RoleBadge` (admin · médico de vuelo · astronauta)
+- [x] `RoleBadge` (con 🌍 Tierra o 🚀 nave, y "Sin rol")
+
+## Vista de administración (`/admin`) · 🟨 frontend listo con datos de prueba
+
+**Principal:** `modules/Identidad/Admin.vue` · piezas en `Components/Admin/` · datos en `Stores/useAdminStore.ts`.
+
+| Sección      | Qué muestra                                                                                 | Acciones                                                    |
+| ------------ | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Cabecera     | Misión, entorno y avance de días; el electrocardiograma como firma                          | —                                                           |
+| Resumen      | Usuarios activos, tripulación, dispositivos en línea (últimos 5 min), alertas por confirmar | —                                                           |
+| Usuarios     | Persona, rol (Tierra/Nave), estado, último acceso. Buscar y filtrar por rol                 | Crear, editar (nombre, rol, astronauta), activar/desactivar |
+| Dispositivos | Nombre, a quién mide (o gateway), `client_id`, en línea / sin señal / desactivado           | Registrar (muestra el secreto UNA vez), activar/desactivar  |
+
+> ⚠️ **Datos de prueba:** `Utils/adminMockData.ts`. Para conectar el backend solo cambia el interior de las acciones de `useAdminStore` por `api()`; los componentes no se tocan.
+
+### Contrato que espera el frontend (para el backend de M0)
+
+Los tipos están en `Types/admin.ts`. Todas con `can:users.manage` o `can:devices.manage` y el formato `{ data, message }`:
+
+| Método y ruta                | Envía                                   | Devuelve `data`                                                                                          |
+| ---------------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/users`          | —                                       | `ManagedUser[]`: `id, name, email, role, astronaut_id, astronaut_name, active, last_login_at`            |
+| `POST /api/v1/users`         | `name, email, role, astronaut_id`       | `ManagedUser` (201)                                                                                      |
+| `PATCH /api/v1/users/{id}`   | `name, role, astronaut_id` y/o `active` | `ManagedUser`                                                                                            |
+| `GET /api/v1/devices`        | —                                       | `ManagedDevice[]`: `id, name, client_id, mission_id, astronaut_id, astronaut_name, active, last_seen_at` |
+| `POST /api/v1/devices`       | `name, astronaut_id` (`null` = gateway) | `{ device: ManagedDevice, client_secret }` (201, el secreto solo aquí)                                   |
+| `PATCH /api/v1/devices/{id}` | `active`                                | `ManagedDevice`                                                                                          |
+
+El resumen usa además la misión actual y la tripulación (M6: `GET /api/v1/missions/current`, `GET /api/v1/astronauts`) y el número de alertas sin confirmar (M5).
 
 ## Cómo funciona
 

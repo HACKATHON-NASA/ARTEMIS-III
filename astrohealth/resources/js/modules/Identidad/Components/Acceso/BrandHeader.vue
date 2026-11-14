@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import logoColor from '../../../../images/marca/logo-color.png';
+import logoColor from '../../../../../images/marca/logo-color.png';
 
 /**
  * La marca: logo de color + AstroHealth + el lema.

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import gsap from 'gsap';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { prefersReducedMotion } from '../Composables/motionPreferences';
+import { prefersReducedMotion } from '../../Composables/motionPreferences';
 
 /**
  * El electrocardiograma de la esquina: una línea tenue y un pulso de luz
