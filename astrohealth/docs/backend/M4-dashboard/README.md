@@ -36,7 +36,7 @@ app/Modules/Dashboard/
 │   ├── GetTrends.php                       # 10 indicadores → TrendAnalyzer (M2) → mensaje
 │   └── DTOs/SeriesResult.php · TrendItem.php
 ├── Http/
-│   ├── Controllers/Api/SeriesController.php · TrendController.php
+│   ├── Controllers/Api/ShowSeriesController.php · ShowTrendsController.php
 │   ├── Requests/SeriesRequest.php          # indicator ∈ catálogo · range ∈ {7d, 30d}
 │   └── Resources/SeriesResource.php · TrendResource.php
 └── Tests/

@@ -1,4 +1,4 @@
-<!-- El PR apunta a `development` (nunca a `main`). Título: MX · <qué hace>  (ej.: M3 · Cuerpo interactivo: zonas con color y pulso) -->
+<!-- El equipo trabaja en `development`. Este PR es de `development` → `main`, solo con la demo completa. Título: Demo · <qué incluye> -->
 
 Ficha: documentacion/modulos/MX-…/README.md
 

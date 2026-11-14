@@ -74,9 +74,9 @@ Los datos de cada entorno van en **`config/environments.php`**. No tienen tabla,
 | Application | `Application/ChangeEnvironment.php` | Valida y guarda el entorno nuevo, y publica el evento |
 | Application | `Application/GetCurrentMission.php` · `ListEnvironments.php` · `ListCrew.php` | |
 | Infrastructure | `Infrastructure/Models/Mission.php` · `Astronaut.php` | |
-| Infrastructure | `Infrastructure/Repositorios/MissionRepository.php` · `AstronautRepository.php` | Implementan `MissionQuery` y `CrewQuery` |
+| Infrastructure | `Repositorios/Mission/FindMissionRepository.php` · `UpdateMissionRepository.php` · `UpsertMissionRepository.php` · `Repositorios/Astronaut/FindAstronautRepository.php` · `UpsertAstronautRepository.php` | Los `Find…` implementan `MissionQuery` y `CrewQuery`. Los `Upsert…` los usa `MissionSeeder` |
 | Infrastructure | `Infrastructure/EnvironmentConfig.php` | Lee `config/environments.php` |
-| Http | `Http/Controllers/Api/MissionController.php` · `EnvironmentController.php` · `AstronautController.php` | |
+| Http | `Http/Controllers/Api/ShowCurrentMissionController.php` · `UpdateMissionController.php` · `ListEnvironmentsController.php` · `ListAstronautsController.php` | Uno por acción |
 | Http | `Http/Requests/UpdateMissionRequest.php` | `environment` debe ser `iss`, `transit`, `moon` o `mars` |
 | Database | `Migrations/` · `Seeders/MissionSeeder.php` | **Fase 1** |
 

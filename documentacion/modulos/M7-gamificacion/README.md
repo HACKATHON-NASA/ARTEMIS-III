@@ -86,8 +86,8 @@ La llave única `(astronaut_id, reason, reference)` garantiza que **nada se cuen
 | Application | `Application/GetGamificationProfile.php` · `GetLeaderboard.php` | |
 | Infrastructure | `Infrastructure/Listeners/OnMeasurementsRecorded.php` | Primer registro, día completo (`MeasurementQuery::daysWithAllIndicators`), sueño ≥ 7 h, ejercicio ≥ 90 min y racha |
 | Infrastructure | `Infrastructure/Listeners/OnReminderCompleted.php` | +5 y la insignia `on_time` |
-| Infrastructure | `Infrastructure/Models/` · `Repositorios/PointsRepository.php` · `AchievementRepository.php` | `insertOrIgnore` en `points_log` (por la llave única) |
-| Http | `Http/Controllers/Api/GamificationController.php` · `LeaderboardController.php` | |
+| Infrastructure | `Infrastructure/Models/` · `Repositorios/Points/FindPointsRepository.php` · `InsertPointsRepository.php` · `Repositorios/Achievement/FindAchievementRepository.php` · `InsertAstronautAchievementRepository.php` · `UpsertAchievementRepository.php` | `InsertPointsRepository` usa `insertOrIgnore` en `points_log` (por la llave única) |
+| Http | `Http/Controllers/Api/ShowGamificationController.php` · `ShowLeaderboardController.php` | Uno por acción |
 | Http | `Http/Resources/GamificationResource.php` · `LeaderboardResource.php` | |
 | Database | `Migrations/` · `Seeders/AchievementSeeder.php` | |
 

@@ -69,9 +69,9 @@ app/Modules/Evaluacion/
 │   ├── Clients/PythonEvaluator.php         # implementa los contratos: Python primero, LocalEvaluator si falla
 │   ├── Clients/LocalEvaluator.php          # thresholds + reglas de Domain
 │   ├── Models/Threshold.php · Assessment.php
-│   └── Repositorios/ThresholdRepository.php (con caché) · AssessmentRepository.php
+│   └── Repositorios/Threshold/FindThresholdRepository.php (con caché) · UpsertThresholdRepository.php — Assessment/FindAssessmentRepository.php · InsertAssessmentRepository.php
 ├── Http/
-│   ├── Controllers/Api/AssessmentController.php
+│   ├── Controllers/Api/ShowAssessmentController.php
 │   └── Resources/AssessmentResource.php
 ├── Database/
 │   ├── Migrations/                         # thresholds (indicator_code + environment) · assessments

@@ -67,8 +67,8 @@ Es dueño de **`reminders`** ([columnas](../../arquitectura/02-base-de-datos.md#
 | Domain | `Domain/Eventos/ReminderCompleted.php` | `reminderId`, `astronautId`, `type` y `doneAt` |
 | Application | `Application/CompleteReminder.php` | Si ya está hecho hoy, responde sin volver a sumar. Si no, guarda `last_done_at` y publica el evento |
 | Application | `Application/ListTodayReminders.php` · `CreateReminder.php` · `UpdateReminder.php` · `DeleteReminder.php` | El CRUD |
-| Infrastructure | `Infrastructure/Models/Reminder.php` · `Repositorios/ReminderRepository.php` | |
-| Http | `Http/Controllers/Api/ReminderController.php` | CRUD + `done` |
+| Infrastructure | `Infrastructure/Models/Reminder.php` · `Repositorios/Reminder/FindReminderRepository.php` · `InsertReminderRepository.php` · `UpdateReminderRepository.php` · `DeleteReminderRepository.php` | Uno por operación |
+| Http | `Http/Controllers/Api/ListRemindersController.php` · `StoreReminderController.php` · `UpdateReminderController.php` · `DeleteReminderController.php` · `CompleteReminderController.php` | Uno por acción (CRUD + `done`) |
 | Http | `Http/Requests/StoreReminderRequest.php` · `UpdateReminderRequest.php` | `time` con formato `HH:MM` y `type` válido |
 | Http | `Http/Resources/ReminderResource.php` | Incluye el `state` calculado |
 | Policies | `Policies/ReminderPolicy.php` | Solo se cambian los recordatorios del astronauta propio |

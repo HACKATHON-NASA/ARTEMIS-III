@@ -16,9 +16,9 @@
 sequenceDiagram
     autonumber
     participant V as Médico de vuelo
-    participant C as MissionController
+    participant C as UpdateMissionController
     participant U as ChangeEnvironment
-    participant R as MissionRepository
+    participant R as UpdateMissionRepository
     participant M1 as M1 · OnMissionEnvironmentChanged
     V->>C: PATCH /missions/1 {environment: "iss"} (mission.update)
     C->>U: execute(1, iss)
@@ -50,9 +50,9 @@ app/Modules/Entorno/
 ├── Infrastructure/
 │   ├── EnvironmentConfig.php               # lee config/environments.php
 │   ├── Models/Mission.php · Astronaut.php
-│   └── Repositorios/MissionRepository.php · AstronautRepository.php   # implementan los contratos
+│   └── Repositorios/Mission/FindMissionRepository.php (MissionQuery) · UpdateMissionRepository.php · UpsertMissionRepository.php — Astronaut/FindAstronautRepository.php (CrewQuery) · UpsertAstronautRepository.php · AstronautMapper.php
 ├── Http/
-│   ├── Controllers/Api/MissionController.php · EnvironmentController.php · AstronautController.php
+│   ├── Controllers/Api/ShowCurrentMissionController.php · UpdateMissionController.php · ListEnvironmentsController.php · ListAstronautsController.php
 │   ├── Requests/UpdateMissionRequest.php
 │   └── Resources/MissionResource.php · EnvironmentResource.php · AstronautResource.php
 ├── Database/

@@ -35,9 +35,9 @@ app/Modules/Cuerpo/
 │   └── DTOs/BodyPartData.php · ZoneStatus.php
 ├── Infrastructure/
 │   ├── Models/BodyPart.php
-│   └── Repositorios/BodyPartRepository.php  # con caché: el catálogo no cambia
+│   └── Repositorios/BodyPart/FindBodyPartRepository.php · UpsertBodyPartRepository.php  # con caché: el catálogo no cambia
 ├── Http/
-│   ├── Controllers/Api/BodyPartController.php · BodyStatusController.php
+│   ├── Controllers/Api/ListBodyPartsController.php · ShowBodyStatusController.php
 │   └── Resources/BodyPartResource.php · BodyStatusResource.php
 ├── Database/
 │   ├── Migrations/                         # body_parts

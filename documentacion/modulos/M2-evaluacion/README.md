@@ -101,10 +101,10 @@ El `status` general sale del puntaje: 80 o más → verde, de 50 a 79 → amaril
 | Application | `Application/GetLatestAssessment.php` | Para el GET |
 | Infrastructure | `Infrastructure/Clients/SimuladorClient.php` | `Http::baseUrl()->timeout()`. Lanza `PythonUnavailable` si hay un *timeout* o un 5xx |
 | Infrastructure | `Infrastructure/Clients/PythonEvaluator.php` | Implementa `Evaluator` y `TrendAnalyzer`: primero Python y, si falla, `LocalEvaluator` |
-| Infrastructure | `Infrastructure/Clients/LocalEvaluator.php` | El respaldo: `ThresholdRepository` + las reglas de `Domain` |
-| Infrastructure | `Infrastructure/Repositorios/ThresholdRepository.php` | `for(indicator, environment)`, con caché |
-| Infrastructure | `Infrastructure/Repositorios/AssessmentRepository.php` | `save()`, `latestFor()` |
-| Http | `Http/Controllers/Api/AssessmentController.php` · `Http/Resources/AssessmentResource.php` | |
+| Infrastructure | `Infrastructure/Clients/LocalEvaluator.php` | El respaldo: `FindThresholdRepository` + las reglas de `Domain` |
+| Infrastructure | `Repositorios/Threshold/FindThresholdRepository.php` · `UpsertThresholdRepository.php` | Buscar: `for(indicator, environment)`, con caché · cargar los umbrales (seeder) |
+| Infrastructure | `Repositorios/Assessment/FindAssessmentRepository.php` · `InsertAssessmentRepository.php` | Buscar: `latestFor()` · Insertar: `insert()` |
+| Http | `Http/Controllers/Api/ShowAssessmentController.php` · `Http/Resources/AssessmentResource.php` | |
 | Database | `Migrations/` · `Seeders/ThresholdSeeder.php` | |
 
 ## 6. Python y respaldo local

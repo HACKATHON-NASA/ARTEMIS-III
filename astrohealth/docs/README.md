@@ -31,7 +31,7 @@ docs/
 | 🧍  | M3 · Cuerpo humano interactivo          |   3   | [⬜](backend/M3-cuerpo/README.md)        | [⬜](database/M3-cuerpo/README.md)              | [⬜](frontend/M3-cuerpo/README.md)        |
 | 📈  | M4 · Dashboard                          |   3   | [⬜](backend/M4-dashboard/README.md)     | [— sin tablas](database/M4-dashboard/README.md) | [⬜](frontend/M4-dashboard/README.md)     |
 | 🚨  | M5 · Recomendaciones y alertas a Tierra |   4   | [⬜](backend/M5-alertas/README.md)       | [⬜](database/M5-alertas/README.md)             | [⬜](frontend/M5-alertas/README.md)       |
-| 🌍  | M6 · Entorno de misión                  | 1 · 4 | [⬜](backend/M6-entorno/README.md)       | [⬜](database/M6-entorno/README.md)             | [⬜](frontend/M6-entorno/README.md)       |
+| 🌍  | M6 · Entorno de misión                  | 1 · 4 | [🟨](backend/M6-entorno/README.md)       | [🟨](database/M6-entorno/README.md)             | [⬜](frontend/M6-entorno/README.md)       |
 | 🏆  | M7 · Gamificación                       |   5   | [⬜](backend/M7-gamificacion/README.md)  | [⬜](database/M7-gamificacion/README.md)        | [⬜](frontend/M7-gamificacion/README.md)  |
 | ⏰  | M8 · Recordatorios                      |   5   | [⬜](backend/M8-recordatorios/README.md) | [⬜](database/M8-recordatorios/README.md)       | [⬜](frontend/M8-recordatorios/README.md) |
 

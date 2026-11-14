@@ -23,7 +23,7 @@ flowchart LR
 
 | Paso | Qué hace el frontend |
 |---|---|
-| Login | Página `pages/Login.vue` → `POST /api/v1/auth/login`. Guarda el `access_token` y el `user` en `useAuthStore` (**en memoria**, nunca en `localStorage`). El *refresh token* llega en una *cookie* `HttpOnly` que JavaScript no ve |
+| Login | Página `pages/Login.vue` → `POST /api/v1/auth/login`. Guarda el `access_token` y el `actor` (quién es, su rol y sus permisos) en `useAuthStore` (**en memoria**, nunca en `localStorage`). El *refresh token* llega en una *cookie* `HttpOnly` que JavaScript no ve |
 | Cada petición | `lib/api.ts` agrega el `Bearer` |
 | `401 AUTH_TOKEN_EXPIRED` | `lib/api.ts` llama **una vez** a `POST /auth/refresh` (con `credentials: 'include'`), guarda el token nuevo y repite la petición. Si el *refresh* falla → al login |
 | Recargar la página | Al arrancar, la app llama a `/auth/refresh`: si la *cookie* sigue viva, la sesión vuelve sin pedir la contraseña |

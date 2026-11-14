@@ -55,7 +55,7 @@ flowchart LR
 
 | Paso                     | Dónde                                                      | Si falla                                        |
 | ------------------------ | ---------------------------------------------------------- | ----------------------------------------------- |
-| Límite de peticiones     | `throttle:login`, `throttle:api`, `throttle:ingest`        | 429 `TOO_MANY_REQUESTS`                         |
+| Límite de peticiones     | `throttle:api-login`, `api-refresh`, `api-device` (M0) · `throttle:ingest` (M1) | 429 `TOO_MANY_REQUESTS`        |
 | ¿Quién es?               | `JwtGuard` de M0 (firma, `exp`, `aud`, lista de revocados) | 401 `AUTH_TOKEN_INVALID` · `AUTH_TOKEN_EXPIRED` |
 | ¿Su rol puede?           | `can:<permiso>` (Gates de M0)                              | 403 `FORBIDDEN`                                 |
 | ¿Los datos tienen forma? | `FormRequest` del módulo                                   | 422 `VALIDATION_FAILED`                         |
@@ -102,7 +102,7 @@ flowchart LR
 | 🧍  | [M3 · Cuerpo](M3-cuerpo/README.md)                    | `Cuerpo`        | Estado por órgano                                                   |     3     |   ⬜   |
 | 📈  | [M4 · Dashboard](M4-dashboard/README.md)              | `Dashboard`     | Series y tendencias                                                 |     3     |   ⬜   |
 | 🚨  | [M5 · Alertas](M5-alertas/README.md)                  | `Alertas`       | Alertas rojas, recomendaciones, envío a Tierra                      |     4     |   ⬜   |
-| 🌍  | [M6 · Entorno](M6-entorno/README.md)                  | `Entorno`       | Misión, tripulación, entornos                                       | **1** · 4 |   ⬜   |
+| 🌍  | [M6 · Entorno](M6-entorno/README.md)                  | `Entorno`       | Misión, tripulación, entornos                                       | **1** · 4 |   🟨   |
 | 🏆  | [M7 · Gamificación](M7-gamificacion/README.md)        | `Gamificacion`  | Puntos, niveles, insignias, ranking                                 |     5     |   ⬜   |
 | ⏰  | [M8 · Recordatorios](M8-recordatorios/README.md)      | `Recordatorios` | Rutina diaria y su evento                                           |     5     |   ⬜   |
 | 🧱  | [Shared](shared.md)                                   | `Shared`        | `ApiResponse`, `BusinessError`, `Transaction`, manejador de errores |   **1**   |   ✅   |
@@ -134,7 +134,7 @@ flowchart LR
 | Rutas             | En `routes.php` de cada módulo, prefijo `/api/v1`, `auth:api` + `can:`                      |
 | Fechas            | UTC en la base y en el JSON (`Z`)                                                           |
 | Pruebas           | `Tests/Unit` (Domain) y `Tests/Feature` (HTTP completo con un JWT de prueba)                |
-| Helper de pruebas | `actingAsRole('astronaut', astronautId: 2)` y `actingAsDevice()` en `tests/TestCase.php`    |
+| Helper de pruebas | _Trait_ `InteractsWithJwt` (`app/Modules/Identidad/Tests/Support/`): `userWithRole()`, `device()`, `tokenFor()`, `bearer()` |
 
 ```powershell
 php artisan test                         # todo

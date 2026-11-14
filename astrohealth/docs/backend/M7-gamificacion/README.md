@@ -51,9 +51,9 @@ app/Modules/Gamificacion/
 ├── Infrastructure/
 │   ├── Listeners/OnMeasurementsRecorded.php · OnReminderCompleted.php   # síncronos
 │   ├── Models/Achievement.php · AstronautAchievement.php · PointsEntry.php
-│   └── Repositorios/PointsRepository.php · AchievementRepository.php
+│   └── Repositorios/Points/FindPointsRepository.php · InsertPointsRepository.php (insertOrIgnore) — Achievement/FindAchievementRepository.php · InsertAstronautAchievementRepository.php · UpsertAchievementRepository.php
 ├── Http/
-│   ├── Controllers/Api/GamificationController.php · LeaderboardController.php
+│   ├── Controllers/Api/ShowGamificationController.php · ShowLeaderboardController.php
 │   └── Resources/GamificationResource.php · LeaderboardResource.php
 ├── Database/
 │   ├── Migrations/                          # achievements · astronaut_achievements · points_log

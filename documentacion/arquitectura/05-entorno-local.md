@@ -160,9 +160,20 @@ npm install
 ```powershell
 copy .env.example .env
 php artisan key:generate
+php artisan identidad:jwt-secret
 ```
 
-El `.env.example` ya trae los valores del proyecto. Abra `.env` y compruebe que dice:
+- `key:generate` escribe `APP_KEY`.
+- `identidad:jwt-secret` escribe `JWT_SECRET`, la llave con la que se firman los tokens del login. **Sin ella nadie puede iniciar sesión.**
+
+Después, abra `.env` y escriba un secreto para el simulador (32 caracteres o más, el que quiera). Es la "contraseña" con la que el simulador pide su token, y debe ser **igual** a la de `simulador/.env`:
+
+```env
+SIMULADOR_CLIENT_ID=sim-ares-1
+SIMULADOR_CLIENT_SECRET=<un-secreto-largo-de-32-o-mas-caracteres>
+```
+
+El `.env.example` ya trae los demás valores del proyecto. Compruebe que dice:
 
 ```env
 APP_NAME=AstroHealth

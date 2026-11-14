@@ -6,8 +6,6 @@
 | -------------- | :----------------: | ----------- |
 | ✅ Terminado (2026-11-14) | **1** (va primero) | Backend     |
 
-> 🛠️ **¿Por dónde empezar?** [Plan de trabajo paso a paso](plan-de-trabajo.md).
-
 **Qué hace:** decide **quién** llama (persona o máquina) y **qué puede** hacer. Emite y verifica los JWT, rota los _refresh tokens_, define los roles y los permisos, y registra los dispositivos (el simulador). Todos los demás módulos se apoyan en él.
 
 ---

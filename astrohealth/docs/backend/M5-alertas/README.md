@@ -47,10 +47,10 @@ app/Modules/Alertas/
 ├── Infrastructure/
 │   ├── Listeners/OnMeasurementsRecorded.php    # síncrono: la alerta existe cuando Vue recibe la respuesta
 │   ├── Models/Alert.php · Recommendation.php
-│   └── Repositorios/AlertRepository.php · RecommendationRepository.php
+│   └── Repositorios/Alert/FindAlertRepository.php · InsertAlertRepository.php · UpdateAlertRepository.php — Recommendation/FindRecommendationRepository.php · UpsertRecommendationRepository.php
 ├── Policies/AlertPolicy.php                # send: solo el astronauta dueño · view: dueño o health.read.any
 ├── Http/
-│   ├── Controllers/Api/AlertController.php · RecommendationController.php
+│   ├── Controllers/Api/ListAlertsController.php · SendAlertToGroundController.php · AcknowledgeAlertController.php · ListRecommendationsController.php
 │   ├── Requests/ListAlertsRequest.php · RecommendationRequest.php
 │   └── Resources/AlertResource.php · RecommendationResource.php
 ├── Database/

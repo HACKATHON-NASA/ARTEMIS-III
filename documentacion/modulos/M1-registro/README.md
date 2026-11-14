@@ -8,7 +8,7 @@
 
 ## 1. Para qué sirve
 
-El astronauta registra sus indicadores del día. Cada valor se valida, se evalúa (verde, amarillo o rojo) y queda **guardado con su color**. Además, este módulo importa los 30 días simulados que genera Python.
+El astronauta registra sus indicadores del día. Cada valor se valida, se evalúa (verde, amarillo o rojo) y queda **guardado con su color**. Además, recibe los 30 días simulados que **envía** el simulador por la ingesta (`POST /api/v1/ingest/readings`).
 
 ## 2. En la demo
 
@@ -87,10 +87,10 @@ Es dueño de **`indicators`** y **`measurements`** ([columnas](../../arquitectur
 | Application | `Application/DTOs/MeasurementData.php` · `RecordResult.php` | Entrada y salida |
 | Infrastructure | `Infrastructure/Listeners/OnMissionEnvironmentChanged.php` | Escucha a M6 y llama a `ReevaluateLatest` |
 | Infrastructure | `Infrastructure/Models/Indicator.php` · `Measurement.php` | Modelos Eloquent |
-| Infrastructure | `Infrastructure/Repositorios/IndicatorRepository.php` | Implementa `IndicatorCatalog` |
-| Infrastructure | `Infrastructure/Repositorios/MeasurementRepository.php` | `save()`, `saveMany()`, `latestPerIndicator()`, `series()`. Implementa `MeasurementQuery` |
+| Infrastructure | `Repositorios/Indicator/FindIndicatorRepository.php` · `UpsertIndicatorRepository.php` | Buscar (implementa `IndicatorCatalog`) · cargar el catálogo (seeder) |
+| Infrastructure | `Repositorios/Measurement/FindMeasurementRepository.php` · `InsertMeasurementRepository.php` · `UpdateMeasurementRepository.php` | Buscar: `latestPerIndicator()`, `series()` (implementa `MeasurementQuery`) · Insertar: `insertMany()` · Actualizar: `updateStatus()` |
 | Http | `Http/Requests/StoreMeasurementsRequest.php` | El astronauta existe, el indicador es uno de los 10 y el valor está en el rango posible (lee el catálogo) |
-| Http | `Http/Controllers/Api/IndicatorController.php` · `MeasurementController.php` | Delgados |
+| Http | `Http/Controllers/Api/ListIndicatorsController.php` · `StoreMeasurementsController.php` · `IngestReadingsController.php` | Uno por acción, delgados |
 | Http | `Http/Resources/IndicatorResource.php` · `MeasurementResource.php` | Forma de `data` |
 | Console | `Console/ImportMissionFileCommand.php` | `registro:import-file <archivo.json>` |
 | Database | `Migrations/` · `Seeders/IndicatorSeeder.php` · `Factories/MeasurementFactory.php` | |
@@ -126,7 +126,7 @@ Es dueño de **`indicators`** y **`measurements`** ([columnas](../../arquitectur
 |---|:---:|---|
 | `VALIDATION_FAILED` | 422 | Un indicador desconocido o un valor fuera del rango posible |
 | `MEASUREMENTS_ASTRONAUT_NOT_FOUND` | 404 | El astronauta no existe |
-| `MEASUREMENTS_IMPORT_FAILED` | — | (Solo en el comando) Python no respondió y no se pasó `--from` |
+| `MEASUREMENTS_IMPORT_FAILED` | — | (Solo en el comando `registro:import-file`, plan B sin red) El archivo no existe o no tiene el formato del simulador |
 
 ## 9. Criterios de aceptación
 
@@ -137,8 +137,8 @@ Es dueño de **`indicators`** y **`measurements`** ([columnas](../../arquitectur
 | 3 | Cualquier usuario | Envía una FC de 900 | 422 `VALIDATION_FAILED` con el error en `measurements.0.value`, y no se guarda nada |
 | 4 | Python apagado | Registra una FC de 130 | Se guarda en rojo usando el respaldo local, sin error para el usuario |
 | 5 | El simulador | Envía el mismo lote dos veces | La segunda vez responde 200 con el mismo resumen y no guarda nada |
-| 7 | Un token de astronauta | Llama a `/ingest/readings` | 403 `FORBIDDEN` |
-| 6 | Un formulario con 3 de 10 campos llenos | Pulsa "Guardar" | Solo se envían los 3 llenos |
+| 6 | Un token de astronauta | Llama a `/ingest/readings` | 403 `FORBIDDEN` |
+| 7 | Un formulario con 3 de 10 campos llenos | Pulsa "Guardar" | Solo se envían los 3 llenos |
 
 ## 10. Listo cuando
 

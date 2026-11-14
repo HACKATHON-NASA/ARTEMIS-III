@@ -24,7 +24,7 @@ sequenceDiagram
     autonumber
     participant S as 🤖 Simulador
     participant G as JwtGuard + can:measurements.ingest
-    participant C as IngestController
+    participant C as IngestReadingsController
     participant U as IngestReadings
     participant D as Domain · ReadingValidator
     participant E as Evaluator (M2)
@@ -188,13 +188,17 @@ app/Modules/Registro/
 │   └── DTOs/BatchData.php · ReadingData.php · MeasurementData.php · BatchResult.php · RecordResult.php
 ├── Infrastructure/
 │   ├── Models/Indicator.php · Measurement.php · IngestBatch.php
-│   ├── Repositorios/IndicatorRepository.php        # implementa IndicatorCatalog (con caché)
-│   ├── Repositorios/MeasurementRepository.php      # insertMany() (bloques de 500, insertOrIgnore) · implementa MeasurementQuery
-│   ├── Repositorios/IngestBatchRepository.php      # findSummary() · create()
+│   ├── Repositorios/Indicator/FindIndicatorRepository.php        # implementa IndicatorCatalog (con caché)
+│   ├── Repositorios/Indicator/UpsertIndicatorRepository.php      # IndicatorSeeder
+│   ├── Repositorios/Measurement/FindMeasurementRepository.php    # latestPerIndicator() · series() · implementa MeasurementQuery
+│   ├── Repositorios/Measurement/InsertMeasurementRepository.php  # insertMany() (bloques de 500, insertOrIgnore)
+│   ├── Repositorios/Measurement/UpdateMeasurementRepository.php  # updateStatus() (al cambiar el entorno)
+│   ├── Repositorios/IngestBatch/FindIngestBatchRepository.php    # findSummary()
+│   ├── Repositorios/IngestBatch/InsertIngestBatchRepository.php  # insert()
 │   └── Listeners/OnMissionEnvironmentChanged.php
 ├── Policies/IngestPolicy.php               # ¿el astronauta es de la misión del dispositivo?
 ├── Http/
-│   ├── Controllers/Api/IngestController.php · MeasurementController.php · IndicatorController.php
+│   ├── Controllers/Api/IngestReadingsController.php · StoreMeasurementsController.php · ListIndicatorsController.php   # uno por acción
 │   ├── Requests/IngestReadingsRequest.php · StoreMeasurementsRequest.php
 │   └── Resources/BatchResource.php · MeasurementResource.php · IndicatorResource.php
 ├── Console/ImportMissionFileCommand.php    # registro:import-file ../simulador/data/output/Ares-1_42.json

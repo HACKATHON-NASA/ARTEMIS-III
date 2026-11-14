@@ -84,8 +84,8 @@ Es dueño de **`recommendations`** y **`alerts`** ([columnas](../../arquitectura
 | Application | `Application/AcknowledgeAlert.php` · `GetRecommendation.php` · `ListAlerts.php` | |
 | Infrastructure | `Infrastructure/Listeners/OnMeasurementsRecorded.php` | Escucha el evento de M1 y llama a `CreateAlertsForRedMeasurements`. **Reemplaza al *Observer* del plan** ([decisión D11](../../arquitectura/ARCHITECTURE.md#2-decisiones-del-proyecto)) |
 | Infrastructure | `Infrastructure/Models/Alert.php` · `Recommendation.php` | |
-| Infrastructure | `Infrastructure/Repositorios/AlertRepository.php` · `RecommendationRepository.php` | |
-| Http | `Http/Controllers/Api/AlertController.php` · `RecommendationController.php` | |
+| Infrastructure | `Repositorios/Alert/FindAlertRepository.php` · `InsertAlertRepository.php` · `UpdateAlertRepository.php` · `Repositorios/Recommendation/FindRecommendationRepository.php` · `UpsertRecommendationRepository.php` | Uno por operación |
+| Http | `Http/Controllers/Api/ListAlertsController.php` · `SendAlertToGroundController.php` · `AcknowledgeAlertController.php` · `ListRecommendationsController.php` | Uno por acción |
 | Http | `Http/Requests/ListAlertsRequest.php` · `RecommendationRequest.php` | |
 | Http | `Http/Resources/AlertResource.php` · `RecommendationResource.php` | |
 | Database | `Migrations/` · `Seeders/RecommendationSeeder.php` | |

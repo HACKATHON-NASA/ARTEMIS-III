@@ -74,8 +74,8 @@ Cada zona toma **el peor** estado de sus indicadores. La regla es la misma de M2
 | Domain | `Domain/Reglas/WorstStatus.php` | `red` > `yellow` > `green` > `null` |
 | Application | `Application/GetBodyStatus.php` | Pide las últimas mediciones (`MeasurementQuery` de M1), las agrupa por zona (`IndicatorCatalog`) y aplica `WorstStatus` |
 | Application | `Application/ListBodyParts.php` | |
-| Infrastructure | `Infrastructure/Models/BodyPart.php` · `Repositorios/BodyPartRepository.php` | |
-| Http | `Http/Controllers/Api/BodyPartController.php` · `BodyStatusController.php` | |
+| Infrastructure | `Infrastructure/Models/BodyPart.php` · `Repositorios/BodyPart/FindBodyPartRepository.php` · `UpsertBodyPartRepository.php` | Buscar (con caché) · cargar el catálogo (seeder) |
+| Http | `Http/Controllers/Api/ListBodyPartsController.php` · `ShowBodyStatusController.php` | Uno por acción |
 | Http | `Http/Resources/BodyPartResource.php` · `BodyStatusResource.php` | |
 | Database | `Migrations/` · `Seeders/BodyPartSeeder.php` | |
 

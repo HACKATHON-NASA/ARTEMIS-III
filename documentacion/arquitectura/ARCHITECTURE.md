@@ -62,7 +62,7 @@ Alternativa compatible: <propuesta>
 | D10 | Ejercicio | Se agrega el indicador `exercise_min` | Sin él, la zona `bones` no tiene datos. El simulador ya lo genera |
 | D11 | Alerta al guardar un valor rojo | Por **evento de dominio** (`MeasurementsRecorded` → Alertas), no por un *Observer* de Eloquent | Así M1 no conoce las tablas de M5 (ver la [sección 7](#7-comunicación-entre-módulos)) |
 | D12 | Migraciones | Modulares: `app/Modules/<Modulo>/Database/Migrations/` | Cada módulo crea sus tablas |
-| D13 | Ramas | `main` · `development` · `feature/mX-nombre` | Ver el [flujo de Git](06-flujo-de-git.md). El plan dice `dev`: aquí se llama `development` |
+| D13 | Ramas | `main` (lo que se presenta) · `development` (donde trabaja todo el equipo) | Ver el [flujo de Git](06-flujo-de-git.md) |
 | D14 | Valores de referencia | Umbrales, dosis y retrasos se guardan en la base de datos o en `config/`, nunca en el código | Los médicos de vuelo los podrían ajustar |
 
 ## 3. Vista general

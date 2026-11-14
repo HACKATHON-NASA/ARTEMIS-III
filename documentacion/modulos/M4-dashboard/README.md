@@ -71,7 +71,7 @@ No tiene tablas. Lee las mediciones de M1 y pide las tendencias a M2. Las bandas
 | Application | `Application/GetIndicatorSeries.php` | `MeasurementQuery::series()` (M1) + bandas (`Evaluator`/umbrales de M2) |
 | Application | `Application/GetTrends.php` | Para cada indicador: los últimos 7 valores (M1) → `TrendAnalyzer` (M2) → mensaje |
 | Http | `Http/Requests/SeriesRequest.php` | `indicator` debe ser uno de los 10 y `range` debe ser `7d` o `30d` |
-| Http | `Http/Controllers/Api/SeriesController.php` · `TrendController.php` | |
+| Http | `Http/Controllers/Api/ShowSeriesController.php` · `ShowTrendsController.php` | Uno por acción |
 | Http | `Http/Resources/SeriesResource.php` · `TrendResource.php` | |
 
 > **Bandas:** M4 pide el entorno a M6 (`MissionQuery`) y el umbral a M2 (`Evaluator::thresholdFor`).

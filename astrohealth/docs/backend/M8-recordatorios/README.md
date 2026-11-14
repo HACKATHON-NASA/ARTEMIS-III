@@ -41,10 +41,10 @@ app/Modules/Recordatorios/
 │   └── DTOs/ReminderData.php · ReminderResult.php
 ├── Infrastructure/
 │   ├── Models/Reminder.php
-│   └── Repositorios/ReminderRepository.php
+│   └── Repositorios/Reminder/FindReminderRepository.php · InsertReminderRepository.php · UpdateReminderRepository.php · DeleteReminderRepository.php
 ├── Policies/ReminderPolicy.php             # solo los del astronauta del token
 ├── Http/
-│   ├── Controllers/Api/ReminderController.php      # index · store · update · destroy · done
+│   ├── Controllers/Api/ListRemindersController.php · StoreReminderController.php · UpdateReminderController.php · DeleteReminderController.php · CompleteReminderController.php
 │   ├── Requests/StoreReminderRequest.php · UpdateReminderRequest.php
 │   └── Resources/ReminderResource.php      # incluye state
 ├── Console/MarkDueRemindersCommand.php     # reminders:mark-due → log de los pendientes

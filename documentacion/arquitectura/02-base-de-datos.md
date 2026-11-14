@@ -2,7 +2,7 @@
 
 > [← Guía técnica](README.md) · Anterior: [API y JSON](01-api-y-json.md) · Siguiente: [Frontend](03-frontend-vue.md)
 
-MySQL, con migraciones **por módulo** en `app/Modules/<Modulo>/Database/Migrations/`. Son las 13 tablas del [plan] más las 3 del acceso y la ingesta (`devices`, `refresh_tokens`, `ingest_batches`)(../PLAN_ASTROHEALTH.md#1-base-de-datos-mysql--hacer-primero), con sus columnas completas. **Es lo primero que se construye** (fase 1).
+MySQL, con migraciones **por módulo** en `app/Modules/<Modulo>/Database/Migrations/`. Son las 13 tablas del [plan](../PLAN_ASTROHEALTH.md#1-base-de-datos-mysql--hacer-primero) más las 3 del acceso y la ingesta (`devices`, `refresh_tokens`, `ingest_batches`), con sus columnas completas. **Es lo primero que se construye** (fase 1).
 
 ## 1. Dueño de cada tabla
 

@@ -18,7 +18,7 @@ Stack: **Laravel (API) + Vue 3 (frontend) + MySQL + Python (FastAPI: motor de ev
 - **Vue**: toda la parte visual. Cuerpo SVG, dashboard, animaciones.
 
 ### Convenciones del equipo
-- Ramas: `main` (lo que se presenta) · `dev` · `feature/mX-nombre`
+- Ramas: `main` (lo que se presenta) · `development` (donde trabaja todo el equipo)
 - API con prefijo `/api/v1`, respuestas JSON `{ data, message }`
 - Colores del semáforo (usar SIEMPRE estos):
   - 🟢 `#22C55E` normal · 🟡 `#EAB308` precaución · 🔴 `#EF4444` crítico · ⚪ `#64748B` sin datos
@@ -159,7 +159,7 @@ Stack: **Laravel (API) + Vue 3 (frontend) + MySQL + Python (FastAPI: motor de ev
 
 **Backend (Laravel)**
 - `GET /api/v1/recommendations?indicator=hr&status=yellow`
-- Al guardar una medición roja → se crea un registro en `alerts` automáticamente (Observer de Eloquent).
+- Al guardar una medición roja → se crea un registro en `alerts` automáticamente (M5 escucha el evento `MeasurementsRecorded` de M1).
 - `POST /api/v1/alerts/{id}/send-to-ground` — marca enviada y calcula `ground_eta_at` según el entorno:
   - ISS: segundos · Luna: ~1.3 s · Marte: entre 4 y 24 min (usar 20 min en la demo)
 - `PATCH /api/v1/alerts/{id}/acknowledge`
