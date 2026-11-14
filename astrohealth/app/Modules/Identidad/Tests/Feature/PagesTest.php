@@ -13,11 +13,16 @@ use Tests\TestCase;
  */
 final class PagesTest extends TestCase
 {
-    public function test_the_login_page_is_served_at_acceso(): void
+    public function test_opening_the_app_goes_straight_to_the_login_screen(): void
+    {
+        $this->get('/')->assertRedirect('/acceso');
+    }
+
+    public function test_the_login_page_is_the_identidad_module_principal(): void
     {
         $this->get('/acceso')
             ->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('Login'));
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Identidad/Login'));
     }
 
     public function test_app_pages_do_not_depend_on_a_server_session(): void
@@ -26,7 +31,7 @@ final class PagesTest extends TestCase
         // la sesión a la API al cargar (useAuthStore.ensureSession).
         $this->get('/dashboard')
             ->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('Dashboard')->missing('auth'));
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Dashboard/Dashboard')->missing('auth'));
     }
 
     public function test_the_fortify_routes_are_gone(): void

@@ -62,7 +62,7 @@ Solo cuando la demo funciona de punta a punta:
 
 | Riesgo | Cómo se evita |
 |---|---|
-| Dos personas en el mismo archivo | Cada uno trabaja en **su** módulo ([reparto](../modulos/README.md#4-reparto-y-orden)). Las páginas de `pages/` las toca una sola persona a la vez |
+| Dos personas en el mismo archivo | Cada uno trabaja en **su** módulo ([reparto](../modulos/README.md#4-reparto-y-orden)). Cada principal (`modules/<Modulo>/<Principal>.vue`) lo toca una sola persona a la vez |
 | Migraciones que chocan | Cada módulo tiene las suyas, en su carpeta |
 | `composer.lock` o `package-lock.json` en conflicto | Quien agrega un paquete lo avisa en el chat y sube rápido. En un conflicto: se toma la versión de `development` y se repite `npm install <paquete>` |
 | Cambios locales que se quedan días sin subir | Subir en cuanto algo funcione y pase las pruebas, aunque sea pequeño |

@@ -10,7 +10,7 @@ Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está e
 
 ## Avance
 
-**Página:** `pages/Mission.vue`
+**Principal:** `modules/Entorno/Mission.vue`
 
 **Componentes**
 

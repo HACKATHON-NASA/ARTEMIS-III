@@ -10,7 +10,7 @@ Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está e
 
 ## Avance
 
-**Página:** `pages/Alerts.vue`
+**Principal:** `modules/Alertas/Alerts.vue`
 
 **Componentes**
 

@@ -86,7 +86,7 @@ No tiene tablas. Lee las mediciones de M1 y pide las tendencias a M2. Las bandas
 | `Components/RangeToggle.vue` | El selector de 7 y 30 días |
 | `Components/TrendBanner.vue` | El aviso amarillo de *"ha bajado 3 días seguidos"*. Si hay varios, se muestra el más grave |
 | `Stores/useDashboardStore.ts` | `trends`, `series`, `selected`, `range`, `loadTrends()`, `loadSeries()` |
-| Página `pages/Dashboard.vue` | Banner → cuadrícula → gráfica del indicador seleccionado |
+| Principal `modules/Dashboard/Dashboard.vue` | Banner → cuadrícula → gráfica del indicador seleccionado |
 
 **Animación de las gráficas:** la de Chart.js (`animation.duration: 600`) y, con `prefers-reduced-motion`, `animation: false`.
 

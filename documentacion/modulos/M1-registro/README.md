@@ -106,7 +106,7 @@ Es dueño de **`indicators`** y **`measurements`** ([columnas](../../arquitectur
 | `Components/FlyingValue.vue` | La animación del valor "volando" hacia el órgano (GSAP). Con `prefers-reduced-motion`, solo un *fade* |
 | `Stores/useMeasurementsStore.ts` | `indicators`, `loadIndicators()`, `record()`, `lastRecorded` |
 | `Types/measurement.ts` | `Indicator`, `Measurement`, `RecordPayload` |
-| Página `pages/Record.vue` | Compone el formulario y el resumen de lo que se acaba de guardar |
+| Principal `modules/Registro/Record.vue` | Compone el formulario y el resumen de lo que se acaba de guardar |
 
 ## 7. Contratos y eventos
 

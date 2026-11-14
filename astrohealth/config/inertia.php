@@ -36,8 +36,9 @@ return [
     'pages' => [
 
         'paths' => [
-            // Todas las páginas viven aquí (ARCHITECTURE / 03-frontend: las páginas solo componen).
-            resource_path('js/pages'),
+            // Cada página es el "principal" de su módulo: "Identidad/Login" →
+            // resources/js/modules/Identidad/Login.vue (03-frontend-vue.md).
+            resource_path('js/modules'),
         ],
 
         'extensions' => [

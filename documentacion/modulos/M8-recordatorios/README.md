@@ -86,7 +86,7 @@ Es dueño de **`reminders`** ([columnas](../../arquitectura/02-base-de-datos.md#
 | Global `composables/useNotifications.ts` | Pide el permiso con un botón ("Activar avisos") y muestra `new Notification(…)` si se concedió |
 | `Composables/useReminderClock.ts` | Cada 30 s revisa si algún `upcoming` pasó a `due`. Si es así, lanza el *toast* y la notificación **una sola vez** por recordatorio y día |
 | `Stores/useRemindersStore.ts` | `today`, `load()`, `complete(id)`. Después de `complete`, llama a `useGamificationStore().refresh()` desde la página |
-| Página | La lista va en `pages/Home.vue`. La edición, en un diálogo desde ahí |
+| Principal | La lista va en `modules/Cuerpo/Home.vue` (Inicio). La edición, en un diálogo desde ahí |
 
 > El orden "completar → refrescar la gamificación" lo coordina la **página**, no el *store* de M8: así un módulo no importa a otro ([regla del frontend](../../arquitectura/03-frontend-vue.md#2-carpetas)).
 

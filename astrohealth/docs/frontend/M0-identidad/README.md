@@ -10,7 +10,7 @@ Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está e
 
 ## Avance
 
-**Página:** `pages/Login.vue`, servida en **`/acceso`** (`app/Modules/Identidad/web.php`).
+**Principal:** `modules/Identidad/Login.vue`, servido en **`/acceso`** (`app/Modules/Identidad/web.php`). Al abrir la app, `/` lleva aquí.
 
 **Store y cliente**
 
@@ -47,7 +47,7 @@ sequenceDiagram
 
 - **Se quitó Fortify** (2026-11-14): el acceso es solo por la API con JWT. Ya no existen `/login`, `/register`, `/settings`, el doble factor ni las _passkeys_. Una migración nueva borra la tabla `passkeys` y las columnas `two_factor_*`.
 - **Las páginas son "cáscaras":** el servidor ya no comparte `auth.user` con Inertia. Quién es el usuario lo sabe el _store_ por la API.
-- **Todas las páginas en `pages/`** (como dice la guía del frontend): `Login` y `Dashboard` incluidos.
+- **Un módulo, una carpeta:** el principal `Login.vue` solo compone; las piezas están en `Components/` y la lógica de movimiento en `Composables/`. Ningún archivo pasa de 300 líneas.
 - **El `Origin` importa:** `/auth/refresh` solo acepta el `Origin` de `APP_URL`. Abra la app en `http://localhost:8000` (no en `127.0.0.1:8000`), o la sesión no se recupera al recargar.
 
 ## Cómo probarlo

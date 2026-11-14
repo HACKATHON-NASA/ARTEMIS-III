@@ -4,11 +4,12 @@ use Illuminate\Support\Facades\Route;
 
 /*
 | Páginas (Inertia). Son solo la "cáscara": la sesión y los datos van por la
-| API /api/v1 con JWT. Cada página protegida pide la sesión al cargar
-| (useAuthStore.ensureSession) y, si no hay, manda a /acceso.
-| Las páginas de cada módulo viven en app/Modules/<Modulo>/web.php.
+| API /api/v1 con JWT. Cada página es el "principal" de su módulo:
+| resources/js/modules/<Modulo>/<Principal>.vue.
+| Las rutas de cada módulo viven en app/Modules/<Modulo>/web.php.
 */
 
-Route::inertia('/', 'Welcome')->name('home');
+// Al abrir la app, directo a la pantalla de acceso.
+Route::redirect('/', '/acceso')->name('home');
 
-Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+Route::inertia('dashboard', 'Dashboard/Dashboard')->name('dashboard');

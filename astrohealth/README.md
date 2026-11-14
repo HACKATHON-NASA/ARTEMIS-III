@@ -15,12 +15,12 @@ php artisan migrate
 composer run dev        # http://localhost:8000
 ```
 
-| Carpeta                          | Qué es                                                                                                      |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `app/Modules/<Modulo>/`          | Backend de los 8 módulos, por capas: `Domain`, `Application`, `Infrastructure`, `Http`, `Database`, `Tests` |
-| `app/Shared/`                    | Piezas técnicas comunes: sobre JSON, errores de negocio, transacciones                                      |
-| `resources/js/modules/<Modulo>/` | Frontend de cada módulo: `Components`, `Stores`, `Composables`, `Types`, `Utils`                            |
-| `resources/js/` (resto)          | Lo global: `pages` (todas las páginas), `components`, `layouts`, `stores`, `lib`, `types`                   |
+| Carpeta                          | Qué es                                                                                                        |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `app/Modules/<Modulo>/`          | Backend de los 8 módulos, por capas: `Domain`, `Application`, `Infrastructure`, `Http`, `Database`, `Tests`   |
+| `app/Shared/`                    | Piezas técnicas comunes: sobre JSON, errores de negocio, transacciones                                        |
+| `resources/js/modules/<Modulo>/` | Frontend de cada módulo: su principal (la pantalla) + `Components`, `Composables`, `Stores`, `Types`, `Utils` |
+| `resources/js/` (resto)          | Lo global: `components`, `layouts`, `stores`, `lib`, `types` · imágenes en `resources/images/`                |
 
 | Módulo del plan              | Carpeta         |
 | ---------------------------- | --------------- |

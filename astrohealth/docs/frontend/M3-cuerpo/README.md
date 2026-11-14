@@ -10,7 +10,7 @@ Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está e
 
 ## Avance
 
-**Página:** `pages/Home.vue (cuerpo)`
+**Principal:** `modules/Cuerpo/Home.vue` (Inicio: el cuerpo)
 
 **Componentes**
 

@@ -5,9 +5,7 @@
          colors="true"
 >
     <testsuites>
-        <testsuite name="Unit">
-            <directory>tests/Unit</directory>
-        </testsuite>
+        <!-- Las pruebas unitarias viven en cada módulo (app/Modules/*/Tests/Unit). -->
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>

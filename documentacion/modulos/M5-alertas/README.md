@@ -100,7 +100,7 @@ Es dueño de **`recommendations`** y **`alerts`** ([columnas](../../arquitectura
 | `Components/AlertList.vue` · `AlertItem.vue` | El centro de alertas: filtros por estado, `StatusBadge` y la hora |
 | `Composables/useCountdown.ts` | `remaining` en segundos, a partir de `ground_eta_at`. Un solo `setInterval` que se limpia al desmontar |
 | `Stores/useAlertsStore.ts` | `pending`, `history`, `load()`, `sendToGround(id)`, `acknowledge(id)` |
-| Página `pages/Alerts.vue` | El centro de alertas |
+| Principal `modules/Alertas/Alerts.vue` | El centro de alertas |
 
 > **El contador de Marte es real:** 20 minutos. Para la demo, `GroundLinkModal` tiene un botón discreto **"⏩ ×60"** que acelera la animación (no cambia el dato guardado).
 

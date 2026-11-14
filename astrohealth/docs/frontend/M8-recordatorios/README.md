@@ -10,7 +10,7 @@ Este documento cuenta **cómo quedó hecho**. **Qué** hay que construir está e
 
 ## Avance
 
-**Página:** `pages/Home.vue (lista del día)`
+**Pantalla:** `modules/Cuerpo/Home.vue` (Inicio: la lista del día)
 
 **Componentes**
 

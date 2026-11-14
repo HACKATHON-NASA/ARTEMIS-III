@@ -2,24 +2,21 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { createPinia } from 'pinia';
 import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
-import AuthLayout from '@/layouts/AuthLayout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
 const appName = import.meta.env.VITE_APP_NAME || 'AstroHealth';
 
+/** Pantallas a pantalla completa, sin el layout de la app (no exigen sesión). */
+const FULL_SCREEN_PAGES = ['Identidad/Login'];
+
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    layout: (name) => {
-        switch (true) {
-            case name === 'Welcome':
-                return null;
-            case name === 'Login':
-                return AuthLayout;
-            default:
-                // AppLayout exige sesión: si no hay, manda a /acceso.
-                return AppLayout;
-        }
-    },
+    // Cada módulo tiene su carpeta con un "principal" (la página) y sus
+    // Components/: "Identidad/Login" → resources/js/modules/Identidad/Login.vue
+    pages: { path: './modules', extension: '.vue' },
+    layout: (name) =>
+        // AppLayout exige sesión: si no hay, manda a /acceso.
+        FULL_SCREEN_PAGES.includes(name) ? null : AppLayout,
     withApp: (app) => {
         app.use(createPinia());
 
@@ -32,7 +29,7 @@ void createInertiaApp({
         });
     },
     progress: {
-        color: '#4B5563',
+        color: '#38bdf8',
     },
 });
 

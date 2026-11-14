@@ -92,7 +92,7 @@ Los datos de cada entorno van en **`config/environments.php`**. No tienen tabla,
 | `Components/MissionBackdrop.vue` | El fondo de la página (estrellas + planeta), con transición de color al cambiar de entorno |
 | Global `composables/useCurrentAstronaut.ts` | El astronauta seleccionado (selector en `AppLayout`). Lo usan todos los módulos para saber a quién consultar |
 | `Stores/useMissionStore.ts` | `mission`, `environments`, `crew`, `load()`, `changeEnvironment(code)` |
-| Página `pages/Mission.vue` | Contador y gravedad → selector → riesgos |
+| Principal `modules/Entorno/Mission.vue` | Contador y gravedad → selector → riesgos |
 
 **Al cambiar de entorno**, M1 vuelve a evaluar las últimas mediciones (por el evento) y la página vuelve a cargar los *stores* del puntaje (M2) y del cuerpo (M3): los colores ya llegan recalculados.
 

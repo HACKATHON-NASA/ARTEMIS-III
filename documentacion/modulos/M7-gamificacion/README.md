@@ -103,7 +103,7 @@ La llave única `(astronaut_id, reason, reference)` garantiza que **nada se cuen
 | `Components/Leaderboard.vue` | El ranking, con el avatar y los puntos. Resalta al astronauta actual |
 | `Composables/useConfetti.ts` | Envuelve `canvas-confetti`. No hace nada con `prefers-reduced-motion` |
 | `Stores/useGamificationStore.ts` | `profile`, `leaderboard`, `refresh()`. **Compara** las insignias de antes y de después del `refresh()`: si hay una nueva, lanza el confeti y el *toast* |
-| Página `pages/Achievements.vue` | XpBar y racha → insignias → ranking |
+| Principal `modules/Gamificacion/Achievements.vue` | XpBar y racha → insignias → ranking |
 
 La `XpBar` y el `StreakCounter` también se ven en el encabezado de `AppLayout`, para que los puntos se noten en toda la app.
 
