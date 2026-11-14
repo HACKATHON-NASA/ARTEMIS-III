@@ -7,7 +7,7 @@ namespace App\Shared\Persistencia;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Implementación con la conexión por defecto (MySQL en la app, SQLite en las pruebas).
+ * Implementación con la conexión por defecto (MySQL: astrohealth en la app, astrohealth_testing en las pruebas).
  * Es el único lugar, fuera de los repositorios, que usa DB::.
  */
 final class DatabaseTransaction implements Transaction

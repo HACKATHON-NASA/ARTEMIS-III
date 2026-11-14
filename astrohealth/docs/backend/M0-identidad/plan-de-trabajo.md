@@ -10,10 +10,20 @@
 |---|---|
 | PHP · Laravel · Composer | 8.4.0 · 13.37.0 · 2.8.6 ✅ |
 | `php artisan test` | **40 pruebas en verde** ✅ (es la línea base: nunca puede bajar) |
-| Pruebas | SQLite en memoria → **toda migración debe funcionar también en SQLite** |
+| Base de datos | **MySQL de XAMPP (MariaDB 10.4.32)**, *driver* `mysql`. Trabajo: `astrohealth` · Pruebas: `astrohealth_testing` (separada, se vacía en cada corrida) |
 | Login actual | Fortify (sesión web, registro, 2FA, *passkeys*), con sus pruebas propias |
 | Rutas `api` | No hay: las registra cada módulo con `ModuleServiceProvider` |
 | `firebase/php-jwt` | No instalado |
+
+### Reglas de MySQL / MariaDB 10.4 para las migraciones
+
+| Regla | Por qué |
+|---|---|
+| *Driver* **`mysql`**, no `mariadb` | El *driver* `mariadb` crea `uuid` como tipo nativo `UUID`, que solo existe desde MariaDB 10.7. Con `mysql` se crea `char(36)` y funciona |
+| `->uuid()` → `char(36)` | Igual de indexable y único |
+| `->json()` funciona (en 10.4 es `LONGTEXT` con `json_valid`) | Se lee con el *cast* `array` del modelo; no se consultan sus campos con SQL |
+| Índices únicos sobre `string(255)` funcionan | MariaDB 10.4 usa filas `DYNAMIC` con índices de hasta 3072 bytes (comprobado: `users.email` único ya migró en las dos bases) |
+| Base de pruebas **siempre** `astrohealth_testing` | `RefreshDatabase` la vacía; el seguro de `TestCase` impide usar otra |
 
 ## Los roles
 
@@ -27,7 +37,7 @@
 | `admin` | Administrador | 🌍 Tierra | ❌ | Usuarios, dispositivos y la misión |
 | `device` | — (máquina) | 🚀 Nave | — | El simulador o los sensores: **solo** envía lecturas |
 
-> **`role` es texto (`string`) en la base y un `enum` en PHP**, no un `ENUM` de MySQL: agregar un rol mañana no exige una migración, y funciona igual en SQLite.
+> **`role` es texto (`string`) en la base y un `enum` en PHP**, no un `ENUM` de MySQL: agregar un rol mañana no exige una migración.
 
 ### Matriz de permisos (versión para la implementación)
 
@@ -87,6 +97,10 @@ flowchart LR
 | **Comprobar** | `php artisan test` → 40 en verde |
 | **Listo cuando** | La rama existe y la línea base está anotada |
 
+### Paso 1b · Pruebas sobre MySQL ✅
+
+> Terminado el 2026-11-14: las pruebas corren contra **`astrohealth_testing`** en MySQL de XAMPP, con un **seguro** en `tests/TestCase.php` que detiene todo si la base no termina en `_testing` **antes** de que `RefreshDatabase` la vacíe (probado: con `DB_DATABASE=astrohealth` en la terminal, las 55 pruebas se detuvieron sin tocar la base de trabajo).
+
 ### Paso 1 · Shared: formato JSON y errores ✅
 
 > Terminado el 2026-11-14: 55 pruebas en verde (40 + 15), Pint ✅, PHPStan sin errores nuevos. Detalle en [Shared · cómo quedó hecho](../shared.md#7-cómo-quedó-hecho).
@@ -121,7 +135,7 @@ Sin esto, cada respuesta saldría distinta. **Todo lo demás se apoya aquí.**
 
 **Pruebas:** `Entorno/Tests/Feature/MissionSeederTest.php`. Después del *seeder* hay 1 misión y 4 astronautas.
 
-**Listo cuando:** `php artisan migrate:fresh --seed` funciona en MySQL **y** las pruebas pasan en SQLite.
+**Listo cuando:** `php artisan migrate:fresh --seed` funciona en `astrohealth` **y** las pruebas pasan en `astrohealth_testing`.
 
 ### Paso 3 · La migración de `users` y el `enum` de roles
 

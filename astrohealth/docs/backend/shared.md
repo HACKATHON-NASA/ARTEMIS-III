@@ -96,7 +96,7 @@ Los eventos se publican **después** del *commit* (`ShouldDispatchAfterCommit`).
 - **`attempts` es `positive-int`:** PHPStan impide pasar 0 o negativos, sin validación en tiempo de ejecución.
 
 ### Diferencias con este documento
-- `MysqlTransaction` pasó a llamarse **`DatabaseTransaction`**, porque en las pruebas la conexión es SQLite.
+- `MysqlTransaction` pasó a llamarse **`DatabaseTransaction`**: usa la conexión por defecto, sea cual sea.
 - Se agregaron los códigos generales `BAD_REQUEST` (400), `METHOD_NOT_ALLOWED` (405), `PAYLOAD_TOO_LARGE` (413) y `SERVICE_UNAVAILABLE` (503).
 
 ### Cómo probarlo

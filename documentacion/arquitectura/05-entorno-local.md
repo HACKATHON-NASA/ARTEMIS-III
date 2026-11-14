@@ -102,13 +102,21 @@ npm -v    # 12.x.x o más
    C:\xampp\mysql\bin\mysql.exe -u root -e "CREATE DATABASE astrohealth CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
    ```
 
+4. Cree **también** la base de **pruebas** (separada: las pruebas la vacían en cada corrida):
+
+   ```powershell
+   C:\xampp\mysql\bin\mysql.exe -u root -e "CREATE DATABASE astrohealth_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+   ```
+
 ✅ **Verificación:**
 
 ```powershell
-C:\xampp\mysql\bin\mysql.exe -u root -e "SHOW DATABASES LIKE 'astrohealth';"
+C:\xampp\mysql\bin\mysql.exe -u root -e "SHOW DATABASES LIKE 'astrohealth%';"
 ```
 
-Debe mostrar `astrohealth`.
+Debe mostrar `astrohealth` y `astrohealth_testing`.
+
+> **XAMPP trae MariaDB 10.4.** En el `.env` se deja `DB_CONNECTION=mysql` (no `mariadb`): el *driver* `mariadb` usa el tipo `UUID`, que MariaDB 10.4 no tiene.
 
 > Si su MySQL de XAMPP tiene contraseña para `root`, añada `-p` a los dos comandos (le pedirá la contraseña) y póngala en `DB_PASSWORD` en el paso 7.
 
