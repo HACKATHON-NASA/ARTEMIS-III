@@ -18,7 +18,7 @@ import HeartbeatLine from '../Identidad/Components/Acceso/HeartbeatLine.vue';
 import ReminderList from '../Recordatorios/Components/ReminderList.vue';
 import { useRemindersStore } from '../Recordatorios/Stores/useRemindersStore';
 import type { Reminder } from '../Recordatorios/Types/reminders';
-import BodyMap from './Components/BodyMap.vue';
+import BodyViewer from './Components/BodyViewer.vue';
 import BodyPartPanel from './Components/BodyPartPanel.vue';
 import HomeGreeting from './Components/HomeGreeting.vue';
 import VitalsGrid from './Components/VitalsGrid.vue';
@@ -178,9 +178,10 @@ onMounted(async () => {
                     <div class="relative">
                         <h2 class="text-lg font-semibold">Tu cuerpo</h2>
                         <p class="mb-4 text-sm text-muted-foreground">
-                            Las zonas que laten necesitan tu atención.
+                            Los órganos que laten necesitan tu atención.
+                            Arrastra para girar y toca un órgano.
                         </p>
-                        <BodyMap
+                        <BodyViewer
                             :parts="body.parts"
                             :status="body.status"
                             :selected="panelOpen ? body.selected : null"

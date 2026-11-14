@@ -38,6 +38,19 @@ export function statusMeta(status: MaybeStatus): StatusMeta {
     return META[status ?? 'none'];
 }
 
+/**
+ * El color del estado en hexadecimal (para WebGL/Three.js, que no entiende
+ * var()). Se lee de las mismas variables --status-* de app.css.
+ */
+export function statusHex(status: MaybeStatus): string {
+    const name = `--status-${status ?? 'none'}`;
+    const value = getComputedStyle(document.documentElement)
+        .getPropertyValue(name)
+        .trim();
+
+    return value || '#64748b';
+}
+
 /** Las zonas en amarillo o rojo "laten" (es un signo vital, no adorno). */
 export function needsAttention(status: MaybeStatus): boolean {
     return status === 'yellow' || status === 'red';

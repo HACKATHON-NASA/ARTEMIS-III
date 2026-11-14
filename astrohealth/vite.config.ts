@@ -35,7 +35,14 @@ export default defineConfig({
     // usan páginas cargadas después (GSAP en la pantalla de acceso) responde
     // 504 "Outdated Optimize Dep" y la página queda sin animaciones.
     optimizeDeps: {
-        include: ['gsap', 'pinia'],
+        include: [
+            'gsap',
+            'pinia',
+            'three',
+            'three/addons/controls/OrbitControls.js',
+            'three/addons/loaders/GLTFLoader.js',
+            'three/addons/libs/meshopt_decoder.module.js',
+        ],
     },
     server: {
         watch: {
@@ -77,6 +84,8 @@ export default defineConfig({
             'composer.json',
             'resources/js/components/ui/*',
             'resources/views/mail/*',
+            // Referencia externa (propuesta de ChatGPT), no es código de la app.
+            'docs/3d/**',
         ],
         sortTailwindcss: {
             functions: ['clsx', 'cn', 'cva'],

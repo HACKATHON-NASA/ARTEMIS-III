@@ -2,15 +2,17 @@
 import { computed, ref } from 'vue';
 import { statusMeta } from '@/lib/status';
 import type { BodyZoneCode } from '@/types/health';
-import type { BodyPart, BodyStatus, ZoneValue } from '../Types/body';
+import type { BodyPart, BodyStatus } from '../Types/body';
+import { worstValue, zoneName } from '../Utils/zoneValues';
 import { VIEWBOX, ZONES } from '../Utils/zones';
 import BodyFigure from './BodyFigure.vue';
 import BodyTooltip from './BodyTooltip.vue';
 import BodyZone from './BodyZone.vue';
 
 /**
- * El cuerpo interactivo (M3 ⭐): la figura, sus 9 zonas con su color y el
- * tooltip. Clic en una zona → `select` (la pantalla abre el panel).
+ * El cuerpo en SVG (respaldo del 3D): la figura, sus 9 zonas con su color y
+ * el tooltip. Se usa si el equipo no soporta WebGL o el modelo no carga.
+ * Clic en una zona → `select` (la pantalla abre el panel).
  */
 const props = defineProps<{
     parts: BodyPart[];
@@ -22,17 +24,8 @@ const emit = defineEmits<{ select: [code: BodyZoneCode] }>();
 
 const hovered = ref<BodyZoneCode | null>(null);
 
-const ORDER = { red: 0, yellow: 1, green: 2 } as const;
-
 function nameOf(code: BodyZoneCode): string {
-    return props.parts.find((part) => part.code === code)?.name ?? code;
-}
-
-/** El valor que explica el color de la zona: el peor de sus indicadores. */
-function worstValue(code: BodyZoneCode): ZoneValue | null {
-    const values = [...props.status[code].values];
-
-    return values.sort((a, b) => ORDER[a.status] - ORDER[b.status])[0] ?? null;
+    return zoneName(props.parts, code);
 }
 
 const tooltip = computed(() => {
@@ -42,7 +35,7 @@ const tooltip = computed(() => {
         ? {
               name: nameOf(zone.code),
               status: props.status[zone.code].status,
-              value: worstValue(zone.code),
+              value: worstValue(props.status, zone.code),
               ...zone.tip,
           }
         : null;
