@@ -1,54 +1,42 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
-import { LogOut, Settings } from '@lucide/vue';
+import { router } from '@inertiajs/vue3';
+import { LogOut } from '@lucide/vue';
 import {
-    DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import UserInfo from '@/components/UserInfo.vue';
-import { logout } from '@/routes';
-import { edit } from '@/routes/profile';
-import type { User } from '@/types';
+import { acceso } from '@/routes';
+import { useAuthStore } from '@/stores/useAuthStore';
+import type { Actor } from '@/types';
 
-type Props = {
-    user: User;
-};
+defineProps<{
+    actor: Actor;
+}>();
 
-const handleLogout = () => {
+const auth = useAuthStore();
+
+async function handleLogout(): Promise<void> {
+    await auth.logout();
     router.flushAll();
-};
-
-defineProps<Props>();
+    router.visit(acceso());
+}
 </script>
 
 <template>
     <DropdownMenuLabel class="p-0 font-normal">
         <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-            <UserInfo :user="user" :show-email="true" />
+            <UserInfo :actor="actor" :show-details="true" />
         </div>
     </DropdownMenuLabel>
     <DropdownMenuSeparator />
-    <DropdownMenuGroup>
-        <DropdownMenuItem :as-child="true">
-            <Link class="block w-full cursor-pointer" :href="edit()" prefetch>
-                <Settings class="mr-2 h-4 w-4" />
-                Settings
-            </Link>
-        </DropdownMenuItem>
-    </DropdownMenuGroup>
-    <DropdownMenuSeparator />
-    <DropdownMenuItem :as-child="true">
-        <Link
-            class="block w-full cursor-pointer"
-            :href="logout()"
-            @click="handleLogout"
-            as="button"
-            data-test="logout-button"
-        >
-            <LogOut class="mr-2 h-4 w-4" />
-            Log out
-        </Link>
+    <DropdownMenuItem
+        class="cursor-pointer"
+        data-test="logout-button"
+        @select="handleLogout"
+    >
+        <LogOut class="mr-2 h-4 w-4" />
+        Cerrar sesión
     </DropdownMenuItem>
 </template>

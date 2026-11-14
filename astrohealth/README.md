@@ -19,8 +19,8 @@ composer run dev        # http://localhost:8000
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `app/Modules/<Modulo>/`          | Backend de los 8 módulos, por capas: `Domain`, `Application`, `Infrastructure`, `Http`, `Database`, `Tests` |
 | `app/Shared/`                    | Piezas técnicas comunes: sobre JSON, errores de negocio, transacciones                                      |
-| `resources/js/modules/<Modulo>/` | Frontend de cada módulo: `Components`, `Composables`, `Pages`, `Types`, `Utils`                             |
-| `resources/js/` (resto)          | Lo global: `components`, `layouts`, `composables`, `lib`, `pages`, `types`                                  |
+| `resources/js/modules/<Modulo>/` | Frontend de cada módulo: `Components`, `Stores`, `Composables`, `Types`, `Utils`                            |
+| `resources/js/` (resto)          | Lo global: `pages` (todas las páginas), `components`, `layouts`, `stores`, `lib`, `types`                   |
 
 | Módulo del plan              | Carpeta         |
 | ---------------------------- | --------------- |

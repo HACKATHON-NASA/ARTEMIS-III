@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 | M0 · Identidad · pantallas (Inertia). La página vive en
-| resources/js/modules/Identidad/Pages/Login.vue
+| resources/js/pages/Login.vue y entra contra POST /api/v1/auth/login (JWT).
 */
 
-Route::inertia('acceso', 'Identidad/Pages/Login')->name('acceso');
+Route::inertia('acceso', 'Login')->name('acceso');
