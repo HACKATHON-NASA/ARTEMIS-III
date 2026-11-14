@@ -32,10 +32,6 @@ final class UpsertUserRepository
             ],
         );
 
-        if ($user->email_verified_at === null) {
-            $user->forceFill(['email_verified_at' => now()])->save();
-        }
-
         return UserMapper::toEntity($user);
     }
 }

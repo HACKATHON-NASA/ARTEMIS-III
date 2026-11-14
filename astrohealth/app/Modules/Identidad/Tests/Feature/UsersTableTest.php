@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Identidad\Tests\Feature;
 
-use App\Models\User;
 use App\Modules\Identidad\Domain\Enums\Role;
 use App\Modules\Identidad\Tests\Support\InteractsWithJwt;
 use Illuminate\Database\QueryException;
@@ -64,10 +63,11 @@ final class UsersTableTest extends TestCase
         $this->assertStringNotContainsStringIgnoringCase('on update', (string) ($column['Extra'] ?? ''));
     }
 
-    public function test_users_without_role_still_work_for_fortify(): void
+    public function test_fortify_leftovers_are_gone(): void
     {
-        $user = User::factory()->create();
-
-        $this->assertNull($user->fresh()?->role);
+        $this->assertFalse(Schema::hasTable('passkeys'));
+        $this->assertFalse(Schema::hasColumns('users', ['two_factor_secret']));
+        $this->assertFalse(Schema::hasColumns('users', ['two_factor_recovery_codes']));
+        $this->assertFalse(Schema::hasColumns('users', ['two_factor_confirmed_at']));
     }
 }

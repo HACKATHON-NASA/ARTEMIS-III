@@ -151,7 +151,11 @@ final class ApiErrorFormatTest extends TestCase
 
     public function test_web_routes_keep_their_normal_behaviour(): void
     {
-        $this->get('/dashboard')->assertRedirect('/login');
+        // Un 404 de una página web sale como página, no con el JSON de la API.
+        $response = $this->get('/no-existe-esta-pagina');
+
+        $response->assertNotFound();
+        $this->assertStringNotContainsString('application/json', (string) $response->headers->get('Content-Type'));
     }
 }
 

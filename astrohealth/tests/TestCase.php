@@ -3,7 +3,6 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Laravel\Fortify\Features;
 use RuntimeException;
 
 abstract class TestCase extends BaseTestCase
@@ -20,13 +19,6 @@ abstract class TestCase extends BaseTestCase
         $this->guardAgainstNonTestingDatabase();
 
         return parent::setUpTraits();
-    }
-
-    protected function skipUnlessFortifyHas(string $feature, ?string $message = null): void
-    {
-        if (! Features::enabled($feature)) {
-            $this->markTestSkipped($message ?? "Fortify feature [{$feature}] is not enabled.");
-        }
     }
 
     private function guardAgainstNonTestingDatabase(): void

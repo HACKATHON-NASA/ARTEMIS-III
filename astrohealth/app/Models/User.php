@@ -6,20 +6,17 @@ use App\Modules\Identidad\Contratos\Actor;
 use App\Modules\Identidad\Domain\Enums\ActorType;
 use App\Modules\Identidad\Domain\Enums\Role;
 use Database\Factories\UserFactory;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
-use Laravel\Fortify\Contracts\PasskeyUser;
-use Laravel\Fortify\PasskeyAuthenticatable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
  * Una persona que usa AstroHealth. Su dueño es M0 · Identidad
- * (se queda en app/Models porque Laravel y Fortify la esperan aquí).
+ * (se queda en app/Models porque Laravel la espera aquí). Entra solo por
+ * la API con JWT (POST /api/v1/auth/login).
  *
  * @property int $id
  * @property string $name
@@ -30,19 +27,16 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $last_login_at
  * @property Carbon|null $email_verified_at
  * @property string $password
- * @property string|null $two_factor_secret
- * @property string|null $two_factor_recovery_codes
- * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'email', 'password', 'role', 'active', 'astronaut_id'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
-class User extends Authenticatable implements Actor, MustVerifyEmail, PasskeyUser
+#[Hidden(['password', 'remember_token'])]
+class User extends Authenticatable implements Actor
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable;
 
     /** Igual que el valor por defecto de la columna, para los modelos recién creados. */
     protected $attributes = ['active' => true];
@@ -87,7 +81,6 @@ class User extends Authenticatable implements Actor, MustVerifyEmail, PasskeyUse
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'two_factor_confirmed_at' => 'datetime',
             'role' => Role::class,
             'active' => 'boolean',
             'astronaut_id' => 'integer',

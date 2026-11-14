@@ -53,14 +53,14 @@ flowchart LR
     C --> A["ApiResponse<br/>{data, message}"]
 ```
 
-| Paso                     | Dónde                                                      | Si falla                                        |
-| ------------------------ | ---------------------------------------------------------- | ----------------------------------------------- |
-| Límite de peticiones     | `throttle:api-login`, `api-refresh`, `api-device` (M0) · `throttle:ingest` (M1) | 429 `TOO_MANY_REQUESTS`        |
-| ¿Quién es?               | `JwtGuard` de M0 (firma, `exp`, `aud`, lista de revocados) | 401 `AUTH_TOKEN_INVALID` · `AUTH_TOKEN_EXPIRED` |
-| ¿Su rol puede?           | `can:<permiso>` (Gates de M0)                              | 403 `FORBIDDEN`                                 |
-| ¿Los datos tienen forma? | `FormRequest` del módulo                                   | 422 `VALIDATION_FAILED`                         |
-| ¿El recurso es suyo?     | _Policy_ del módulo, dentro del caso de uso                | 403 `FORBIDDEN`                                 |
-| ¿La regla lo permite?    | `Domain` → `BusinessError`                                 | 409 / 422 con el código del módulo              |
+| Paso                     | Dónde                                                                           | Si falla                                        |
+| ------------------------ | ------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Límite de peticiones     | `throttle:api-login`, `api-refresh`, `api-device` (M0) · `throttle:ingest` (M1) | 429 `TOO_MANY_REQUESTS`                         |
+| ¿Quién es?               | `JwtGuard` de M0 (firma, `exp`, `aud`, lista de revocados)                      | 401 `AUTH_TOKEN_INVALID` · `AUTH_TOKEN_EXPIRED` |
+| ¿Su rol puede?           | `can:<permiso>` (Gates de M0)                                                   | 403 `FORBIDDEN`                                 |
+| ¿Los datos tienen forma? | `FormRequest` del módulo                                                        | 422 `VALIDATION_FAILED`                         |
+| ¿El recurso es suyo?     | _Policy_ del módulo, dentro del caso de uso                                     | 403 `FORBIDDEN`                                 |
+| ¿La regla lo permite?    | `Domain` → `BusinessError`                                                      | 409 / 422 con el código del módulo              |
 
 ## 3. Roles y permisos
 
@@ -125,15 +125,15 @@ flowchart LR
 
 ## 6. Convenciones del backend
 
-| Tema              | Regla                                                                                       |
-| ----------------- | ------------------------------------------------------------------------------------------- |
-| Clases            | `final`, `declare(strict_types=1);`, tipos en parámetros y retornos                         |
-| Casos de uso      | Una clase, un `execute()`, recibe DTOs, devuelve DTOs                                       |
-| Controladores     | `Request → caso de uso → Resource → ApiResponse`, menos de 15 líneas por método             |
-| Respuestas        | Siempre con `ApiResponse` ([formato](../../../documentacion/arquitectura/01-api-y-json.md)) |
-| Rutas             | En `routes.php` de cada módulo, prefijo `/api/v1`, `auth:api` + `can:`                      |
-| Fechas            | UTC en la base y en el JSON (`Z`)                                                           |
-| Pruebas           | `Tests/Unit` (Domain) y `Tests/Feature` (HTTP completo con un JWT de prueba)                |
+| Tema              | Regla                                                                                                                       |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Clases            | `final`, `declare(strict_types=1);`, tipos en parámetros y retornos                                                         |
+| Casos de uso      | Una clase, un `execute()`, recibe DTOs, devuelve DTOs                                                                       |
+| Controladores     | `Request → caso de uso → Resource → ApiResponse`, menos de 15 líneas por método                                             |
+| Respuestas        | Siempre con `ApiResponse` ([formato](../../../documentacion/arquitectura/01-api-y-json.md))                                 |
+| Rutas             | En `routes.php` de cada módulo, prefijo `/api/v1`, `auth:api` + `can:`                                                      |
+| Fechas            | UTC en la base y en el JSON (`Z`)                                                                                           |
+| Pruebas           | `Tests/Unit` (Domain) y `Tests/Feature` (HTTP completo con un JWT de prueba)                                                |
 | Helper de pruebas | _Trait_ `InteractsWithJwt` (`app/Modules/Identidad/Tests/Support/`): `userWithRole()`, `device()`, `tokenFor()`, `bearer()` |
 
 ```powershell

@@ -35,12 +35,11 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        // Sin "auth": la sesión no viaja en las páginas. Quién es el usuario lo
+        // sabe el frontend por la API (useAuthStore → /api/v1/auth/*, JWT).
         return [
             ...parent::share($request),
             'name' => config('app.name'),
-            'auth' => [
-                'user' => $request->user(),
-            ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

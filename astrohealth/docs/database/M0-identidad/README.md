@@ -2,9 +2,9 @@
 
 > [← Base de datos](../README.md) · Código: `astrohealth/app/Modules/Identidad/Database/` · Diseño: [M0 · backend §5](../../backend/M0-identidad/README.md#5-datos)
 
-| Estado         | Fase  | Responsable |
-| -------------- | :---: | ----------- |
-| ✅ Terminado (2026-11-14) | **1** | Backend |
+| Estado                    | Fase  | Responsable |
+| ------------------------- | :---: | ----------- |
+| ✅ Terminado (2026-11-14) | **1** | Backend     |
 
 Este documento cuenta **cómo quedó hecho**. El diseño está en el documento del backend de M0.
 
@@ -23,11 +23,11 @@ Este documento cuenta **cómo quedó hecho**. El diseño está en el documento d
 
 ## Tablas creadas (MySQL · MariaDB 10.4)
 
-| Tabla | Migración | Índices y llaves | Notas |
-|---|---|---|---|
-| `users` (+ columnas) | `2026_11_15_000300_add_access_columns_to_users_table` | `role` índice · `astronaut_id` único → `astronauts` (`ON DELETE SET NULL`) | `role VARCHAR(30) NULL` · `active TINYINT(1) DEFAULT 1` · `last_login_at DATETIME NULL` |
-| `devices` | `2026_11_15_000400_create_devices_table` | `client_id` único · `mission_id` → `missions` (cascada) · `astronaut_id` → `astronauts` (`SET NULL`) | `secret_hash` (bcrypt) · `last_seen_at DATETIME` |
-| `refresh_tokens` | `2026_11_15_000500_create_refresh_tokens_table` | `token_hash CHAR(64)` único · `family_id CHAR(36)` índice · `user_id` → `users` (cascada) | Fechas `DATETIME` (no `TIMESTAMP`): ver decisiones |
+| Tabla                | Migración                                             | Índices y llaves                                                                                     | Notas                                                                                   |
+| -------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `users` (+ columnas) | `2026_11_15_000300_add_access_columns_to_users_table` | `role` índice · `astronaut_id` único → `astronauts` (`ON DELETE SET NULL`)                           | `role VARCHAR(30) NULL` · `active TINYINT(1) DEFAULT 1` · `last_login_at DATETIME NULL` |
+| `devices`            | `2026_11_15_000400_create_devices_table`              | `client_id` único · `mission_id` → `missions` (cascada) · `astronaut_id` → `astronauts` (`SET NULL`) | `secret_hash` (bcrypt) · `last_seen_at DATETIME`                                        |
+| `refresh_tokens`     | `2026_11_15_000500_create_refresh_tokens_table`       | `token_hash CHAR(64)` único · `family_id CHAR(36)` índice · `user_id` → `users` (cascada)            | Fechas `DATETIME` (no `TIMESTAMP`): ver decisiones                                      |
 
 ## Seeders y datos iniciales
 
@@ -36,8 +36,9 @@ Este documento cuenta **cómo quedó hecho**. El diseño está en el documento d
 ## Decisiones técnicas
 
 - `DATETIME` y no `TIMESTAMP` en las fechas que no son `created_at`/`updated_at`: con `explicit_defaults_for_timestamp=OFF` (MariaDB 10.4), la primera `TIMESTAMP NOT NULL` recibiría `ON UPDATE CURRENT_TIMESTAMP`. `UsersTableTest` lo vigila.
-- `role` *nullable* para no romper el registro de Fortify; sin rol no se entra a la API.
-- Todas las migraciones tienen `down()` y se probó el *rollback* de las 5.
+- `role` _nullable_ por si un usuario se crea antes de darle rol; sin rol no se entra a la API.
+- `2026_11_15_000600_remove_fortify_from_users`: borra la tabla `passkeys` y las columnas `two_factor_*` (se quitó Fortify).
+- Todas las migraciones tienen `down()` y se probó el _rollback_ de las 5.
 
 ## Diferencias con el diseño
 
