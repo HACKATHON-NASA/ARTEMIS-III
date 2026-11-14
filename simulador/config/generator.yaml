@@ -1,0 +1,86 @@
+# Parámetros del generador de misión (efectos simples, coherentes con los riesgos HRP).
+# Todo el ruido es gaussiano y depende de la semilla (seed).
+
+# Horas del día (UTC) de cada toma.
+schedule:
+  hr: [8, 20]
+  bp_sys: [8]
+  bp_dia: [8]
+  glucose: [7]          # en ayunas
+  temp: [8]
+  spo2: [8, 20]
+  sleep: [7]            # al despertar: horas de la noche anterior
+  mood: [21]
+  radiation: [23]       # dosis acumulada del día
+  exercise_min: [19]
+
+units:
+  hr: bpm
+  bp_sys: mmHg
+  bp_dia: mmHg
+  glucose: mg/dL
+  temp: °C
+  spo2: "%"
+  sleep: h
+  mood: "1-5"
+  radiation: mSv/day
+  exercise_min: min
+
+noise_sd:
+  hr: 3.0
+  bp_sys: 5.0
+  bp_dia: 3.5
+  temp: 0.15
+  spo2: 0.6
+  sleep: 0.2
+  mood: 0.3
+  exercise_min: 10.0
+
+microgravity:
+  # El pulso en reposo baja en las primeras semanas (escala con 1 - gravedad).
+  hr_drop_bpm: 4.0
+  hr_drop_tau_days: 7
+  # La presión es más variable (multiplica el ruido, escala con 1 - gravedad).
+  bp_variability_factor: 1.4
+  evening_hr_increase: 4.0
+
+sleep:
+  # El sueño tiende a bajar a 6–6,5 h (NASA: los astronautas duermen ~6 h).
+  target_h: 6.5
+  tau_days: 10
+  after_sep_drop_h: 0.6     # la noche siguiente a un SEP (estrés, refugio)
+
+mood:
+  isolation_drop_per_day: 0.025
+  good_sleep_bonus: 0.25    # si durmió >= 7 h
+  bad_sleep_penalty: 0.3    # si durmió < 6 h
+  exercise_bonus: 0.15      # si hizo >= 90 min
+
+exercise:
+  sep_day_reduction_min: 50 # en el refugio no se puede entrenar
+
+glucose:
+  # Ruido diario personal = baseline_sd de OSDR × fracción (la sd de OSDR mezcla
+  # personas y días; dentro de una misma persona la variación es menor).
+  within_person_fraction: 0.4
+  # Si no hay calibration.json: referencia general (source = simulated_reference).
+  fallback_mean: 85
+  fallback_sd: 8
+  fallback_delta_pct: 0
+
+radiation:
+  # Dosis dentro del hábitat = base del entorno × multiplicador DONKI × blindaje.
+  shielding_mean: 0.92
+  shielding_sd: 0.03
+  shielding_max: 1.0
+
+demo_events:
+  sep_day: 12                       # SEP simulado si DONKI no trae ninguno
+  sleep_decline:
+    astronaut_id: 2
+    days: {18: 5.8, 19: 5.5, 20: 5.2, 21: 5.0}
+  blood_pressure_spike:
+    astronaut_id: 3
+    day: 24
+    bp_sys: 148
+    bp_dia: 94
