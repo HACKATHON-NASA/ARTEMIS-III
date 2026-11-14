@@ -1,24 +1,26 @@
 # Documentación técnica · Base de datos (MySQL)
 
-Cómo quedó **construido** el base de datos de cada módulo. Una carpeta por módulo; dentro, el `README.md` del módulo y los `.md` que haga falta (un tema por archivo).
+> [← Documentación técnica](../README.md)
 
-| Código | Carpeta | Módulo |
-|---|---|---|
-| M01 | [`M01-identidad/`](M01-identidad/README.md) | Identidad y acceso |
-| M02 | [`M02-mision/`](M02-mision/README.md) | Misión y tripulación |
-| M03 | [`M03-ingesta/`](M03-ingesta/README.md) | Ingesta de datos |
-| M04 | [`M04-signos-vitales/`](M04-signos-vitales/README.md) | Signos vitales |
-| M05 | [`M05-psicologia/`](M05-psicologia/README.md) | Psicología y cognición |
-| M06 | [`M06-sueno/`](M06-sueno/README.md) | Sueño |
-| M07 | [`M07-examenes/`](M07-examenes/README.md) | Exámenes médicos |
-| M08 | [`M08-ambiente/`](M08-ambiente/README.md) | Ambiente |
-| M09 | [`M09-radiacion/`](M09-radiacion/README.md) | Radiación |
-| M10 | [`M10-fisico-metabolico/`](M10-fisico-metabolico/README.md) | Físico y metabólico |
-| M11 | [`M11-sintomas/`](M11-sintomas/README.md) | Síntomas |
-| M12 | [`M12-analitica/`](M12-analitica/README.md) | Analítica y línea base |
-| M13 | [`M13-alertas/`](M13-alertas/README.md) | Alertas y casos clínicos |
-| M14 | [`M14-reportes/`](M14-reportes/README.md) | Reportes |
-| M15 | [`M15-sincronizacion/`](M15-sincronizacion/README.md) | Sincronización |
-| M16 | [`M16-configuracion/`](M16-configuracion/README.md) | Configuración |
+Las tablas que de verdad se crearon, sus índices y sus *seeders*. El diseño completo está en [Base de datos](../../../documentacion/arquitectura/02-base-de-datos.md).
+
+| | Carpeta | Módulo | Fase | Estado |
+|:---:|---|---|:---:|:---:|
+| 🔐 | [`M0-identidad/`](M0-identidad/README.md) | Identidad y acceso | 1 | ⬜ |
+| 🩺 | [`M1-registro/`](M1-registro/README.md) | Registro de indicadores | 2 | ⬜ |
+| 🚦 | [`M2-evaluacion/`](M2-evaluacion/README.md) | Motor de evaluación | 2 | ⬜ |
+| 🧍 | [`M3-cuerpo/`](M3-cuerpo/README.md) | Cuerpo humano interactivo | 3 | ⬜ |
+| 📈 | [`M4-dashboard/`](M4-dashboard/README.md) | Dashboard | 3 | ⬜ |
+| 🚨 | [`M5-alertas/`](M5-alertas/README.md) | Recomendaciones y alertas a Tierra | 4 | ⬜ |
+| 🌍 | [`M6-entorno/`](M6-entorno/README.md) | Entorno de misión | 1 · 4 | ⬜ |
+| 🏆 | [`M7-gamificacion/`](M7-gamificacion/README.md) | Gamificación | 5 | ⬜ |
+| ⏰ | [`M8-recordatorios/`](M8-recordatorios/README.md) | Recordatorios | 5 | ⬜ |
+
+**Estados:** ⬜ sin empezar · 🟨 en curso · ✅ terminado (con sus pruebas en verde).
+
+```powershell
+php artisan migrate:fresh --seed
+# y el simulador enviando los lotes: ver backend/M1-registro (ingesta)
+```
 
 > 📝 **Documentar siempre:** este documento se actualiza en el mismo *pull request* que cambia el código.

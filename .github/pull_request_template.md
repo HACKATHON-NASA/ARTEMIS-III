@@ -1,24 +1,23 @@
-<!-- El PR apunta a `development` (nunca a `main`). Título: HU-xx.yy · Backend|Frontend · <título de la historia> -->
+<!-- El PR apunta a `development` (nunca a `main`). Título: MX · <qué hace>  (ej.: M3 · Cuerpo interactivo: zonas con color y pulso) -->
 
-Historia: documentacion/modulos/Mxx-…/<capa>/HU/HU-xx.yy-….md
-Jira: HU-xx.yy
+Ficha: documentacion/modulos/MX-…/README.md
 
 ## Antes de programar (ARCHITECTURE.md)
 - Módulo:
 - Capas:
 - Archivos:
-- Dependencias:
+- Dependencias (contratos, eventos, Python):
 
 ## Qué hace
 -
 
-## Criterios de aceptación
-- [ ] … (prueba: `…Test`)
+## Criterios de aceptación de la ficha
+- [ ] #… (prueba: `…Test`)
 
 ## Cómo probarlo
 1.
 
 ## Revisión
-- [ ] `php artisan test` y `npm run test` pasan
-- [ ] Sin prácticas prohibidas de ARCHITECTURE.md
-- [ ] Si cambió una ficha, está actualizada con su línea en el CHANGELOG
+- [ ] `php artisan test` pasa
+- [ ] Sin prácticas prohibidas de ARCHITECTURE.md (§11)
+- [ ] Si cambió algo del contrato (ruta, JSON, tabla), la ficha del módulo está actualizada

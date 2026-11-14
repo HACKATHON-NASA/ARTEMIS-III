@@ -1,14 +1,10 @@
 # AstroHealth · Aplicación
 
-Aplicación **Laravel 13 + Inertia 3 + Vue 3 + TypeScript + Tailwind CSS v4** de AstroHealth. El mismo código corre en los dos nodos (`APP_NODO=nave` o `tierra`).
+Aplicación **Laravel 13 + Inertia 3 + Vue 3 + TypeScript + Tailwind CSS v4** de AstroHealth.
 
-| Para… | Lea |
-|---|---|
-| Instalarla en su computador | [Preparar el entorno local](../documentacion/modulos/00-arquitectura/08-entorno-local.md) |
-| Saber dónde va cada cosa | [Estructura de carpetas](../documentacion/modulos/00-arquitectura/10-estructura-de-carpetas.md) |
-| Las reglas obligatorias | [ARCHITECTURE.md](../documentacion/modulos/00-arquitectura/ARCHITECTURE.md) |
-| Trabajar con Git | [Flujo de trabajo con Git](../documentacion/modulos/00-arquitectura/09-flujo-de-git.md) |
-| Qué construir en cada historia | [Fichas de los módulos](../documentacion/modulos/README.md) |
+- Qué se construye: [Plan de módulos](../documentacion/PLAN_ASTROHEALTH.md)
+- Cómo se programa: [Guía de arquitectura](../documentacion/arquitectura/README.md)
+- Cómo quedó hecho, y el avance por módulo: [Documentación técnica](docs/README.md)
 
 ```powershell
 composer install
@@ -21,15 +17,18 @@ composer run dev        # http://localhost:8000
 
 | Carpeta | Qué es |
 |---|---|
-| [`app/`](app/README.md) | Backend: los 16 módulos en [`app/Modules`](app/Modules/README.md) y lo común en [`app/Shared`](app/Shared/README.md) |
-| `resources/js/` | Frontend: los módulos en [`resources/js/modules`](resources/js/modules/README.md) y lo global al lado |
-| `resources/css/` | Tailwind v4 y las variables de color |
-| `routes/` | Rutas del *starter kit* (las de cada módulo viven en su `routes.php`) |
-| `database/` | Migraciones y *seeders* del kit (`users`, `cache`, `jobs`); las de cada módulo, en su carpeta |
-| `config/`, `bootstrap/` | Configuración de Laravel; `bootstrap/providers.php` registra los módulos |
-| `tests/` | Configuración de Pest y la prueba de arquitectura; las pruebas de cada módulo, en su carpeta |
-| [`docs/`](docs/README.md) | Documentación **técnica del código** (decisiones de implementación, diagramas, despliegue) |
-| `public/` | Lo único accesible desde el navegador |
-| `storage/` | Archivos privados, *logs* y caché (no se suben) |
+| `app/Modules/<Modulo>/` | Backend de los 8 módulos, por capas: `Domain`, `Application`, `Infrastructure`, `Http`, `Database`, `Tests` |
+| `app/Shared/` | Piezas técnicas comunes: sobre JSON, errores de negocio, transacciones |
+| `resources/js/modules/<Modulo>/` | Frontend de cada módulo: `Components`, `Composables`, `Pages`, `Types`, `Utils` |
+| `resources/js/` (resto) | Lo global: `components`, `layouts`, `composables`, `lib`, `pages`, `types` |
 
-> 📝 **Documentar siempre:** si cambia lo que hace esta carpeta o añade un tipo de archivo nuevo, actualice este README y el CHANGELOG en el mismo *pull request*.
+| Módulo del plan | Carpeta |
+|---|---|
+| M1 Registro de indicadores | `Registro` |
+| M2 Motor de evaluación | `Evaluacion` |
+| M3 Cuerpo humano interactivo | `Cuerpo` |
+| M4 Dashboard | `Dashboard` |
+| M5 Recomendaciones y alertas | `Alertas` |
+| M6 Entorno de misión | `Entorno` |
+| M7 Gamificación | `Gamificacion` |
+| M8 Recordatorios | `Recordatorios` |
