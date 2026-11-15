@@ -24,6 +24,7 @@ return [
     'alerts.send' => ['crew_medical_officer', 'astronaut'],
     'alerts.acknowledge' => ['admin', 'flight_surgeon'],
     'mission.update' => ['admin', 'flight_surgeon'],
+    'missions.manage' => ['admin'],
     'reminders.manage.own' => ['crew_medical_officer', 'astronaut'],
     'gamification.read' => ['admin', 'flight_surgeon', 'crew_medical_officer', 'astronaut'],
     'users.manage' => ['admin'],

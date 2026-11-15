@@ -8,7 +8,7 @@ import RoleBadge from './RoleBadge.vue';
 import StatusDot from './StatusDot.vue';
 
 /**
- * Una persona: quién es, su rol, su estado, su último acceso y sus acciones.
+ * Una persona: quién es, su rol y su misión, su estado, su último acceso y sus acciones.
  * En el celular las columnas se apilan.
  */
 defineProps<{ user: ManagedUser; busy: boolean }>();
@@ -35,8 +35,17 @@ defineEmits<{ edit: []; toggle: [] }>();
             </div>
         </div>
 
-        <div class="col-start-1 md:col-start-auto">
+        <div class="col-start-1 min-w-0 md:col-start-auto">
             <RoleBadge :role="user.role" />
+            <p
+                v-if="user.mission_name"
+                class="mt-1 truncate text-xs text-muted-foreground"
+            >
+                {{ user.mission_name
+                }}<template v-if="user.crew_role">
+                    · {{ user.crew_role }}</template
+                >
+            </p>
         </div>
 
         <div

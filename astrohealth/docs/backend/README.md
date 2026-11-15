@@ -86,6 +86,7 @@ flowchart LR
 | `alerts.send` — enviar una alerta a Tierra              |         |                  |    ✅ (cualquiera)     | ✅ (suyas)  |          |
 | `alerts.acknowledge` — confirmar desde Tierra           |   ✅    |        ✅        |                        |             |          |
 | `mission.update` — cambiar el entorno                   |   ✅    |        ✅        |                        |             |          |
+| `missions.manage` — crear misiones y tripulantes        |   ✅    |                  |                        |             |          |
 | `reminders.manage.own` — sus recordatorios              |         |                  |           ✅           |     ✅      |          |
 | `gamification.read` — puntos y ranking                  |   ✅    |        ✅        |           ✅           |     ✅      |          |
 | `users.manage` · `devices.manage`                       |   ✅    |                  |                        |             |          |

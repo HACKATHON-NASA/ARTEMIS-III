@@ -148,6 +148,8 @@ Todas las llamadas a Python viven en `app/Modules/Evaluacion/Infrastructure/Clie
 | GET | `/api/v1/environments` | M6 | `crew.read` |
 | GET | `/api/v1/missions/current` | M6 | `crew.read` |
 | PATCH | `/api/v1/missions/{id}` | M6 | `mission.update` |
+| GET · POST | `/api/v1/missions` | M6 | `missions.manage` |
+| POST · PATCH | `/api/v1/astronauts` · `/api/v1/astronauts/{id}` | M6 | `missions.manage` |
 | GET | `/api/v1/astronauts` | M6 | `crew.read` |
 | GET | `/api/v1/astronauts/{id}/gamification` | M7 | `gamification.read` |
 | GET | `/api/v1/leaderboard` | M7 | `gamification.read` |

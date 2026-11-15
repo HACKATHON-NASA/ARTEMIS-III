@@ -2,7 +2,7 @@ import type { PersonRole, RoleOption } from '../Types/admin';
 
 /**
  * Los roles de personas, para mostrar y para el formulario. Las reglas
- * reales (quién necesita astronauta) las valida el backend (RoleAssignment);
+ * reales (quién necesita misión y tripulante) las valida el backend (RoleAssignment);
  * aquí solo sirven para guiar el formulario.
  */
 export const ROLE_OPTIONS: RoleOption[] = [
@@ -11,24 +11,28 @@ export const ROLE_OPTIONS: RoleOption[] = [
         label: 'Administración',
         location: 'earth',
         requiresAstronaut: false,
+        requiresMission: false,
     },
     {
         value: 'flight_surgeon',
         label: 'Médico de vuelo',
         location: 'earth',
         requiresAstronaut: false,
+        requiresMission: true,
     },
     {
         value: 'crew_medical_officer',
         label: 'Médico de la tripulación',
         location: 'space',
         requiresAstronaut: true,
+        requiresMission: true,
     },
     {
         value: 'astronaut',
         label: 'Astronauta',
         location: 'space',
         requiresAstronaut: true,
+        requiresMission: true,
     },
 ];
 

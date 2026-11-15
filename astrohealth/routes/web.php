@@ -23,6 +23,10 @@ Route::inertia('inicio', 'Cuerpo/Home')->name('inicio');
 Route::inertia('salud', 'Cuerpo/CrewHealth')->name('salud');
 Route::inertia('tripulacion', 'Entorno/Crew')->name('tripulacion');
 
+// Administración: crear misiones y ver cada una (permiso missions.manage).
+// Pasa a app/Modules/Entorno/web.php con su backend.
+Route::inertia('admin/misiones', 'Entorno/Missions')->name('misiones');
+
 // Registrar (M1): el astronauta anota sus indicadores del día.
 // Pasa a app/Modules/Registro/web.php cuando exista el backend de M1.
 Route::inertia('registrar', 'Registro/Record')->name('registrar');

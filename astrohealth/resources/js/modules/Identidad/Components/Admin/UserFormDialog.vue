@@ -21,34 +21,70 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import type {
-    CrewOption,
     ManagedUser,
+    MissionOption,
     PersonRole,
     UserFormData,
 } from '../../Types/admin';
 import { ROLE_OPTIONS, roleOption } from '../../Utils/roles';
+import UserMissionFields from './UserMissionFields.vue';
 
 /**
- * Crear una persona o editar su nombre, rol y astronauta. El correo no se
- * cambia después de crearla. Los roles de la nave exigen un astronauta.
+ * Crear una persona o editar su nombre, rol y misión. El correo no se
+ * cambia después de crearla. La nave (astronauta y médico de la tripulación)
+ * y los médicos de vuelo van asociados a una misión; los de la nave, además,
+ * con su cargo (así se crea su tripulante). Administración no lleva misión.
  */
 const props = defineProps<{
     user: ManagedUser | null;
-    crew: CrewOption[];
+    missions: MissionOption[];
+    crewRoles: string[];
     submit: (data: UserFormData) => Promise<void>;
 }>();
 
 const open = defineModel<boolean>('open', { required: true });
 
-const form = reactive({ name: '', email: '', role: '', astronaut: '' });
+const form = reactive({
+    name: '',
+    email: '',
+    role: '',
+    mission: '',
+    crewRole: '',
+});
 const errors = ref<Partial<Record<keyof typeof form, string>>>({});
 const saving = ref(false);
 
 const isEdit = computed(() => props.user !== null);
-const needsAstronaut = computed(
-    () =>
-        roleOption((form.role || null) as PersonRole | null)
-            ?.requiresAstronaut ?? false,
+const selectedRole = computed(() =>
+    roleOption((form.role || null) as PersonRole | null),
+);
+const needsMission = computed(
+    () => selectedRole.value?.requiresMission ?? false,
+);
+const needsCrewRole = computed(
+    () => selectedRole.value?.requiresAstronaut ?? false,
+);
+
+// Al corregir un campo, su error se va.
+watch(
+    () => ({ ...form }),
+    (now, before) => {
+        for (const key of Object.keys(now) as (keyof typeof form)[]) {
+            if (now[key] !== before[key]) {
+                delete errors.value[key];
+            }
+        }
+    },
+);
+
+// El médico de la tripulación tiene ese cargo de entrada.
+watch(
+    () => form.role,
+    (role) => {
+        if (role === 'crew_medical_officer' && form.crewRole === '') {
+            form.crewRole = 'Médico de la tripulación';
+        }
+    },
 );
 
 watch(open, (isOpen) => {
@@ -59,7 +95,8 @@ watch(open, (isOpen) => {
     form.name = props.user?.name ?? '';
     form.email = props.user?.email ?? '';
     form.role = props.user?.role ?? '';
-    form.astronaut = props.user?.astronaut_id?.toString() ?? '';
+    form.mission = props.user?.mission_id?.toString() ?? '';
+    form.crewRole = props.user?.crew_role ?? '';
     errors.value = {};
 });
 
@@ -78,8 +115,12 @@ function validate(): boolean {
         errors.value.role = 'Elige un rol.';
     }
 
-    if (needsAstronaut.value && form.astronaut === '') {
-        errors.value.astronaut = 'Este rol va en la nave: elige el astronauta.';
+    if (needsMission.value && form.mission === '') {
+        errors.value.mission = 'Elige la misión de esta persona.';
+    }
+
+    if (needsCrewRole.value && form.crewRole === '') {
+        errors.value.crewRole = 'Elige su cargo en la tripulación.';
     }
 
     return Object.keys(errors.value).length === 0;
@@ -97,7 +138,8 @@ async function save(): Promise<void> {
             name: form.name,
             email: form.email,
             role: form.role as PersonRole,
-            astronaut_id: needsAstronaut.value ? Number(form.astronaut) : null,
+            mission_id: needsMission.value ? Number(form.mission) : null,
+            crew_role: needsCrewRole.value ? form.crewRole : null,
         });
         open.value = false;
     } finally {
@@ -108,7 +150,7 @@ async function save(): Promise<void> {
 
 <template>
     <Dialog v-model:open="open">
-        <DialogContent class="sm:max-w-md">
+        <DialogContent class="max-h-[92vh] overflow-y-auto sm:max-w-md">
             <DialogHeader>
                 <DialogTitle>
                     {{ isEdit ? 'Editar usuario' : 'Nuevo usuario' }}
@@ -116,7 +158,7 @@ async function save(): Promise<void> {
                 <DialogDescription>
                     {{
                         isEdit
-                            ? 'Cambia el nombre, el rol o el astronauta.'
+                            ? 'Cambia el nombre, el rol o la misión.'
                             : 'La persona entrará con este correo. La contraseña se le asigna aparte.'
                     }}
                 </DialogDescription>
@@ -174,29 +216,19 @@ async function save(): Promise<void> {
                     </Select>
                     <InputError :message="errors.role" />
                 </div>
-                <div v-if="needsAstronaut" class="grid gap-2">
-                    <Label for="user-astronaut">Astronauta</Label>
-                    <Select v-model="form.astronaut">
-                        <SelectTrigger id="user-astronaut" class="w-full">
-                            <SelectValue
-                                placeholder="¿Quién de la tripulación?"
-                            />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem
-                                v-for="member in crew"
-                                :key="member.id"
-                                :value="member.id.toString()"
-                            >
-                                {{ member.name }}
-                                <span class="text-muted-foreground"
-                                    >· {{ member.crew_role }}</span
-                                >
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <InputError :message="errors.astronaut" />
-                </div>
+                <UserMissionFields
+                    v-if="needsMission"
+                    v-model:mission="form.mission"
+                    v-model:crew-role="form.crewRole"
+                    :missions="missions"
+                    :crew-roles="crewRoles"
+                    :with-crew-role="needsCrewRole"
+                    :current-mission="user?.mission_id ?? null"
+                    :errors="{
+                        mission: errors.mission,
+                        crewRole: errors.crewRole,
+                    }"
+                />
             </form>
 
             <DialogFooter>

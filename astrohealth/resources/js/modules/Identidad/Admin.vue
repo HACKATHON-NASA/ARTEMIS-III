@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { dashboard, usuarios } from '@/routes';
@@ -12,12 +12,23 @@ import DevicesPanel from './Components/Admin/DevicesPanel.vue';
 import UserFormDialog from './Components/Admin/UserFormDialog.vue';
 import UsersPanel from './Components/Admin/UsersPanel.vue';
 import { useReveal } from '@/composables/useReveal';
+import { useMissionsStore } from '../Entorno/Stores/useMissionsStore';
+import { CREW_ROLES, environmentInfo } from '../Entorno/Utils/environments';
 import { useAdminStore } from './Stores/useAdminStore';
-import type { ManagedDevice, ManagedUser, UserFormData } from './Types/admin';
+import type {
+    ManagedDevice,
+    ManagedUser,
+    MissionOption,
+    UserFormData,
+    UserLink,
+} from './Types/admin';
+import { roleOption } from './Utils/roles';
 
 /**
- * M0 · Vista de administración (/admin): usuarios y dispositivos.
- * Solo para quien tiene el permiso users.manage (el rol admin).
+ * M0 · Vista de administración (/admin/usuarios): usuarios y dispositivos.
+ * Solo para quien tiene el permiso users.manage (el rol admin). Cada persona
+ * de la nave o médico de vuelo va asociada a una misión de M6: al guardar,
+ * el principal crea o actualiza su tripulante (useMissionsStore).
  * ⚠️ Por ahora con datos de prueba: ver Stores/useAdminStore.ts.
  */
 defineOptions({
@@ -26,6 +37,7 @@ defineOptions({
 
 const auth = useAuthStore();
 const store = useAdminStore();
+const missions = useMissionsStore();
 const root = ref<HTMLElement | null>(null);
 const { reveal } = useReveal(root);
 
@@ -43,8 +55,55 @@ function openUser(user: ManagedUser | null): void {
     userDialog.value = true;
 }
 
+/** Las misiones para el formulario (las en curso primero). */
+const missionOptions = computed<MissionOption[]>(() =>
+    missions.views.map((mission) => ({
+        id: mission.id,
+        name: mission.name,
+        status: mission.status,
+        place: environmentInfo(mission.environment).name,
+    })),
+);
+
+// Los dispositivos se asignan a la tripulación de la misión actual.
+watch(
+    () => missions.find(store.mission?.id ?? null)?.crew ?? [],
+    (crew) =>
+        store.setCrew(
+            crew.map(({ id, name, crew_role }) => ({ id, name, crew_role })),
+        ),
+    { immediate: true },
+);
+
+/** Crea o actualiza el tripulante de una persona de la nave (M6). */
+async function linkFor(data: UserFormData): Promise<UserLink> {
+    const mission = missions.find(data.mission_id);
+    const link: UserLink = {
+        astronaut_id: null,
+        astronaut_name: null,
+        mission_name: mission?.name ?? null,
+    };
+
+    if (!roleOption(data.role)?.requiresAstronaut || mission === null) {
+        return link;
+    }
+
+    const astronaut = {
+        name: data.name,
+        crew_role: data.crew_role ?? '',
+        mission_id: mission.id,
+    };
+    const current = editing.value?.astronaut_id ?? null;
+    const saved =
+        (current !== null &&
+            (await missions.updateAstronaut(current, astronaut))) ||
+        (await missions.addAstronaut(astronaut));
+
+    return { ...link, astronaut_id: saved.id, astronaut_name: saved.name };
+}
+
 async function saveUser(data: UserFormData): Promise<void> {
-    await store.saveUser(data, editing.value?.id);
+    await store.saveUser(data, await linkFor(data), editing.value?.id);
     toast.success(
         editing.value ? 'Usuario actualizado' : `${data.name} ya tiene acceso`,
     );
@@ -75,7 +134,7 @@ onMounted(async () => {
         return;
     }
 
-    await store.load();
+    await Promise.all([store.load(), missions.load()]);
     await nextTick();
     reveal();
 });
@@ -114,7 +173,8 @@ onMounted(async () => {
         <UserFormDialog
             v-model:open="userDialog"
             :user="editing"
-            :crew="store.crew"
+            :missions="missionOptions"
+            :crew-roles="CREW_ROLES"
             :submit="saveUser"
         />
         <DeviceFormDialog

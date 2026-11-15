@@ -6,6 +6,7 @@ import {
     BookOpen,
     ChartLine,
     HeartPulse,
+    Rocket,
     ShieldCheck,
     SquarePlus,
     Users,
@@ -28,6 +29,7 @@ import {
     alertas,
     dashboard,
     inicio,
+    misiones,
     registrar,
     salud,
     tripulacion,
@@ -73,11 +75,14 @@ const missionItems = computed<NavItem[]>(() => [
     { title: 'Guía de salud', href: '#', icon: BookOpen, soon: true },
 ]);
 
-const adminItems = computed<NavItem[]>(() =>
-    auth.can('users.manage')
+const adminItems = computed<NavItem[]>(() => [
+    ...(auth.can('missions.manage')
+        ? [{ title: 'Misiones', href: misiones(), icon: Rocket }]
+        : []),
+    ...(auth.can('users.manage')
         ? [{ title: 'Usuarios', href: usuarios(), icon: ShieldCheck }]
-        : [],
-);
+        : []),
+]);
 
 const homeLink = computed(() =>
     auth.actor?.astronaut_id

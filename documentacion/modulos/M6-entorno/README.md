@@ -42,6 +42,9 @@ Los datos de cada entorno van en **`config/environments.php`**. No tienen tabla,
 | GET | `/api/v1/environments` | Los 4 entornos de `config/environments.php` |
 | GET | `/api/v1/missions/current` | La misión actual, su entorno, su día de misión y su tripulación |
 | PATCH | `/api/v1/missions/{id}` | Cambia el `environment` |
+| GET | `/api/v1/missions` | Todas las misiones con su tripulación (administración, `missions.manage`) |
+| POST | `/api/v1/missions` | Crea una misión: `name`, `environment`, `start_date`, `day_count`, `objective` (`missions.manage`) |
+| POST · PATCH | `/api/v1/astronauts` · `/api/v1/astronauts/{id}` | Crea o cambia un tripulante (`name`, `crew_role`, `mission_id`). Lo usa Usuarios (M0) al crear a una persona de la nave |
 | GET | `/api/v1/astronauts` | La tripulación (para el selector de astronauta y el ranking) |
 
 **`GET /api/v1/missions/current`**
@@ -93,6 +96,19 @@ Los datos de cada entorno van en **`config/environments.php`**. No tienen tabla,
 | Global `composables/useCurrentAstronaut.ts` | El astronauta seleccionado (selector en `AppLayout`). Lo usan todos los módulos para saber a quién consultar |
 | `Stores/useMissionStore.ts` | `mission`, `environments`, `crew`, `load()`, `changeEnvironment(code)` |
 | Principal `modules/Entorno/Mission.vue` | Contador y gravedad → selector → riesgos |
+
+**Gestión de misiones (administración, `/admin/misiones`):**
+
+| Archivo | Qué hace |
+|---|---|
+| Principal `modules/Entorno/Missions.vue` | Las misiones por estado (en curso, planificadas, terminadas), con su tripulación, y "Nueva misión". Permiso `missions.manage` |
+| `Components/MissionCard.vue` | Entorno, estado, día de misión, fechas y tripulación. La misión actual lleva al Panel de salud |
+| `Components/MissionFormDialog.vue` · `EnvironmentPicker.vue` | Crear una misión: nombre (sin repetir), entorno, inicio, duración (1–1000 días) y objetivo |
+| `Components/MissionTabs.vue` | Filtro por estado con su número |
+| `Stores/useMissionsStore.ts` | `missions`, `astronauts`, `views`, `createMission()`, `addAstronaut()`, `updateAstronaut()` |
+| `Utils/missionDates.ts` | Estado y día de misión a partir de `start_date` y `day_count` (la misma regla que `MissionDay.php`) |
+
+**Usuarios y misiones:** en Usuarios (M0), el astronauta y el médico de la tripulación se crean **asociados a una misión y con su cargo** (así se crea su tripulante); el médico de vuelo, asociado a la misión que sigue; administración no lleva misión.
 
 **Al cambiar de entorno**, M1 vuelve a evaluar las últimas mediciones (por el evento) y la página vuelve a cargar los *stores* del puntaje (M2) y del cuerpo (M3): los colores ya llegan recalculados.
 

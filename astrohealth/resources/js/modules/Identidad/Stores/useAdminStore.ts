@@ -8,9 +8,9 @@ import type {
     ManagedUser,
     MissionSummary,
     UserFormData,
+    UserLink,
 } from '../Types/admin';
 import {
-    MOCK_CREW,
     MOCK_MISSION,
     MOCK_PENDING_ALERTS,
     mockDevices,
@@ -20,6 +20,7 @@ import { isOnline } from '../Utils/time';
 
 /**
  * Datos de la vista de administración (usuarios, dispositivos, misión).
+ * Las misiones y sus tripulantes son de M6 (Entorno/Stores/useMissionsStore).
  *
  * ⚠️ HOY usa datos de prueba (Utils/adminMockData.ts). Cuando el backend
  * tenga /api/v1/users y /api/v1/devices, solo cambia el interior de estas
@@ -67,20 +68,29 @@ export const useAdminStore = defineStore('admin', () => {
         loading.value = true;
         await wait();
         mission.value = MOCK_MISSION;
-        crew.value = MOCK_CREW;
         users.value = mockUsers();
         devices.value = mockDevices();
         pendingAlerts.value = MOCK_PENDING_ALERTS;
         loading.value = false;
     }
 
-    async function saveUser(data: UserFormData, id?: number): Promise<void> {
+    /** La tripulación de la misión actual (la pone el principal desde M6). */
+    function setCrew(options: CrewOption[]): void {
+        crew.value = options;
+    }
+
+    async function saveUser(
+        data: UserFormData,
+        link: UserLink,
+        id?: number,
+    ): Promise<void> {
         await wait();
         const fields = {
             name: data.name.trim(),
             role: data.role,
-            astronaut_id: data.astronaut_id,
-            astronaut_name: crewName(data.astronaut_id),
+            mission_id: data.mission_id,
+            crew_role: data.crew_role,
+            ...link,
         };
         const existing = users.value.find((user) => user.id === id);
 
@@ -142,6 +152,7 @@ export const useAdminStore = defineStore('admin', () => {
         loading,
         stats,
         load,
+        setCrew,
         saveUser,
         setUserActive,
         createDevice,

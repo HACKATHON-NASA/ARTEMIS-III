@@ -39,6 +39,14 @@ final class PagesTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component('Identidad/Admin'));
     }
 
+    public function test_the_missions_page_is_the_entorno_module_principal(): void
+    {
+        // Cáscara: el permiso missions.manage lo comprueba la pantalla al cargar.
+        $this->get('/admin/misiones')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Entorno/Missions'));
+    }
+
     public function test_the_health_panel_and_crew_pages_exist(): void
     {
         $this->get('/salud')
