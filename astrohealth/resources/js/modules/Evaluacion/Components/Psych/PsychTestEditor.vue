@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,8 @@ import type { PsychTest } from '../../Types/psych';
 import BandsField from './BandsField.vue';
 import QuestionsField from './QuestionsField.vue';
 import ScaleField from './ScaleField.vue';
+
+const { t } = useI18n();
 
 /**
  * Crear o editar un test: datos generales, preguntas, respuestas posibles y
@@ -37,17 +40,29 @@ const BLANK: PsychTest = {
     description: '',
     instructions: '',
     frequency_days: 7,
-    unit: 'puntos',
+    unit: t('Evaluacion.editor.defaultUnit'),
     scale: [
-        { label: 'Nunca', points: 0 },
-        { label: 'A veces', points: 1 },
-        { label: 'Siempre', points: 2 },
+        { label: t('Evaluacion.editor.defaultScale.0'), points: 0 },
+        { label: t('Evaluacion.editor.defaultScale.1'), points: 1 },
+        { label: t('Evaluacion.editor.defaultScale.2'), points: 2 },
     ],
     questions: [],
     bands: [
-        { max: 3, label: 'Bien', status: 'green' },
-        { max: 6, label: 'Vigilar', status: 'yellow' },
-        { max: 99, label: 'Atender', status: 'red' },
+        {
+            max: 3,
+            label: t('Evaluacion.editor.defaultBands.0'),
+            status: 'green',
+        },
+        {
+            max: 6,
+            label: t('Evaluacion.editor.defaultBands.1'),
+            status: 'yellow',
+        },
+        {
+            max: 99,
+            label: t('Evaluacion.editor.defaultBands.2'),
+            status: 'red',
+        },
     ],
     source: null,
 };
@@ -67,23 +82,22 @@ watch(open, (isOpen) => {
 });
 
 function check(test: PsychTest): string | null {
-    if (test.name.trim().length < 3) return 'Escribe el nombre del test.';
+    if (test.name.trim().length < 3) return t('Evaluacion.editor.errName');
     if (
         test.kind === 'psychological' &&
         test.questions.filter((q) => q.text.trim()).length === 0
     )
-        return 'Agrega al menos una pregunta.';
+        return t('Evaluacion.editor.errQuestions');
     if (
         test.kind === 'psychological' &&
         test.scale.filter((o) => o.label.trim()).length < 2
     )
-        return 'Agrega al menos dos respuestas posibles.';
+        return t('Evaluacion.editor.errScale');
     if (test.bands.length === 0 || test.bands.some((b) => !b.label.trim()))
-        return 'Cada nivel necesita un nombre.';
+        return t('Evaluacion.editor.errBandName');
     if (test.bands.some((b, i) => i > 0 && b.max <= test.bands[i - 1].max))
-        return 'Los niveles van de menor a mayor puntaje.';
-    if (!(test.frequency_days >= 1))
-        return 'La frecuencia es de al menos 1 día.';
+        return t('Evaluacion.editor.errBandOrder');
+    if (!(test.frequency_days >= 1)) return t('Evaluacion.editor.errFrequency');
 
     return null;
 }
@@ -120,11 +134,12 @@ async function save(): Promise<void> {
         <DialogContent class="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
             <DialogHeader>
                 <DialogTitle>{{
-                    test ? `Editar ${test.name}` : 'Nuevo test'
+                    test
+                        ? t('Evaluacion.editor.editTitle', { name: test.name })
+                        : t('Evaluacion.editor.newTitle')
                 }}</DialogTitle>
                 <DialogDescription>
-                    Lo responde la tripulación. Los cambios valen para las
-                    próximas respuestas; las anteriores no cambian.
+                    {{ t('Evaluacion.editor.hint') }}
                 </DialogDescription>
             </DialogHeader>
 
@@ -138,29 +153,39 @@ async function save(): Promise<void> {
                     class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_11rem_7rem]"
                 >
                     <div class="grid gap-1.5">
-                        <Label for="psych-name">Nombre</Label>
+                        <Label for="psych-name">{{
+                            t('Evaluacion.editor.name')
+                        }}</Label>
                         <Input
                             id="psych-name"
                             v-model="draft.name"
-                            placeholder="Ej.: Calidad del sueño"
+                            :placeholder="
+                                t('Evaluacion.editor.namePlaceholder')
+                            "
                         />
                     </div>
                     <div class="grid gap-1.5">
-                        <Label for="psych-kind">Tipo</Label>
+                        <Label for="psych-kind">{{
+                            t('Evaluacion.editor.kind')
+                        }}</Label>
                         <select
                             id="psych-kind"
                             v-model="draft.kind"
                             :disabled="!!test"
                             class="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm dark:bg-input/30"
                         >
-                            <option value="psychological">Psicológico</option>
+                            <option value="psychological">
+                                {{ t('Evaluacion.editor.psychological') }}
+                            </option>
                             <option value="cognitive">
-                                Cognitivo (reacción)
+                                {{ t('Evaluacion.editor.cognitive') }}
                             </option>
                         </select>
                     </div>
                     <div class="grid gap-1.5">
-                        <Label for="psych-freq">Cada (días)</Label>
+                        <Label for="psych-freq">{{
+                            t('Evaluacion.editor.every')
+                        }}</Label>
                         <Input
                             id="psych-freq"
                             v-model.number="draft.frequency_days"
@@ -170,13 +195,15 @@ async function save(): Promise<void> {
                     </div>
                 </div>
                 <div class="grid gap-1.5">
-                    <Label for="psych-desc">Qué mide</Label>
+                    <Label for="psych-desc">{{
+                        t('Evaluacion.editor.measures')
+                    }}</Label>
                     <Input id="psych-desc" v-model="draft.description" />
                 </div>
                 <div class="grid gap-1.5">
-                    <Label for="psych-inst"
-                        >Instrucciones para el astronauta</Label
-                    >
+                    <Label for="psych-inst">{{
+                        t('Evaluacion.editor.instructions')
+                    }}</Label>
                     <Input id="psych-inst" v-model="draft.instructions" />
                 </div>
 
@@ -189,7 +216,9 @@ async function save(): Promise<void> {
             </form>
 
             <DialogFooter>
-                <Button variant="ghost" @click="open = false">Cancelar</Button>
+                <Button variant="ghost" @click="open = false">{{
+                    t('common.cancel')
+                }}</Button>
                 <Button
                     type="submit"
                     form="psych-form"
@@ -197,7 +226,7 @@ async function save(): Promise<void> {
                     class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                 >
                     <Spinner v-if="saving" />
-                    Guardar test
+                    {{ t('Evaluacion.editor.save') }}
                 </Button>
             </DialogFooter>
         </DialogContent>

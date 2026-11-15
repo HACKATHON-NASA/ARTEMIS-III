@@ -74,6 +74,7 @@ export default {
         notEnough: 'There is not enough data to compare yet.',
         chartAria: '{name} of the crew, day by day',
         healthyRange: 'Healthy range',
+        caption: 'Latest value of each indicator per crew member',
         day: 'Day {n}',
     },
 };

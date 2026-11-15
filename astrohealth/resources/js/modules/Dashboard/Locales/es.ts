@@ -74,6 +74,7 @@ export default {
         notEnough: 'Aún no hay suficientes datos para comparar.',
         chartAria: '{name} de la tripulación, día a día',
         healthyRange: 'Rango sano',
+        caption: 'Último valor de cada indicador por tripulante',
         day: 'Día {n}',
     },
 };

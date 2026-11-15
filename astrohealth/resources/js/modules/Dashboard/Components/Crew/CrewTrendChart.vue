@@ -175,7 +175,7 @@ watch(
                     text-anchor="middle"
                     class="fill-muted-foreground"
                 >
-                    Día {{ day }}
+                    {{ t('Dashboard.crew.day', { n: day }) }}
                 </text>
             </g>
 

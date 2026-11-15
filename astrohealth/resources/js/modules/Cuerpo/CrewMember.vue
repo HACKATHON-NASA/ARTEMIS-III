@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import { assessmentSummary } from '../Evaluacion/Utils/summary';
 import { crewRoleLabel } from '../Entorno/Utils/environments';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ArrowLeft, BellRing, ClipboardPen } from '@lucide/vue';
@@ -182,8 +183,11 @@ onBeforeUnmount(() => clearInterval(timer));
                             size="md"
                         />
                         <span class="text-muted-foreground">{{
-                            assessment.current?.summary ??
-                            t('Cuerpo.member.noMeasurements')
+                            assessment.current
+                                ? assessmentSummary(
+                                      assessment.current.body_status,
+                                  )
+                                : t('Cuerpo.member.noMeasurements')
                         }}</span>
                     </p>
                 </div>

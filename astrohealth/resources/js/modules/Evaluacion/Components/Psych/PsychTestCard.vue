@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Brain, CircleCheck, Pencil, Play, Zap } from '@lucide/vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import { Button } from '@/components/ui/button';
 import { statusMeta } from '@/lib/status';
 import type { PsychResult, PsychTest } from '../../Types/psych';
+
+const { t } = useI18n();
 
 /**
  * Un test del catálogo: qué mide, cuántas preguntas, cada cuánto y cómo se
@@ -44,31 +47,47 @@ defineEmits<{ take: []; edit: [] }>();
                 <h2 class="font-semibold">{{ test.name }}</h2>
                 <p class="text-xs text-muted-foreground">
                     {{
-                        test.kind === 'cognitive' ? 'Cognitivo' : 'Psicológico'
+                        test.kind === 'cognitive'
+                            ? t('Evaluacion.psych.cognitive')
+                            : t('Evaluacion.psych.psychological')
                     }}
                     ·
                     {{
                         test.kind === 'cognitive'
-                            ? '8 señales'
-                            : `${test.questions.length} preguntas`
+                            ? t('Evaluacion.psych.signals')
+                            : t(
+                                  'Evaluacion.psych.questions',
+                                  { n: test.questions.length },
+                                  test.questions.length,
+                              )
                     }}
-                    · cada {{ test.frequency_days }} días
+                    ·
+                    {{
+                        t(
+                            'Evaluacion.psych.every',
+                            { n: test.frequency_days },
+                            test.frequency_days,
+                        )
+                    }}
                 </p>
             </div>
             <Button
                 v-if="canEdit"
                 variant="outline"
                 size="sm"
-                :aria-label="`Editar ${test.name}`"
+                :aria-label="t('Evaluacion.guide.editWho', { name: test.name })"
                 @click="$emit('edit')"
             >
-                <Pencil /> Editar
+                <Pencil /> {{ t('common.edit') }}
             </Button>
         </header>
 
         <p class="text-sm text-muted-foreground">{{ test.description }}</p>
 
-        <ul class="flex flex-wrap gap-1.5" aria-label="Cómo se interpreta">
+        <ul
+            class="flex flex-wrap gap-1.5"
+            :aria-label="t('Evaluacion.psych.howRead')"
+        >
             <li
                 v-for="(band, index) in test.bands"
                 :key="band.label"
@@ -92,21 +111,23 @@ defineEmits<{ take: []; edit: [] }>();
         >
             <p v-if="last" class="flex items-center gap-2 text-sm">
                 <CircleCheck class="size-4 text-muted-foreground" />
-                Día {{ last.day }}:
+                {{ t('Evaluacion.psych.lastDay', { day: last.day }) }}
                 <strong class="tabular-nums">{{ last.score }}</strong>
                 <StatusBadge :status="last.status" />
             </p>
             <p v-else class="text-sm text-muted-foreground">
-                Aún no lo has hecho.
+                {{ t('Evaluacion.psych.notYet') }}
             </p>
             <Button
                 v-if="due"
                 class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                 @click="$emit('take')"
             >
-                <Play /> Responder
+                <Play /> {{ t('Evaluacion.psych.answer') }}
             </Button>
-            <span v-else class="text-xs text-muted-foreground">Al día</span>
+            <span v-else class="text-xs text-muted-foreground">{{
+                t('Evaluacion.psych.upToDateShort')
+            }}</span>
         </footer>
 
         <p v-if="test.source" class="text-[11px] text-muted-foreground/80">

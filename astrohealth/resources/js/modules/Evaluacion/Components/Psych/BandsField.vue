@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Plus, Trash2 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { statusMeta } from '@/lib/status';
 import type { Status } from '@/types/health';
 import type { PsychBand } from '../../Types/psych';
+
+const { t } = useI18n();
 
 /**
  * Cómo se interpreta el puntaje: hasta qué puntaje va cada nivel, su nombre
@@ -33,18 +36,18 @@ function add(): void {
                 v-model.number="band.max"
                 type="number"
                 class="w-20 tabular-nums"
-                :aria-label="`Puntaje máximo del nivel ${index + 1}`"
+                :aria-label="t('Evaluacion.editor.maxOf', { n: index + 1 })"
             />
             <Input
                 v-model="band.label"
                 class="min-w-0 flex-1"
-                :aria-label="`Nombre del nivel ${index + 1}`"
-                placeholder="Ej.: Leve"
+                :aria-label="t('Evaluacion.editor.nameOf', { n: index + 1 })"
+                :placeholder="t('Evaluacion.editor.bandPlaceholder')"
             />
             <div
                 class="flex gap-1"
                 role="radiogroup"
-                :aria-label="`Color del nivel ${index + 1}`"
+                :aria-label="t('Evaluacion.editor.colorOf', { n: index + 1 })"
             >
                 <button
                     v-for="status in STATUSES"
@@ -67,7 +70,9 @@ function add(): void {
             <Button
                 variant="ghost"
                 size="icon-sm"
-                :aria-label="`Quitar el nivel ${index + 1}`"
+                :aria-label="
+                    t('Evaluacion.editor.removeBand', { n: index + 1 })
+                "
                 @click="bands = bands.filter((_, i) => i !== index)"
             >
                 <Trash2 />
@@ -78,7 +83,7 @@ function add(): void {
             size="sm"
             class="justify-self-start"
             @click="add"
-            ><Plus /> Agregar nivel</Button
+            ><Plus /> {{ t('Evaluacion.editor.addBand') }}</Button
         >
     </fieldset>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import { assessmentSummary } from '../Evaluacion/Utils/summary';
 import { Head, router } from '@inertiajs/vue3';
 import { Activity, BellRing, ClipboardCheck, Siren } from '@lucide/vue';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
@@ -98,7 +99,9 @@ const crewRows = computed<WatchRow[]>(() =>
                 name: member.name,
                 score: result?.score ?? null,
                 status: result?.status ?? null,
-                summary: result?.summary ?? 'Todavía no registra mediciones.',
+                summary: result
+                    ? assessmentSummary(result.body_status)
+                    : t('Evaluacion.summary.noMeasurements'),
             };
         })
         .sort((a, b) => (a.score ?? 101) - (b.score ?? 101)),
@@ -156,7 +159,7 @@ watch(
 
 onMounted(async () => {
     if (!auth.can('health.read.any')) {
-        toast.error('El Panel de salud es para médicos y administración.');
+        toast.error(t('common.medicalOnly'));
         router.visit(dashboard());
 
         return;

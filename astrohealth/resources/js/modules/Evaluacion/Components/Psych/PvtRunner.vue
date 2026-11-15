@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
+
+const { t } = useI18n();
 
 /**
  * La prueba de reacción (PVT corto): 8 señales que aparecen después de una
@@ -79,7 +82,12 @@ onBeforeUnmount(() => {
 <template>
     <div class="flex flex-col items-center gap-4">
         <p class="text-xs text-muted-foreground tabular-nums">
-            Señal {{ Math.min(trial + 1, TRIALS) }} de {{ TRIALS }}
+            {{
+                t('Evaluacion.psych.signalOf', {
+                    n: Math.min(trial + 1, TRIALS),
+                    total: TRIALS,
+                })
+            }}
         </p>
         <button
             type="button"
@@ -96,17 +104,21 @@ onBeforeUnmount(() => {
             aria-live="polite"
             @pointerdown="press"
         >
-            <span v-if="state === 'waiting'">Espera la señal…</span>
-            <span v-else-if="state === 'go'" class="text-lg font-bold"
-                >¡Ya!</span
-            >
-            <span v-else-if="state === 'early'">Muy pronto</span>
+            <span v-if="state === 'waiting'">{{
+                t('Evaluacion.psych.wait')
+            }}</span>
+            <span v-else-if="state === 'go'" class="text-lg font-bold">{{
+                t('Evaluacion.psych.go')
+            }}</span>
+            <span v-else-if="state === 'early'">{{
+                t('Evaluacion.psych.tooSoon')
+            }}</span>
             <span v-else class="text-2xl font-semibold tabular-nums"
                 >{{ lastMs }} ms</span
             >
         </button>
         <p class="text-xs text-muted-foreground">
-            Toca el círculo o pulsa Espacio.
+            {{ t('Evaluacion.psych.tapOrSpace') }}
         </p>
     </div>
 </template>

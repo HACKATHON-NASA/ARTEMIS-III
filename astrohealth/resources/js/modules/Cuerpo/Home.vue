@@ -145,7 +145,7 @@ onMounted(async () => {
     const astronautId = auth.actor?.astronaut_id ?? null;
 
     if (astronautId === null) {
-        toast.error('El Inicio es para la tripulación.');
+        toast.error(t('common.crewOnly'));
         router.visit(dashboard());
 
         return;

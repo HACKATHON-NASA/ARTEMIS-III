@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { api, ApiError } from '@/lib/api';
+import { t } from '@/lib/i18n';
 import type { PsychResult, PsychSubmission, PsychTest } from '../Types/psych';
+import { localizeTest } from '../Utils/psychText';
 
 /**
  * La guía psicológica (M2): el catálogo de tests, las respuestas de la
@@ -12,17 +14,21 @@ import type { PsychResult, PsychSubmission, PsychTest } from '../Types/psych';
  * puntaje, la banda y el color los calcula el backend; también suma los
  * puntos (M7) y, si hay una respuesta de riesgo, avisa a Tierra (M5). Cada
  * quien recibe solo los resultados que puede ver (health.read).
+ *
+ * `tests` sale con los textos en el idioma de ahora (para mostrar);
+ * `original()` da el test tal como está guardado (para editarlo).
  */
 function fail(error: unknown, fallback: string): void {
     toast.error(error instanceof ApiError ? error.message : fallback);
 }
 
 export const usePsychStore = defineStore('psych', () => {
-    const tests = ref<PsychTest[]>([]);
+    const stored = ref<PsychTest[]>([]);
+    const tests = computed(() => stored.value.map(localizeTest));
     const results = ref<PsychResult[]>([]);
 
     async function load(): Promise<void> {
-        [tests.value, results.value] = await Promise.all([
+        [stored.value, results.value] = await Promise.all([
             api<PsychTest[]>('/psych-tests'),
             api<PsychResult[]>('/psych-results'),
         ]);
@@ -30,6 +36,11 @@ export const usePsychStore = defineStore('psych', () => {
 
     function find(id: number): PsychTest | null {
         return tests.value.find((test) => test.id === id) ?? null;
+    }
+
+    /** El test tal como está guardado (sin traducir), para el editor. */
+    function original(id: number): PsychTest | null {
+        return stored.value.find((test) => test.id === id) ?? null;
     }
 
     /** Resultados de un tripulante en un test, del más viejo al más nuevo. */
@@ -69,14 +80,14 @@ export const usePsychStore = defineStore('psych', () => {
                 id ? `/psych-tests/${id}` : '/psych-tests',
                 { method: id ? 'PUT' : 'POST', body },
             );
-            tests.value = [
-                ...tests.value.filter((item) => item.id !== saved.id),
+            stored.value = [
+                ...stored.value.filter((item) => item.id !== saved.id),
                 saved,
             ].sort((a, b) => a.id - b.id);
 
             return saved;
         } catch (error) {
-            fail(error, 'No se pudo guardar el test.');
+            fail(error, t('Evaluacion.psych.saveFailed'));
 
             return null;
         }
@@ -105,7 +116,7 @@ export const usePsychStore = defineStore('psych', () => {
 
             return saved;
         } catch (error) {
-            fail(error, 'No se pudo enviar el test.');
+            fail(error, t('Evaluacion.psych.sendFailed'));
 
             return null;
         }
@@ -116,6 +127,7 @@ export const usePsychStore = defineStore('psych', () => {
         results,
         load,
         find,
+        original,
         history,
         latest,
         isDue,

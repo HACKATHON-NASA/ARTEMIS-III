@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Head, router } from '@inertiajs/vue3';
 import { Brain, Plus, ShieldCheck } from '@lucide/vue';
 import { computed, nextTick, onMounted, ref } from 'vue';
@@ -17,6 +18,8 @@ import PsychTestEditor from './Components/Psych/PsychTestEditor.vue';
 import { usePsychStore } from './Stores/usePsychStore';
 import type { PsychSubmission, PsychTest } from './Types/psych';
 
+const { t } = useI18n();
+
 /**
  * Guía psicológica (/guia/psicologica, M2): los tests de la tripulación.
  * El astronauta responde los que le tocan; el equipo médico (guide.manage)
@@ -26,7 +29,7 @@ import type { PsychSubmission, PsychTest } from './Types/psych';
  */
 defineOptions({
     layout: {
-        breadcrumbs: [{ title: 'Guía psicológica', href: psicologia() }],
+        breadcrumbs: [{ title: 'nav.psychGuide', href: psicologia() }],
     },
 });
 
@@ -82,9 +85,14 @@ async function saveTest(test: PsychTest): Promise<void> {
         return;
     }
 
-    toast.success(test.id ? 'Test actualizado' : 'Test creado', {
-        description: saved.name,
-    });
+    toast.success(
+        test.id
+            ? t('Evaluacion.psych.testUpdated')
+            : t('Evaluacion.psych.testCreated'),
+        {
+            description: saved.name,
+        },
+    );
 }
 
 onMounted(async () => {
@@ -102,7 +110,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Guía psicológica" />
+    <Head :title="t('Evaluacion.psych.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <header class="flex flex-col gap-4" data-reveal>
@@ -110,17 +118,16 @@ onMounted(async () => {
                 <p
                     class="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
                 >
-                    <Brain class="size-3.5" /> Salud mental y cognitiva
+                    <Brain class="size-3.5" />
+                    {{ t('Evaluacion.psych.eyebrow') }}
                 </p>
                 <h1
                     class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
                 >
-                    Guía psicológica
+                    {{ t('Evaluacion.psych.title') }}
                 </h1>
                 <p class="mt-2 max-w-2xl text-muted-foreground">
-                    El aislamiento, el encierro y la distancia de casa pesan en
-                    una misión larga. Estos tests ayudan a notarlo a tiempo. No
-                    reemplazan la conversación con un profesional.
+                    {{ t('Evaluacion.psych.subtitle') }}
                 </p>
             </div>
             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -133,7 +140,7 @@ onMounted(async () => {
                     class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                     @click="editing = { open: true, test: null }"
                 >
-                    <Plus /> Nuevo test
+                    <Plus /> {{ t('Evaluacion.psych.newTest') }}
                 </Button>
             </div>
         </header>
@@ -147,20 +154,17 @@ onMounted(async () => {
             <ShieldCheck class="size-5 shrink-0 text-sky-500" />
             <p class="text-sm">
                 <template v-if="pending.length">
-                    Tienes <strong>{{ pending.length }}</strong>
                     {{
-                        pending.length === 1
-                            ? 'test pendiente'
-                            : 'tests pendientes'
+                        t(
+                            'Evaluacion.psych.pending',
+                            { n: pending.length },
+                            pending.length,
+                        )
                     }}
-                    esta semana. Toma unos minutos en un lugar tranquilo.
                 </template>
-                <template v-else
-                    >Estás al día con tus tests. ¡Gracias!</template
-                >
+                <template v-else>{{ t('Evaluacion.psych.upToDate') }}</template>
                 <span class="block text-xs text-muted-foreground">
-                    Tus respuestas son privadas: el equipo médico solo ve tu
-                    puntaje.
+                    {{ t('Evaluacion.psych.private') }}
                 </span>
             </p>
         </section>
@@ -178,7 +182,7 @@ onMounted(async () => {
                 :last="own === null ? null : psych.latest(own, test.id)"
                 :can-edit="canEdit"
                 @take="taking = { open: true, test }"
-                @edit="editing = { open: true, test }"
+                @edit="editing = { open: true, test: psych.original(test.id) }"
             />
         </div>
 

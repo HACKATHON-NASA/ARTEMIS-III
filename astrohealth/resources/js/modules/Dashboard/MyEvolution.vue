@@ -60,7 +60,7 @@ const series = computed<CrewSeries[]>(() => {
     return [
         {
             astronaut_id: own.value,
-            name: 'Tú',
+            name: t('common.youCap'),
             color: 'var(--series-1)',
             points: points.filter((p) => p.day > from),
         },
@@ -74,7 +74,7 @@ function open(code: IndicatorCode): void {
 
 onMounted(async () => {
     if (!auth.actor?.astronaut_id) {
-        toast.error('Mi evolución es para la tripulación.');
+        toast.error(t('common.crewOnly'));
         router.visit(dashboard());
 
         return;

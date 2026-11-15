@@ -26,7 +26,9 @@ defineEmits<{ pick: [code: IndicatorCode] }>();
             class="w-full min-w-[760px] border-separate border-spacing-1 text-sm"
         >
             <caption class="sr-only">
-                Último valor de cada indicador por tripulante
+                {{
+                    t('Dashboard.crew.caption')
+                }}
             </caption>
             <thead>
                 <tr>
