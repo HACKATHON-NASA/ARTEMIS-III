@@ -177,6 +177,7 @@ export default {
     },
     tests: {
         'PHQ-9': {
+            source: 'PHQ-9 · Kroenke, Spitzer y Williams (2001), de uso libre',
             name: 'Estado de ánimo (PHQ-9)',
             description:
                 'Detecta síntomas de depresión: interés, ánimo, sueño, energía y concentración.',
@@ -208,6 +209,7 @@ export default {
             ],
         },
         'GAD-7': {
+            source: 'GAD-7 · Spitzer y otros (2006), de uso libre',
             name: 'Ansiedad (GAD-7)',
             description:
                 'Mide la ansiedad: nervios, preocupación, irritabilidad y miedo.',
@@ -231,6 +233,7 @@ export default {
             bands: ['Mínima', 'Leve', 'Moderada', 'Severa'],
         },
         'PSS-4': {
+            source: 'PSS-4 · Cohen, Kamarck y Mermelstein (1983)',
             name: 'Estrés percibido (PSS-4)',
             description:
                 'Qué tanto siente que la vida es impredecible, incontrolable o sobrecargada.',
@@ -251,6 +254,7 @@ export default {
             bands: ['Estrés bajo', 'Estrés moderado', 'Estrés alto'],
         },
         PVT: {
+            source: 'Versión corta del PVT (Dinges y Powell, 1985), usado por la NASA',
             name: 'Atención y reacción (PVT)',
             description:
                 'Mide la atención sostenida y la fatiga: qué tan rápido reacciona a una señal.',

@@ -392,6 +392,12 @@ $this->getJson('/api/v1/auth/me', $this->bearer($token))->assertOk();
 - [x] `users.mission_id` para el médico de vuelo (su token trae su misión) · `identidad:user-password <correo>`
 - [x] Fortify quitado: el acceso es solo por la API con JWT (login de Vue en `/acceso`)
 
+## 10 bis. Acceso rápido (sin contraseña)
+
+El reto pide que la app no exija login. La pantalla de acceso muestra a las personas activas (`GET /api/v1/auth/quick-access`: id, nombre, rol; sin correo) y se entra eligiendo una (`POST /api/v1/auth/quick-access {user_id}`). La sesión es la **misma** del login normal: JWT y *refresh token* en la cookie, así que los permisos y los Gates no cambian. Una persona desactivada o sin rol no puede entrar (404 `AUTH_QUICK_ACCESS_OFF`). El correo y la contraseña siguen como opción.
+
+Se apaga con `QUICK_ACCESS=false` en `.env` (`config/identidad.php`); entonces ambas rutas responden 404 y la pantalla muestra solo el formulario. Pruebas: `QuickAccessTest`.
+
 ## 11. Cómo quedó hecho
 
 ### Las 4 capas, archivo por archivo

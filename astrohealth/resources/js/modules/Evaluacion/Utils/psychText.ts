@@ -23,6 +23,10 @@ export function localizeTest(test: PsychTest): PsychTest {
         description: localized(`${base}.description`, test.description),
         instructions: localized(`${base}.instructions`, test.instructions),
         unit: localized(`Evaluacion.units.${test.unit}`, test.unit),
+        source:
+            test.source === null
+                ? null
+                : localized(`${base}.source`, test.source),
         scale: test.scale.map((option, index) => ({
             ...option,
             label: localized(`${base}.scale.${index}`, option.label),

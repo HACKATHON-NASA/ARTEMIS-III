@@ -33,6 +33,7 @@ import HomeSkeleton from './Components/HomeSkeleton.vue';
 import TodayPlan from './Components/TodayPlan.vue';
 import { useBodyStore } from './Stores/useBodyStore';
 import { buildTodayPlan } from './Utils/todayPlan';
+import { badgeName } from '../Gamificacion/Utils/rules';
 
 const { t } = useI18n();
 
@@ -90,15 +91,20 @@ async function sendMessage(message: NewMessage): Promise<void> {
     groundOpen.value = true;
 }
 
+/** El próximo recordatorio por hacer, con su título en el idioma de ahora. */
+const nextReminder = computed(() => {
+    const next = reminders.reminders.find((item) => item.state !== 'done');
+
+    return next ? { ...next, title: reminderTitle(next) } : null;
+});
+
 /** "Tu día": lo que falta medir, la rutina, los tests y la próxima insignia. */
 const plan = computed(() =>
     buildTodayPlan({
         values: Object.values(body.status ?? {}).flatMap((zone) => zone.values),
         routine: {
             ...reminders.progress,
-            next:
-                reminders.reminders.find((item) => item.state !== 'done') ??
-                null,
+            next: nextReminder.value,
         },
         tests: {
             pending: psych.tests.filter((test) =>
@@ -110,7 +116,10 @@ const plan = computed(() =>
             ).length,
             total: psych.tests.length,
         },
-        badges: gamification.profile?.badges ?? [],
+        badges: (gamification.profile?.badges ?? []).map((badge) => ({
+            ...badge,
+            name: badgeName(badge),
+        })),
         links: {
             record: registrar(),
             routine: `${inicio().url}#rutina`,

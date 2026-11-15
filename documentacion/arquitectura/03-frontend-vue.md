@@ -141,3 +141,15 @@ Escritorio, portátil y tableta. En el móvil, el cuerpo y el panel del órgano 
 
 - **Dentro de la app:** `ToastNotification` (con `vue-sonner`).
 - **Del navegador:** la API `Notification`, solo si el usuario la acepta. Se pide permiso con un botón, nunca al cargar la página.
+
+## 8. Dos idiomas (inglés por defecto)
+
+- **vue-i18n** (`lib/i18n.ts`). Inglés por defecto; el selector EN · ES está en el menú lateral y en la pantalla de acceso, y se recuerda en el navegador (`astrohealth.locale`).
+- **Textos por módulo:** `modules/<Modulo>/Locales/{en,es}.ts`, leídos como `t('<Modulo>.clave')`. Lo compartido (menú, botones, estados, roles, indicadores, entornos, cargos) vive en `resources/js/locales/{en,es}.ts`.
+- **Fuera de componentes** (stores, utilidades): `t()`, `tOr()`, `formatNumber()`, `agoFromMinutes()` de `@/lib/i18n`. Las listas que se muestran usan *getters* o claves, nunca textos fijos, para que cambien al cambiar de idioma.
+- **Datos que vienen de la base:**
+  - Catálogos fijos (los 10 indicadores, las 9 zonas, las 9 insignias, los recordatorios por defecto, los 4 tests de base): se traducen por su código.
+  - Los textos de base (recordatorios, tests) solo se traducen si siguen **igual** al original; lo que el equipo médico cambia se muestra tal cual.
+  - Lo que escribe una persona (indicaciones, notas, mensajes, respuestas) se muestra como se escribió.
+- **Alertas y resumen del estado general:** la pantalla arma el texto en el idioma activo con los datos (tipo, indicador, `value`, nivel; estado por zona). Si falta algún dato, muestra el texto original.
+- **API:** cada petición manda `Accept-Language`. El backend (`SetLocaleFromHeader`) traduce sus mensajes de error y de validación con `lang/en.json`; sin ese encabezado, responde en español.

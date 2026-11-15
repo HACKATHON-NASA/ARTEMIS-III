@@ -175,6 +175,7 @@ export default {
     },
     tests: {
         'PHQ-9': {
+            source: 'PHQ-9 · Kroenke, Spitzer and Williams (2001), free to use',
             name: 'Mood (PHQ-9)',
             description:
                 'Screens for symptoms of depression: interest, mood, sleep, energy and concentration.',
@@ -206,6 +207,7 @@ export default {
             ],
         },
         'GAD-7': {
+            source: 'GAD-7 · Spitzer et al. (2006), free to use',
             name: 'Anxiety (GAD-7)',
             description:
                 'Measures anxiety: nerves, worry, irritability and fear.',
@@ -229,6 +231,7 @@ export default {
             bands: ['Minimal', 'Mild', 'Moderate', 'Severe'],
         },
         'PSS-4': {
+            source: 'PSS-4 · Cohen, Kamarck and Mermelstein (1983)',
             name: 'Perceived stress (PSS-4)',
             description:
                 'How much you feel life is unpredictable, uncontrollable or overloaded.',
@@ -249,6 +252,7 @@ export default {
             bands: ['Low stress', 'Moderate stress', 'High stress'],
         },
         PVT: {
+            source: 'Short version of the PVT (Dinges and Powell, 1985), used by NASA',
             name: 'Attention and reaction (PVT)',
             description:
                 'Measures sustained attention and fatigue: how fast you react to a signal.',

@@ -21,6 +21,16 @@ abstract class TestCase extends BaseTestCase
         return parent::setUpTraits();
     }
 
+    /**
+     * Las pruebas piden en español, como la app sin idioma elegido (el
+     * cliente de pruebas de Symfony manda "en-us" por defecto).
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withHeader('Accept-Language', 'es');
+    }
+
     private function guardAgainstNonTestingDatabase(): void
     {
         $database = (string) config('database.connections.'.config('database.default').'.database');
