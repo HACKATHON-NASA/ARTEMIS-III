@@ -128,7 +128,6 @@ async function completeReminder(reminder: Reminder): Promise<void> {
         auth.actor?.astronaut_id ?? 0,
         'reminder',
         `${reminder.id}-${mission.current?.day ?? 1}`,
-        mission.current?.day ?? 1,
     );
     busyReminder.value = null;
 
@@ -156,8 +155,8 @@ onMounted(async () => {
         reminders.load(astronautId),
         mission.load(),
         psych.load(),
+        gamification.load(astronautId),
     ]);
-    await gamification.load(astronautId, mission.current?.day ?? 1);
     ready.value = true;
     await nextTick();
     reveal();

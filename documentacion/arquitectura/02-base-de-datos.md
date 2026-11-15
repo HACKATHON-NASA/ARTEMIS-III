@@ -156,9 +156,9 @@ Detalle en [M0 · backend](../../astrohealth/docs/backend/M0-identidad/README.md
 ### M7 · `achievements`, `astronaut_achievements`, `points_log`
 | Tabla | Columnas |
 |---|---|
-| `achievements` | `code` (único), `name`, `description`, `icon`, `points` |
-| `astronaut_achievements` | `astronaut_id`, `achievement_id`, `earned_at`. Llave única `(astronaut_id, achievement_id)` |
-| `points_log` | `astronaut_id`, `points`, `reason` (`daily_complete`, `streak_7`, `sleep_7h`, `exercise`, `reminder`), `reference` (*nullable*, evita sumar dos veces lo mismo), `created_at`. Llave única `(astronaut_id, reason, reference)` |
+| `achievements` | `code` (único), `name`, `icon`, `condition`, `bonus` (puntos extra al ganarla), `target` (la meta de su barra de avance), `sort_order` |
+| `astronaut_achievements` | `astronaut_id`, `achievement_id`, `earned_day` (día de misión), `earned_at`. Llave única `(astronaut_id, achievement_id)` |
+| `points_log` | `astronaut_id`, `points`, `reason` (`daily_complete`, `streak_7`, `sleep_7h`, `exercise`, `reminder`, `psych_test`, `badge`), `reference` (evita sumar dos veces lo mismo: el día, el recordatorio, el test o la insignia), `day` (día de misión), `created_at`. Llave única `(astronaut_id, reason, reference)`; índice `(astronaut_id, day)` |
 
 ### M8 · `reminders`
 | Columna | Tipo | Notas |
@@ -179,7 +179,7 @@ Detalle en [M0 · backend](../../astrohealth/docs/backend/M0-identidad/README.md
 | `ThresholdSeeder` | M2 | Los umbrales del [plan §2](../PLAN_ASTROHEALTH.md#2-umbrales-de-referencia-para-el-motor-de-evaluación) para los 4 entornos |
 | `BodyPartSeeder` | M3 | Las 9 zonas, con su función y su riesgo espacial |
 | `RecommendationSeeder` | M5 | Una recomendación por indicador, en amarillo y en rojo |
-| `AchievementSeeder` | M7 | Las insignias |
+| `AchievementSeeder` · `DemoPointsSeeder` | M7 | Las 9 insignias · (solo fuera de producción) los puntos e insignias de Ares-1 hasta hoy |
 | `ReminderSeeder` | M8 | Los 5 recordatorios por defecto para cada astronauta |
 | **El simulador** (ingesta) | M1 | Los 30 días simulados llegan por `POST /api/v1/ingest/readings`. Plan B sin red: `registro:import-file <json>` |
 

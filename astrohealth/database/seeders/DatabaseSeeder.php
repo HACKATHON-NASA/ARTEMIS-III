@@ -8,6 +8,8 @@ use App\Modules\Cuerpo\Database\Seeders\BodyPartSeeder;
 use App\Modules\Cuerpo\Database\Seeders\DemoClinicalNotesSeeder;
 use App\Modules\Entorno\Database\Seeders\MissionSeeder;
 use App\Modules\Evaluacion\Database\Seeders\ThresholdSeeder;
+use App\Modules\Gamificacion\Database\Seeders\AchievementSeeder;
+use App\Modules\Gamificacion\Database\Seeders\DemoPointsSeeder;
 use App\Modules\Identidad\Database\Seeders\DeviceSeeder;
 use App\Modules\Identidad\Database\Seeders\UserSeeder;
 use App\Modules\Registro\Database\Seeders\DemoHistorySeeder;
@@ -33,11 +35,13 @@ class DatabaseSeeder extends Seeder
             IndicatorSeeder::class, // M1: el catálogo de los 10 indicadores
             BodyPartSeeder::class,  // M3: las 9 zonas del cuerpo
             RecommendationSeeder::class, // M5: "qué hacer" en amarillo y en rojo
+            AchievementSeeder::class, // M7: las 9 insignias
             // Solo fuera de producción: los últimos valores, las notas, las alertas y las indicaciones de Ares-1.
             DemoReadingsSeeder::class,
             DemoHistorySeeder::class,
             DemoClinicalNotesSeeder::class,
             DemoAlertsSeeder::class,
+            DemoPointsSeeder::class,
         ]);
     }
 }

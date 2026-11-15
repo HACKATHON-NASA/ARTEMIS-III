@@ -2,7 +2,6 @@
 import { Link } from '@inertiajs/vue3';
 import { onMounted } from 'vue';
 import { logros } from '@/routes';
-import { useMissionStore } from '../../Entorno/Stores/useMissionStore';
 import { useGamificationStore } from '../Stores/useGamificationStore';
 import XpBar from './XpBar.vue';
 
@@ -14,15 +13,10 @@ import XpBar from './XpBar.vue';
 const props = defineProps<{ astronautId: number }>();
 
 const store = useGamificationStore();
-const mission = useMissionStore();
 
 onMounted(async () => {
-    if (!mission.current) {
-        await mission.load();
-    }
-
     if (store.profile?.astronaut_id !== props.astronautId) {
-        await store.load(props.astronautId, mission.current?.day ?? 1);
+        await store.load(props.astronautId);
     }
 });
 </script>

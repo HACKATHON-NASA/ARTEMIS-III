@@ -5,6 +5,7 @@ use App\Modules\Cuerpo\CuerpoServiceProvider;
 use App\Modules\Dashboard\DashboardServiceProvider;
 use App\Modules\Entorno\EntornoServiceProvider;
 use App\Modules\Evaluacion\EvaluacionServiceProvider;
+use App\Modules\Gamificacion\GamificacionServiceProvider;
 use App\Modules\Identidad\IdentidadServiceProvider;
 use App\Modules\Registro\RegistroServiceProvider;
 use App\Providers\AppServiceProvider;
@@ -18,6 +19,7 @@ return [
     DashboardServiceProvider::class,
     EntornoServiceProvider::class,
     EvaluacionServiceProvider::class,
+    GamificacionServiceProvider::class,
     IdentidadServiceProvider::class,
     RegistroServiceProvider::class,
 ];

@@ -1,6 +1,6 @@
 /**
  * Tipos de M7 · Gamificación, con la forma de la API:
- * GET /api/v1/astronauts/{id}/gamification y GET /api/v1/leaderboard.
+ * GET /api/v1/astronauts/{id}/gamification y GET /api/v1/gamification/leaderboard.
  */
 export type PointReason =
     | 'daily_complete'
@@ -71,3 +71,6 @@ export type AwardResult = {
     levelUp: number | null;
     newBadges: Badge[];
 };
+
+/** Lo que el tripulante reclama (POST /gamification/claims); lo demás lo suma M7 solo. */
+export type ClaimableReason = Extract<PointReason, 'reminder' | 'psych_test'>;

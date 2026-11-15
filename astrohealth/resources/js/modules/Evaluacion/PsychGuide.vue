@@ -79,7 +79,6 @@ async function submit(submission: PsychSubmission) {
             own.value,
             'psych_test',
             `${test.id}-${today.value}`,
-            today.value,
         );
     }
 

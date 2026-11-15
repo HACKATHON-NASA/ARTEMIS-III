@@ -18,7 +18,6 @@ import { useGamificationStore } from './Stores/useGamificationStore';
 /**
  * Logros (/logros, M7): nivel y racha → insignias → ranking de la
  * tripulación, y cómo se ganan los puntos. Cuidarse como un hábito.
- * ⚠️ Por ahora con datos de prueba (ver Stores/useGamificationStore.ts).
  */
 defineOptions({
     layout: { breadcrumbs: [{ title: 'Logros', href: logros() }] },
@@ -50,10 +49,8 @@ onMounted(async () => {
 
     await Promise.all([mission.load(), crew.load(own.value)]);
     await Promise.all([
-        own.value !== null
-            ? store.load(own.value, today.value)
-            : Promise.resolve(),
-        store.loadLeaderboard(crew.members, today.value),
+        own.value !== null ? store.load(own.value) : Promise.resolve(),
+        store.loadLeaderboard(crew.members),
     ]);
     ready.value = true;
     await nextTick();

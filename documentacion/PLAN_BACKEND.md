@@ -19,7 +19,7 @@
 | M3 Cuerpo | ✅ | ❌ | ❌ | `Cuerpo/Utils/bodyMockData.ts`, `notesMock.ts`, `mocks/crewProfiles.ts` |
 | M4 Dashboard | ✅ | ❌ | (no tiene tablas) | `mocks/crewHistory.ts`, `mocks/crewHealth.ts` |
 | M5 Alertas | ✅ | ❌ | ❌ | `Alertas/Utils/alertsMock*.ts`, `recommendationsMockData.ts`, `adviceMock.ts` |
-| M7 Gamificación | ✅ | ❌ | ❌ | `Gamificacion/Utils/gamificationMock.ts`, `rules.ts` |
+| M7 Gamificación | ✅ | ✅ (F7) | ✅ (F7) | — |
 | M8 Recordatorios | ✅ | ❌ | ❌ | `Recordatorios/Utils/remindersMock.ts` |
 | Simulador | ✅ API propia `:8001` | ❌ no envía lotes a Laravel | — | — |
 
@@ -282,19 +282,24 @@ Lee por contratos: `MeasurementQuery` (M1), `Evaluator` y `TrendAnalyzer` (M2), 
 
 ---
 
-## F7 · M7 Gamificación
+## F7 · M7 Gamificación · ✅ hecho (16 nov 2026)
 
-**Tablas:** `achievements` (las 9 insignias), `astronaut_achievements`, `points_log` (llave única `(astronaut_id, reason, reference)` para no sumar dos veces).
+**Tablas:** `achievements` (las 9 insignias, con `bonus` y `target`), `astronaut_achievements` (con `earned_day`), `points_log` (con `day` de misión; llave única `(astronaut_id, reason, reference)` para no sumar dos veces).
 
-**Domain:** `PointsRule` (valores por `config/gamification.php`, no en el código: **P7**), `StreakRule::days($dates)`, `LevelRule`, una regla por insignia (`iron_body`, `swiss_clock`, `mission_30`…), todas con pruebas unitarias.
-**Listeners:** `OnMeasurementsRecorded` (día completo, sueño ≥ 7 h, ejercicio), `OnReminderCompleted`, `OnPsychTestTaken`.
+**Domain:** `LevelRule`, `StreakRule` (racha actual, primer día que llega a N seguidos, a N en total, a N en una semana) y `BadgeRule` (una regla por insignia sobre `BadgeFacts`). Los puntos y los umbrales en `config/gamification.php` (**P7**). "Pulso y presión en verde" usa el color que ya guardó M2 (**P4**).
+**Listener:** `OnMeasurementsRecorded` → `AwardForMeasurements` (día completo, sueño ≥ 7 h, ejercicio ≥ 90 min); `PointsAwarder` suma la racha de 7 y las insignias nuevas con su bono.
 
 | Endpoint | Permiso | Caso de uso |
 |---|---|---|
-| `GET /api/v1/astronauts/{id}/gamification` | `gamification.read` | `GetGamificationProfile` |
-| `GET /api/v1/leaderboard?mission=` | `gamification.read` | `GetLeaderboard` |
+| `GET /api/v1/astronauts/{id}/gamification` | `gamification.read` + Gate `health.read` | `GetProfile` |
+| `GET /api/v1/gamification/leaderboard?astronauts=` | `gamification.read` + `mission.access` por tripulante | `GetLeaderboard` |
+| `POST /api/v1/gamification/claims` | `gamification.read`, solo tripulantes | `ClaimPoints` (**temporal**) |
 
-**Listo cuando:** los puntos y las insignias los da el backend; borrar `rules.ts` y `gamificationMock.ts` no cambia lo que se ve.
+**Cambios frente a lo planeado:** M8 y los tests psicológicos aún no tienen backend, así que en vez de `OnReminderCompleted` y `OnPsychTestTaken` hay un reclamo temporal (`POST /gamification/claims`, solo `reminder` y `psych_test`, para uno mismo, con los puntos de la configuración). Se borra en F8 y F9 cuando esos módulos publiquen su evento. El ranking recibe `?astronauts=` como la comparación de M4.
+**Datos de demo:** `DemoPointsSeeder` (solo fuera de producción) con los puntos de Ares-1, sacando sueño y ejercicio de la historia real de la base.
+**Frontend:** `useGamificationStore` usa la API (`refresh()` tras registrar, `award()` para reclamar). Borrados `gamificationMock.ts`, `profile.ts` y `mocks/crewHistory.ts`; `rules.ts` quedó solo con textos.
+**Pruebas:** 14 nuevas (5 unitarias de reglas, 9 de la API; 260 en verde).
+**Listo cuando:** ✅ los puntos y las insignias los da el backend; Logros, la barra lateral y el ranking salen de la base de datos.
 
 ---
 
