@@ -3,43 +3,27 @@ import { statusMeta } from '@/lib/status';
 import type { MaybeStatus } from '@/types/health';
 
 /**
- * Qué significa cada color del semáforo médico en el cuerpo. Los colores
- * salen de statusMeta (las variables --status-*), nunca se escriben aquí.
+ * Qué significa cada color del semáforo médico: el punto y su nombre. Los
+ * colores salen de statusMeta (las variables --status-*).
  */
-const ITEMS: { status: MaybeStatus; meaning: string }[] = [
-    { status: 'green', meaning: 'Rango sano' },
-    { status: 'yellow', meaning: 'Vigilar de cerca' },
-    { status: 'red', meaning: 'Actuar y avisar a Tierra' },
-    { status: null, meaning: 'Aún sin medir' },
-];
+const STATUSES: MaybeStatus[] = ['green', 'yellow', 'red', null];
 </script>
 
 <template>
     <ul
-        class="grid grid-cols-2 gap-2 sm:grid-cols-4"
+        class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
         aria-label="Qué significa cada color"
     >
         <li
-            v-for="item in ITEMS"
-            :key="item.status ?? 'none'"
-            class="flex items-start gap-2.5 rounded-xl border px-3 py-2"
-            :class="statusMeta(item.status).soft"
+            v-for="status in STATUSES"
+            :key="status ?? 'none'"
+            class="flex items-center gap-2"
         >
             <span
-                class="mt-1 size-2.5 shrink-0 rounded-full"
-                :style="{
-                    background: statusMeta(item.status).color,
-                    boxShadow: `0 0 8px ${statusMeta(item.status).color}`,
-                }"
+                class="size-2.5 rounded-full"
+                :style="{ background: statusMeta(status).color }"
             />
-            <span class="min-w-0">
-                <span class="block text-sm font-semibold">
-                    {{ statusMeta(item.status).label }}
-                </span>
-                <span class="block text-xs leading-snug opacity-80">
-                    {{ item.meaning }}
-                </span>
-            </span>
+            {{ statusMeta(status).label }}
         </li>
     </ul>
 </template>
