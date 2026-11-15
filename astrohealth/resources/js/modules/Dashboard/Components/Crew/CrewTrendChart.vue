@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { formatNumber } from '@/lib/i18n';
 import gsap from 'gsap';
 import { computed, nextTick, ref, toRef, watch } from 'vue';
 import { statusMeta } from '@/lib/status';
@@ -10,6 +12,8 @@ import {
 } from '../../Composables/useTrendGeometry';
 import type { Bands, CrewSeries } from '../../Types/crewTrends';
 import type { ChartMeta } from '../../Types/crewTrends';
+
+const { t } = useI18n();
 
 /**
  * Un indicador, una línea por tripulante, día a día. La franja gris es el
@@ -33,7 +37,7 @@ const geo = useTrendGeometry(
     width,
 );
 const fmt = (value: number) =>
-    value.toLocaleString('es', {
+    formatNumber(value, {
         minimumFractionDigits: props.meta.decimals,
         maximumFractionDigits: props.meta.decimals,
     });
@@ -126,7 +130,7 @@ watch(
             v-if="geo.withData.value.length === 0"
             class="flex h-[300px] items-center justify-center text-sm text-muted-foreground"
         >
-            Aún no hay suficientes datos para comparar.
+            {{ t('Dashboard.crew.notEnough') }}
         </p>
 
         <svg
@@ -136,7 +140,7 @@ watch(
             :height="HEIGHT"
             class="block touch-none outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             role="img"
-            :aria-label="`${meta.label} de la tripulación, día a día`"
+            :aria-label="t('Dashboard.crew.chartAria', { name: meta.label })"
             tabindex="0"
             @pointermove="onMove"
             @pointerleave="hoverDay = null"
@@ -188,7 +192,7 @@ watch(
                     :y="geo.band.value.top + 14"
                     class="fill-muted-foreground text-[11px]"
                 >
-                    Rango sano
+                    {{ t('Dashboard.crew.healthyRange') }}
                 </text>
             </g>
 
@@ -260,7 +264,7 @@ watch(
             role="status"
         >
             <p class="mb-2 text-xs font-semibold text-muted-foreground">
-                Día {{ hoverDay }}
+                {{ t('Dashboard.crew.day', { n: hoverDay }) }}
             </p>
             <p
                 v-for="{ line, point } in hovered"

@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { ArrowRight, TrendingDown, TrendingUp } from '@lucide/vue';
 import { statusMeta } from '@/lib/status';
 import type { HealthChange } from '../../Types/crewTrends';
 import { formatValue, indicatorMeta } from '../../Utils/indicatorMeta';
+
+const { t } = useI18n();
 
 /**
  * Lo que cambió de color en las últimas 72 horas: lo que empeoró primero
@@ -16,7 +19,7 @@ defineProps<{ changes: HealthChange[] }>();
         <header class="border-b p-4 sm:px-6">
             <h2 class="flex items-center gap-2 font-semibold">
                 <TrendingDown class="size-4 text-sky-500" />
-                Cambios en las últimas 72 h
+                {{ t('Dashboard.panel.changes72') }}
             </h2>
         </header>
         <ul v-if="changes.length" class="divide-y">
@@ -58,14 +61,18 @@ defineProps<{ changes: HealthChange[] }>();
                         />
                         {{ formatValue(item.to.value, item.indicator) }}
                         {{ indicatorMeta(item.indicator).unit }} ·
-                        {{ item.worse ? 'empeoró' : 'se recuperó' }}
+                        {{
+                            item.worse
+                                ? t('Dashboard.panel.worsened')
+                                : t('Dashboard.panel.recovered')
+                        }}
                         ({{ statusMeta(item.to.status).label }})
                     </p>
                 </div>
             </li>
         </ul>
         <p v-else class="p-6 text-center text-sm text-muted-foreground">
-            Sin cambios de color en estos días.
+            {{ t('Dashboard.panel.noChanges') }}
         </p>
     </section>
 </template>

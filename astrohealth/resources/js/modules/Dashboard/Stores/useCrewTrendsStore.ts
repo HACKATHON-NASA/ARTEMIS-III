@@ -12,6 +12,7 @@ import type {
     TrendRange,
 } from '../Types/crewTrends';
 import { seriesColor } from '../Utils/indicatorMeta';
+import { t } from '@/lib/i18n';
 
 /**
  * La comparación de la tripulación de una misión (M4): el mapa de riesgos
@@ -59,7 +60,10 @@ export const useCrewTrendsStore = defineStore('crewTrends', () => {
     }
 
     function nameOf(id: number): string {
-        return crew.find((member) => member.id === id)?.name ?? 'Tripulante';
+        return (
+            crew.find((member) => member.id === id)?.name ??
+            t('Dashboard.crewMember')
+        );
     }
 
     function colorOf(id: number): string {
