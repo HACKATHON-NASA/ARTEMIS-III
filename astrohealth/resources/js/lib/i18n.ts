@@ -77,7 +77,7 @@ const global = i18n.global as unknown as {
     t: (
         key: string,
         params?: Record<string, unknown>,
-        options?: { locale: string },
+        options?: { locale: string } | number,
     ) => string;
     te: (key: string) => boolean;
 };
@@ -112,8 +112,14 @@ export function tIn(locale: Locale, key: string): string {
 }
 
 /** Traducir fuera de un componente (stores, utilidades). */
-export function t(key: string, params?: Record<string, unknown>): string {
-    return global.t(key, params);
+export function t(
+    key: string,
+    params?: Record<string, unknown>,
+    plural?: number,
+): string {
+    return plural === undefined
+        ? global.t(key, params)
+        : global.t(key, params ?? {}, plural);
 }
 
 /** Un número con el formato del idioma (1,234.5 · 1.234,5). */

@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import type { NoteDraft, NoteKind } from '../../Types/notes';
 import { NOTE_KINDS } from '../../Utils/noteKinds';
+
+const { t } = useI18n();
 
 /**
  * Escribir una nota clínica: el tipo, el texto y si requiere seguimiento.
@@ -20,7 +23,7 @@ const saving = ref(false);
 
 async function save(): Promise<void> {
     if (text.value.trim().length < 5) {
-        error.value = 'Escribe la nota (al menos unas palabras).';
+        error.value = t('Cuerpo.notes.errText');
 
         return;
     }
@@ -50,7 +53,7 @@ async function save(): Promise<void> {
         <div
             class="flex flex-wrap gap-1.5"
             role="radiogroup"
-            aria-label="Tipo de nota"
+            :aria-label="t('Cuerpo.notes.kindAria')"
         >
             <button
                 v-for="(meta, code) in NOTE_KINDS"
@@ -74,7 +77,7 @@ async function save(): Promise<void> {
             v-model="text"
             rows="3"
             maxlength="1000"
-            aria-label="Texto de la nota"
+            :aria-label="t('Cuerpo.notes.textAria')"
             :placeholder="NOTE_KINDS[kind].hint"
             class="w-full rounded-md border border-input bg-card px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             @input="error = null"
@@ -87,7 +90,7 @@ async function save(): Promise<void> {
                     type="checkbox"
                     class="accent-amber-500"
                 />
-                Requiere seguimiento
+                {{ t('Cuerpo.notes.needsFollowUp') }}
             </label>
             <Button
                 type="submit"
@@ -96,7 +99,7 @@ async function save(): Promise<void> {
                 class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
             >
                 <Spinner v-if="saving" />
-                Guardar nota
+                {{ t('Cuerpo.notes.save') }}
             </Button>
         </div>
     </form>

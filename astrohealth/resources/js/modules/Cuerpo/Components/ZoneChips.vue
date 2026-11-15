@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { statusMeta } from '@/lib/status';
 import type { BodyZoneCode } from '@/types/health';
 import type { BodyPart, BodyStatus } from '../Types/body';
+
+const { t } = useI18n();
 
 /**
  * Las 9 zonas como botones con su color. Sirven para elegir con el
@@ -20,7 +23,7 @@ defineEmits<{ select: [code: BodyZoneCode] }>();
 <template>
     <ul
         class="flex flex-wrap justify-center gap-2"
-        aria-label="Zonas del cuerpo"
+        :aria-label="t('Cuerpo.body3d.zonesAria')"
     >
         <li v-for="part in parts" :key="part.code">
             <button

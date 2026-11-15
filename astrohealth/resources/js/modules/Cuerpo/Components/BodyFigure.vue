@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 /**
  * La silueta del astronauta (SVG propio, sin imágenes): un holograma azul
  * de frente. Solo dibuja; las zonas van encima (BodyZone). Un lado se
@@ -44,7 +47,7 @@ const HALF =
             fill="#7dd3fc"
             fill-opacity="0.8"
         >
-            Radiación
+            {{ t('Cuerpo.body3d.radiation') }}
         </text>
 
         <g filter="url(#body-glow)">

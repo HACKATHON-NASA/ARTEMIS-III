@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Lock } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -6,6 +7,8 @@ import { useNotesStore } from '../../Stores/useNotesStore';
 import type { NoteDraft } from '../../Types/notes';
 import NoteComposer from './NoteComposer.vue';
 import NoteItem from './NoteItem.vue';
+
+const { t } = useI18n();
 
 /**
  * Notas clínicas del tripulante (expediente privado del equipo médico, en
@@ -23,9 +26,9 @@ const shown = computed(() => (onlyPending.value ? store.pending : store.notes));
 
 async function add(draft: NoteDraft): Promise<void> {
     await store.add(props.astronautId, props.author, draft);
-    toast.success('Nota guardada', {
+    toast.success(t('Cuerpo.notes.saved'), {
         description: draft.follow_up
-            ? 'Quedó con seguimiento pendiente.'
+            ? t('Cuerpo.notes.savedFollowUp')
             : undefined,
     });
 }
@@ -44,27 +47,31 @@ onMounted(() => void store.load(props.astronautId));
         <header class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h2 class="flex items-center gap-2 text-lg font-semibold">
-                    <Lock class="size-4 text-sky-500" /> Notas clínicas
+                    <Lock class="size-4 text-sky-500" />
+                    {{ t('Cuerpo.notes.title') }}
                 </h2>
                 <p class="text-xs text-muted-foreground">
-                    Privadas: solo las ve el equipo médico. No se editan ni se
-                    borran.
+                    {{ t('Cuerpo.notes.private') }}
                 </p>
             </div>
             <div
                 class="inline-flex rounded-lg border bg-muted/40 p-0.5"
                 role="group"
-                aria-label="Qué notas ver"
+                :aria-label="t('Cuerpo.notes.filterAria')"
             >
                 <button
                     v-for="option in [
                         {
                             value: false,
-                            label: `Todas (${store.notes.length})`,
+                            label: t('Cuerpo.notes.all', {
+                                n: store.notes.length,
+                            }),
                         },
                         {
                             value: true,
-                            label: `Seguimiento (${store.pending.length})`,
+                            label: t('Cuerpo.notes.followUps', {
+                                n: store.pending.length,
+                            }),
                         },
                     ]"
                     :key="option.label"
@@ -107,8 +114,8 @@ onMounted(() => void store.load(props.astronautId));
         >
             {{
                 onlyPending
-                    ? 'No hay seguimientos pendientes.'
-                    : 'Aún no hay notas.'
+                    ? t('Cuerpo.notes.noFollowUps')
+                    : t('Cuerpo.notes.none')
             }}
         </p>
     </section>

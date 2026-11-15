@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { reminderTitle } from '../Recordatorios/Utils/reminderTypes';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -32,13 +34,15 @@ import TodayPlan from './Components/TodayPlan.vue';
 import { useBodyStore } from './Stores/useBodyStore';
 import { buildTodayPlan } from './Utils/todayPlan';
 
+const { t } = useI18n();
+
 /**
  * Inicio del astronauta (/inicio): cuerpo (M3) + puntaje (M2) + alertas (M5)
  * + rutina (M8), con la misión de M6. El principal compone; cada módulo
  * pone sus piezas. ⚠️ Por ahora, todos con datos de prueba (ver sus stores).
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Inicio', href: inicio() }] },
+    layout: { breadcrumbs: [{ title: 'nav.home', href: inicio() }] },
 });
 
 const auth = useAuthStore();
@@ -131,8 +135,8 @@ async function completeReminder(reminder: Reminder): Promise<void> {
     busyReminder.value = null;
 
     if (gained > 0) {
-        toast.success(`¡Hecho! +${gained} puntos`, {
-            description: reminder.title,
+        toast.success(t('Cuerpo.home.done', { n: gained }), {
+            description: reminderTitle(reminder),
         });
     }
 }
@@ -163,7 +167,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Inicio" />
+    <Head :title="t('Cuerpo.home.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <HomeSkeleton v-if="!ready || !body.status || !mission.current" />
@@ -199,7 +203,7 @@ onMounted(async () => {
 
             <section class="flex flex-col gap-3" data-reveal>
                 <h2 class="text-sm font-semibold text-muted-foreground">
-                    ¿Necesitas a Tierra?
+                    {{ t('Cuerpo.home.needEarth') }}
                 </h2>
                 <AstronautComms
                     @choose="compose = { open: true, kind: $event }"
@@ -217,10 +221,11 @@ onMounted(async () => {
                         class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,rgb(14_165_233/0.12),transparent_65%)]"
                     />
                     <div class="relative">
-                        <h2 class="text-lg font-semibold">Tu cuerpo</h2>
+                        <h2 class="text-lg font-semibold">
+                            {{ t('Cuerpo.home.yourBody') }}
+                        </h2>
                         <p class="mb-4 text-sm text-muted-foreground">
-                            Los órganos que laten necesitan tu atención.
-                            Arrastra para girar y toca un órgano.
+                            {{ t('Cuerpo.home.yourBodyHint') }}
                         </p>
                         <BodyViewer
                             :parts="body.parts"

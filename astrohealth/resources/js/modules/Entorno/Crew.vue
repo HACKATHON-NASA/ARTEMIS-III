@@ -12,7 +12,7 @@ import { useAlertsStore } from '../Alertas/Stores/useAlertsStore';
 import CrewBodyCard from '../Cuerpo/Components/CrewBodyCard.vue';
 import ZoneDialog from '../Cuerpo/Components/ZoneDialog.vue';
 import { useBodyStore } from '../Cuerpo/Stores/useBodyStore';
-import { MODEL_CREDIT, MODEL_CREDIT_URL } from '../Cuerpo/Utils/bodyModel';
+import { MODEL_CREDIT_URL } from '../Cuerpo/Utils/bodyModel';
 import { useAuthStore } from '@/stores/useAuthStore';
 import CrewInsights from '../Dashboard/Components/Crew/CrewInsights.vue';
 import { useAssessmentStore } from '../Evaluacion/Stores/useAssessmentStore';
@@ -202,7 +202,7 @@ onMounted(async () => {
                     rel="noopener"
                     class="-mt-2 text-center text-[10px] text-muted-foreground/80 hover:underline"
                 >
-                    {{ MODEL_CREDIT }}
+                    {{ t('Cuerpo.body3d.credit') }}
                 </a>
             </template>
 

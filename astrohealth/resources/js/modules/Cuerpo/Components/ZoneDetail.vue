@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { ExternalLink, Orbit } from '@lucide/vue';
 import { statusMeta } from '@/lib/status';
 import type { BodyPart, ZoneStatus } from '../Types/body';
-import { INDICATOR_NAMES } from '../Utils/indicators';
+import { indicatorLabel } from '../Utils/indicators';
+
+const { t } = useI18n();
 
 /**
  * El detalle de una zona en 3 bloques: estado y valores, cómo la afecta el
@@ -19,7 +22,7 @@ defineProps<{ part: BodyPart; zone: ZoneStatus }>();
             <h3
                 class="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase"
             >
-                Estado actual
+                {{ t('Cuerpo.zone.current') }}
             </h3>
             <ul v-if="zone.values.length" class="divide-y rounded-xl border">
                 <li
@@ -34,7 +37,7 @@ defineProps<{ part: BodyPart; zone: ZoneStatus }>();
                                 backgroundColor: statusMeta(item.status).color,
                             }"
                         />
-                        {{ INDICATOR_NAMES[item.indicator] }}
+                        {{ indicatorLabel(item.indicator) }}
                     </span>
                     <span class="font-semibold tabular-nums">
                         {{ item.value }}
@@ -49,8 +52,7 @@ defineProps<{ part: BodyPart; zone: ZoneStatus }>();
                 v-else
                 class="rounded-xl border border-dashed p-4 text-sm text-muted-foreground"
             >
-                Esta zona no tiene un sensor propio todavía. Si hay síntomas, se
-                registran y se avisa al médico.
+                {{ t('Cuerpo.zone.noSensor') }}
             </p>
         </section>
 
@@ -58,7 +60,7 @@ defineProps<{ part: BodyPart; zone: ZoneStatus }>();
             <h3
                 class="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase"
             >
-                Cómo lo afecta el espacio
+                {{ t('Cuerpo.zone.spaceEffect') }}
             </h3>
             <div
                 class="rounded-xl border bg-linear-to-br from-sky-500/10 to-transparent p-4"
@@ -67,7 +69,7 @@ defineProps<{ part: BodyPart; zone: ZoneStatus }>();
                     class="mb-2 inline-flex items-center gap-1.5 text-xs font-medium text-sky-700 dark:text-sky-300"
                 >
                     <Orbit class="size-3.5" />
-                    Peligro NASA HRP: {{ part.hrp_hazard }}
+                    {{ t('Cuerpo.zone.hazard', { name: part.hrp_hazard }) }}
                 </p>
                 <p class="text-sm leading-relaxed">
                     {{ part.space_risk_text }}
@@ -78,7 +80,7 @@ defineProps<{ part: BodyPart; zone: ZoneStatus }>();
                     rel="noopener"
                     class="mt-3 inline-flex items-center gap-1 text-xs text-sky-600 hover:underline dark:text-sky-400"
                 >
-                    Fuente: NASA Human Research Program
+                    {{ t('Cuerpo.zone.source') }}
                     <ExternalLink class="size-3" />
                 </a>
             </div>
@@ -88,11 +90,11 @@ defineProps<{ part: BodyPart; zone: ZoneStatus }>();
             <h3
                 class="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase"
             >
-                Qué hacer
+                {{ t('Cuerpo.zone.whatToDo') }}
             </h3>
             <slot name="recommendation">
                 <p class="text-sm text-muted-foreground">
-                    Todo en orden. Seguir con la rutina.
+                    {{ t('Cuerpo.zone.allGood') }}
                 </p>
             </slot>
         </section>

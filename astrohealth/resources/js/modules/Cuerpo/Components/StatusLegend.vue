@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { statusMeta } from '@/lib/status';
 import type { MaybeStatus } from '@/types/health';
+
+const { t } = useI18n();
 
 /**
  * Qué significa cada color del semáforo médico: el punto y su nombre. Los
@@ -12,7 +15,7 @@ const STATUSES: MaybeStatus[] = ['green', 'yellow', 'red', null];
 <template>
     <ul
         class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
-        aria-label="Qué significa cada color"
+        :aria-label="t('Cuerpo.body3d.legendAria')"
     >
         <li
             v-for="status in STATUSES"

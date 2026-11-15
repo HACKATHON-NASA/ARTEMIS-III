@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { crewRoleLabel } from '../../Entorno/Utils/environments';
 import { Link } from '@inertiajs/vue3';
 import type { InertiaLinkProps } from '@inertiajs/vue3';
 import StatusBadge from '@/components/StatusBadge.vue';
@@ -7,6 +9,8 @@ import { statusMeta } from '@/lib/status';
 import type { BodyZoneCode, MaybeStatus } from '@/types/health';
 import type { BodyPart, BodyStatus } from '../Types/body';
 import BodyViewer from './BodyViewer.vue';
+
+const { t } = useI18n();
 
 /**
  * Un tripulante con su cuerpo (el esqueleto y los órganos pintados por
@@ -52,7 +56,7 @@ defineEmits<{ select: [code: BodyZoneCode] }>();
                         >
                     </h2>
                     <p class="truncate text-xs text-muted-foreground">
-                        {{ crewRole }}
+                        {{ crewRoleLabel(crewRole) }}
                     </p>
                 </div>
             </div>
@@ -60,7 +64,7 @@ defineEmits<{ select: [code: BodyZoneCode] }>();
                 <p class="text-2xl leading-none font-semibold tabular-nums">
                     {{ score ?? '—'
                     }}<span class="text-xs font-normal text-muted-foreground">{{
-                        score === null ? ' sin datos' : '/100'
+                        score === null ? t('Cuerpo.card.noData') : '/100'
                     }}</span>
                 </p>
                 <StatusBadge :status="status" />
@@ -75,13 +79,13 @@ defineEmits<{ select: [code: BodyZoneCode] }>();
             @select="$emit('select', $event)"
         />
         <div class="flex items-center justify-between gap-2 px-4 pb-4 text-xs">
-            <span class="text-muted-foreground"
-                >Toca un órgano para ver su estado</span
-            >
+            <span class="text-muted-foreground">{{
+                t('Cuerpo.card.tapOrgan')
+            }}</span>
             <Link
                 :href="href"
                 class="font-medium text-sky-600 hover:underline dark:text-sky-400"
-                >Ver ficha →</Link
+                >{{ t('Cuerpo.card.seeProfile') }}</Link
             >
         </div>
     </article>

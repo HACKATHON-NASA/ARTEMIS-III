@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { crewRoleLabel } from '../Entorno/Utils/environments';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ArrowLeft, BellRing, ClipboardPen } from '@lucide/vue';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
@@ -32,6 +34,8 @@ import ClinicalNotes from './Components/Notes/ClinicalNotes.vue';
 import ZoneDialog from './Components/ZoneDialog.vue';
 import { useBodyStore } from './Stores/useBodyStore';
 
+const { t } = useI18n();
+
 /**
  * Ficha del tripulante (/tripulacion/{id}): todo de una persona para el
  * médico. Su cuerpo, lo que viene empeorando, sus indicadores, sus tests y
@@ -42,7 +46,7 @@ import { useBodyStore } from './Stores/useBodyStore';
 const props = defineProps<{ astronautId: number }>();
 
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Tripulación', href: tripulacion() }] },
+    layout: { breadcrumbs: [{ title: 'nav.crew', href: tripulacion() }] },
 });
 
 const auth = useAuthStore();
@@ -87,11 +91,11 @@ async function sendAdvice(
 ): Promise<void> {
     await advice.send(
         props.astronautId,
-        auth.actor?.name ?? 'Equipo médico',
+        auth.actor?.name ?? t('Cuerpo.member.medicalTeam'),
         draft,
     );
-    toast.success('Indicación enviada', {
-        description: `Llega a la nave en ${delay.value}.`,
+    toast.success(t('Cuerpo.member.adviceSent'), {
+        description: t('Cuerpo.member.arrivesIn', { delay: delay.value }),
     });
 }
 
@@ -127,14 +131,14 @@ onBeforeUnmount(() => clearInterval(timer));
 </script>
 
 <template>
-    <Head :title="member?.name ?? 'Tripulante'" />
+    <Head :title="member?.name ?? t('Cuerpo.member.crewMember')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <Link
             :href="tripulacion()"
             class="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
-            <ArrowLeft class="size-4" /> Tripulación
+            <ArrowLeft class="size-4" /> {{ t('Cuerpo.member.back') }}
         </Link>
 
         <template v-if="!ready || !member">
@@ -160,8 +164,13 @@ onBeforeUnmount(() => clearInterval(timer));
                         {{ member.name }}
                     </h1>
                     <p class="text-muted-foreground">
-                        {{ member.crew_role }} · {{ crew.mission?.name }} · día
-                        {{ day }}
+                        {{
+                            t('Cuerpo.member.subtitle', {
+                                role: crewRoleLabel(member.crew_role),
+                                mission: crew.mission?.name ?? '',
+                                day,
+                            })
+                        }}
                     </p>
                     <p class="mt-2 flex flex-wrap items-center gap-2 text-sm">
                         <strong class="text-2xl tabular-nums">{{
@@ -174,14 +183,17 @@ onBeforeUnmount(() => clearInterval(timer));
                         />
                         <span class="text-muted-foreground">{{
                             assessment.current?.summary ??
-                            'Sin mediciones todavía.'
+                            t('Cuerpo.member.noMeasurements')
                         }}</span>
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <Button as-child variant="outline">
                         <Link :href="alertas()"
-                            ><BellRing /> Alertas ({{ pending }})</Link
+                            ><BellRing />
+                            {{
+                                t('Cuerpo.member.alerts', { n: pending })
+                            }}</Link
                         >
                     </Button>
                     <Button
@@ -189,7 +201,7 @@ onBeforeUnmount(() => clearInterval(timer));
                         class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                         @click="composing = true"
                     >
-                        <ClipboardPen /> Nueva indicación
+                        <ClipboardPen /> {{ t('Cuerpo.member.newAdvice') }}
                     </Button>
                 </div>
             </header>
@@ -208,9 +220,11 @@ onBeforeUnmount(() => clearInterval(timer));
                     class="rounded-2xl border bg-card p-4 sm:p-6"
                     data-reveal
                 >
-                    <h2 class="text-lg font-semibold">Su cuerpo</h2>
+                    <h2 class="text-lg font-semibold">
+                        {{ t('Cuerpo.member.theirBody') }}
+                    </h2>
                     <p class="mb-3 text-sm text-muted-foreground">
-                        Toca un órgano para ver su detalle.
+                        {{ t('Cuerpo.member.theirBodyHint') }}
                     </p>
                     <BodyViewer
                         v-if="body.status"
@@ -225,7 +239,7 @@ onBeforeUnmount(() => clearInterval(timer));
                     data-reveal
                 >
                     <h2 class="mb-3 text-lg font-semibold">
-                        Indicaciones del médico
+                        {{ t('Cuerpo.member.doctorAdvice') }}
                     </h2>
                     <AdviceList :items="advice.items" :now="advice.now" />
                 </section>
@@ -234,12 +248,14 @@ onBeforeUnmount(() => clearInterval(timer));
             <div v-if="auth.can('clinical_notes.manage')" data-reveal>
                 <ClinicalNotes
                     :astronaut-id="astronautId"
-                    :author="auth.actor?.name ?? 'Equipo médico'"
+                    :author="auth.actor?.name ?? t('Cuerpo.member.medicalTeam')"
                 />
             </div>
 
             <section class="flex flex-col gap-3" data-reveal>
-                <h2 class="text-lg font-semibold">Sus indicadores</h2>
+                <h2 class="text-lg font-semibold">
+                    {{ t('Cuerpo.member.theirIndicators') }}
+                </h2>
                 <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     <IndicatorTrendCard
                         v-for="history in evolution.histories"
@@ -251,7 +267,9 @@ onBeforeUnmount(() => clearInterval(timer));
             </section>
 
             <section class="flex flex-col gap-3" data-reveal>
-                <h2 class="text-lg font-semibold">Sus tests psicológicos</h2>
+                <h2 class="text-lg font-semibold">
+                    {{ t('Cuerpo.member.theirTests') }}
+                </h2>
                 <MyTestsSummary
                     :tests="psych.tests"
                     :history="(testId) => psych.history(astronautId, testId)"

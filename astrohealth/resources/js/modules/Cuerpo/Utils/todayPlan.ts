@@ -2,7 +2,8 @@ import type { InertiaLinkProps } from '@inertiajs/vue3';
 import { Brain, ClipboardList, ListChecks, Trophy } from '@lucide/vue';
 import type { Component } from 'vue';
 import type { IndicatorCode } from '@/types/health';
-import { INDICATOR_NAMES } from './indicators';
+import { t } from '@/lib/i18n';
+import { indicatorLabel } from './indicators';
 
 /**
  * "Tu día" en el Inicio: qué le falta hoy al astronauta, en cuatro tarjetas
@@ -48,9 +49,16 @@ type Input = {
 };
 
 function list(names: string[]): string {
-    return names.length <= 2
-        ? names.join(' y ')
-        : `${names.slice(0, 2).join(', ')} y ${names.length - 2} más`;
+    if (names.length <= 1) {
+        return names.join('');
+    }
+
+    return names.length === 2
+        ? t('Cuerpo.plan.and', { a: names[0], b: names[1] })
+        : t('Cuerpo.plan.andMore', {
+              list: names.slice(0, 2).join(', '),
+              n: names.length - 2,
+          });
 }
 
 export function buildTodayPlan(input: Input): PlanItem[] {
@@ -60,7 +68,7 @@ export function buildTodayPlan(input: Input): PlanItem[] {
             (value) =>
                 Date.now() - new Date(value.measured_at).getTime() >= DAY_MS,
         )
-        .map((value) => INDICATOR_NAMES[value.indicator]);
+        .map((value) => indicatorLabel(value.indicator));
     const measured = {
         done: input.values.length - missing.length,
         total: input.values.length,
@@ -79,51 +87,57 @@ export function buildTodayPlan(input: Input): PlanItem[] {
         {
             key: 'measure',
             icon: ClipboardList,
-            title: 'Mediciones',
+            title: t('Cuerpo.plan.measure'),
             detail: measured.missing.length
-                ? `Te falta: ${list(measured.missing)}`
-                : 'Registraste todo hoy',
+                ? t('Cuerpo.plan.missing', { list: list(measured.missing) })
+                : t('Cuerpo.plan.allLogged'),
             progress: { done: measured.done, total: measured.total },
             complete: measured.missing.length === 0,
-            action: 'Registrar',
+            action: t('Cuerpo.plan.record'),
             href: links.record,
         },
         {
             key: 'routine',
             icon: ListChecks,
-            title: 'Rutina',
+            title: t('Cuerpo.plan.routine'),
             detail: routine.next
-                ? `Lo próximo: ${routine.next.title.replace(/\s*\p{Extended_Pictographic}/gu, '')} · ${routine.next.time}`
-                : 'Cumpliste tu rutina',
+                ? t('Cuerpo.plan.next', {
+                      title: routine.next.title.replace(
+                          /\s*\p{Extended_Pictographic}/gu,
+                          '',
+                      ),
+                      time: routine.next.time,
+                  })
+                : t('Cuerpo.plan.routineDone'),
             progress: routine,
             complete: routine.next === null,
-            action: 'Ver rutina',
+            action: t('Cuerpo.plan.seeRoutine'),
             href: links.routine,
         },
         {
             key: 'tests',
             icon: Brain,
-            title: 'Tests de la semana',
+            title: t('Cuerpo.plan.tests'),
             detail: tests.pending
-                ? `Te ${tests.pending === 1 ? 'toca 1 test' : `tocan ${tests.pending} tests`}`
-                : 'Estás al día',
+                ? t('Cuerpo.plan.testsDue', { n: tests.pending }, tests.pending)
+                : t('Cuerpo.plan.upToDate'),
             progress: { done: tests.total - tests.pending, total: tests.total },
             complete: tests.pending === 0,
-            action: 'Responder',
+            action: t('Cuerpo.plan.answer'),
             href: links.tests,
         },
         {
             key: 'badge',
             icon: Trophy,
-            title: 'Próxima insignia',
+            title: t('Cuerpo.plan.badge'),
             detail: badge
                 ? `${badge.icon} ${badge.name}`
-                : '¡Las tienes todas!',
+                : t('Cuerpo.plan.allBadges'),
             progress: badge
                 ? { done: badge.current, total: badge.target }
                 : { done: 1, total: 1 },
             complete: badge === null,
-            action: 'Ver logros',
+            action: t('Cuerpo.plan.seeBadges'),
             href: links.badges,
         },
     ];
