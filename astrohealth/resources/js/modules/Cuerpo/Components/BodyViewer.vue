@@ -9,7 +9,8 @@ import ZoneChips from './ZoneChips.vue';
  * El cuerpo del Inicio: intenta el 3D (modelo anatómico real) y, si el
  * equipo no soporta WebGL o el modelo no carga, muestra el cuerpo en SVG.
  * Three.js y el modelo se descargan aparte, solo cuando hacen falta.
- * Debajo, las 9 zonas como botones (teclado y zonas sin órgano en el 3D).
+ * A la derecha, las 9 zonas en columna como botones (teclado y zonas sin
+ * órgano en el 3D).
  */
 defineProps<{
     parts: BodyPart[];
@@ -26,7 +27,10 @@ const use3d = ref(true);
 </script>
 
 <template>
-    <div class="flex flex-col gap-4">
+    <div
+        class="grid items-center gap-3"
+        :class="use3d && !compact ? 'grid-cols-[minmax(0,1fr)_auto]' : ''"
+    >
         <Body3D
             v-if="use3d"
             :parts="parts"
@@ -46,6 +50,7 @@ const use3d = ref(true);
 
         <ZoneChips
             v-if="use3d && !compact"
+            class="self-center"
             :parts="parts"
             :status="status"
             :selected="selected"
