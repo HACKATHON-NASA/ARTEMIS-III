@@ -27,6 +27,7 @@ import {
     SidebarTrigger,
 } from '@/components/ui/sidebar';
 import SidebarXp from '@/modules/Gamificacion/Components/SidebarXp.vue';
+import { useReminderClock } from '@/modules/Recordatorios/Composables/useReminderClock';
 import { useLiveAlerts } from '@/modules/Alertas/Composables/useLiveAlerts';
 import { useAlertsStore } from '@/modules/Alertas/Stores/useAlertsStore';
 import {
@@ -113,6 +114,9 @@ const homeLink = computed(() =>
 // Alertas en vivo en cualquier pantalla: avisa a quien atiende (Tierra y el
 // médico de la tripulación) cuando llega algo nuevo.
 useLiveAlerts(() => canSeeCrew.value);
+
+// La rutina avisa a su hora en cualquier pantalla (solo quien va en la nave).
+useReminderClock(() => auth.actor?.astronaut_id ?? null);
 
 // Contador de alertas sin confirmar: de toda la tripulación o, para el
 // astronauta, solo las suyas.

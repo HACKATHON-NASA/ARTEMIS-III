@@ -121,3 +121,8 @@ Es dueño de **`reminders`** ([columnas](../../arquitectura/02-base-de-datos.md#
 - [ ] Aparece el recordatorio.
 - [ ] Se marca como hecho.
 - [ ] Suma puntos.
+
+
+## Estado del frontend (datos de prueba)
+
+Hecho: `Components/RoutineCard.vue` (en el Inicio) con el avance, la lista ordenada por hora, crear y editar en `ReminderEditor.vue` (tipo con título sugerido, título y hora; eliminar con confirmación) y el botón para activar los avisos del navegador (`composables/useNotifications.ts`, nunca se pide al cargar). `Composables/useReminderClock.ts` lo monta el menú lateral: cada 30 s recalcula los estados y, cuando uno pasa a "ya es la hora", avisa **una vez por día** con un *toast* y la notificación del navegador (lo que ya estaba pendiente al abrir la app no se avisa). Marcar hecho suma +5 en M7 (lo coordina el Inicio). ⚠️ La rutina se guarda en este navegador (`Utils/remindersMock.ts`).

@@ -19,7 +19,7 @@ import { useGamificationStore } from '../Gamificacion/Stores/useGamificationStor
 import HealthScore from '../Evaluacion/Components/HealthScore.vue';
 import { useAssessmentStore } from '../Evaluacion/Stores/useAssessmentStore';
 import HeartbeatLine from '../Identidad/Components/Acceso/HeartbeatLine.vue';
-import ReminderList from '../Recordatorios/Components/ReminderList.vue';
+import RoutineCard from '../Recordatorios/Components/RoutineCard.vue';
 import { useRemindersStore } from '../Recordatorios/Stores/useRemindersStore';
 import type { Reminder } from '../Recordatorios/Types/reminders';
 import BodyViewer from './Components/BodyViewer.vue';
@@ -83,7 +83,12 @@ async function sendMessage(message: NewMessage): Promise<void> {
 
 async function completeReminder(reminder: Reminder): Promise<void> {
     busyReminder.value = reminder.id;
-    await reminders.markDone(reminder.id);
+    if (!(await reminders.markDone(reminder.id))) {
+        busyReminder.value = null;
+
+        return;
+    }
+
     const { gained } = await gamification.award(
         auth.actor?.astronaut_id ?? 0,
         'reminder',
@@ -226,10 +231,7 @@ onMounted(async () => {
                         class="rounded-2xl border bg-card p-4 sm:p-6"
                         data-reveal
                     >
-                        <ReminderList
-                            :reminders="reminders.reminders"
-                            :done="reminders.progress.done"
-                            :total="reminders.progress.total"
+                        <RoutineCard
                             :busy-id="busyReminder"
                             @done="completeReminder"
                         />

@@ -20,3 +20,6 @@ export type Reminder = {
     state: ReminderState;
     last_done_at: string | null;
 };
+
+/** Lo que se edita de un recordatorio (crear o cambiar). */
+export type ReminderDraft = Pick<Reminder, 'type' | 'title' | 'time'>;

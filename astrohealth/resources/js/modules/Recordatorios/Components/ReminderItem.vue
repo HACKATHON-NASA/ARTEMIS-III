@@ -1,31 +1,15 @@
 <script setup lang="ts">
-import {
-    Activity,
-    Check,
-    Dumbbell,
-    HeartPulse,
-    Moon,
-    Radiation,
-    Smile,
-} from '@lucide/vue';
+import { Check, Pencil } from '@lucide/vue';
 import { computed } from 'vue';
-import type { Component } from 'vue';
-import type { Reminder, ReminderType } from '../Types/reminders';
+import type { Reminder } from '../Types/reminders';
+import { reminderIcon } from '../Utils/reminderTypes';
 
 /**
- * Un recordatorio: su ícono, su hora y la casilla para marcarlo hecho.
+ * Un recordatorio: su ícono, su hora, editarlo y la casilla para marcarlo
+ * hecho.
  */
 const props = defineProps<{ reminder: Reminder; busy: boolean }>();
-defineEmits<{ done: [] }>();
-
-const ICONS: Record<ReminderType, Component> = {
-    measure_bp: HeartPulse,
-    exercise: Dumbbell,
-    log_sleep: Moon,
-    mood_check: Smile,
-    dosimeter: Radiation,
-    custom: Activity,
-};
+defineEmits<{ done: []; edit: [] }>();
 
 const isDone = computed(() => props.reminder.state === 'done');
 </script>
@@ -41,7 +25,7 @@ const isDone = computed(() => props.reminder.state === 'done');
         <span
             class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-sky-400/20 to-blue-600/10 text-sky-600 dark:text-sky-300"
         >
-            <component :is="ICONS[reminder.type]" class="size-4" />
+            <component :is="reminderIcon(reminder.type)" class="size-4" />
         </span>
 
         <div class="min-w-0 flex-1">
@@ -60,6 +44,16 @@ const isDone = computed(() => props.reminder.state === 'done');
                 >
             </p>
         </div>
+
+        <button
+            type="button"
+            class="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+            :aria-label="`Editar: ${reminder.title}`"
+            title="Editar"
+            @click="$emit('edit')"
+        >
+            <Pencil class="size-3.5" />
+        </button>
 
         <button
             type="button"
