@@ -1,0 +1,19 @@
+# Secretos
+.env
+!.env.example
+
+# Entorno virtual y Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Datos descargados o generados (se conserva la estructura con .gitkeep)
+data/donki/cache/*
+!data/donki/cache/.gitkeep
+data/output/*
+!data/output/.gitkeep
+data/osdr/raw/*
+!data/osdr/raw/.gitkeep
+data/osdr/processed/*
+!data/osdr/processed/.gitkeep

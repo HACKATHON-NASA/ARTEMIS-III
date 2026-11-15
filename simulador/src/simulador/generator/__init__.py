@@ -1,0 +1,1 @@
+"""Paquete generator del simulador."""

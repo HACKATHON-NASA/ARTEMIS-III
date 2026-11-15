@@ -1,0 +1,36 @@
+# Entornos de misión.
+# Dosis base: valores de referencia medidos; verificar y citar antes de la presentación.
+# comm_delay_seconds: retraso de comunicación con la Tierra, en una vía.
+
+environments:
+  iss:
+    label: Estación Espacial Internacional
+    gravity_g: 0.0
+    base_dose_msv_day: 0.5
+    dose_source: "Rango típico a bordo de la ISS: ~0,3–0,8 mSv/día (NASA)"
+    comm_delay_seconds: 0
+    description: Órbita baja terrestre; la magnetosfera aún protege.
+
+  transit:
+    label: Tránsito interplanetario
+    gravity_g: 0.0
+    base_dose_msv_day: 1.8
+    dose_source: "MSL/RAD en crucero a Marte: 1,84 mSv/día (Zeitlin et al., Science 2013)"
+    comm_delay_seconds: 300   # crece con la distancia; valor de demo
+    description: Espacio profundo sin protección magnética.
+
+  moon:
+    label: Superficie lunar
+    gravity_g: 0.166
+    base_dose_msv_day: 1.4
+    dose_source: "Chang'e 4 / LND: 1,37 mSv/día (Zhang et al., Science Advances 2020)"
+    comm_delay_seconds: 1.3
+    description: Sin atmósfera ni campo magnético.
+
+  mars:
+    label: Superficie de Marte
+    gravity_g: 0.38
+    base_dose_msv_day: 0.6
+    dose_source: "MSL/RAD en el cráter Gale: 0,64 mSv/día (Hassler et al., Science 2014)"
+    comm_delay_seconds: 1200  # real: 4–24 min; demo: 20 min
+    description: Atmósfera delgada; retraso de comunicación de minutos.

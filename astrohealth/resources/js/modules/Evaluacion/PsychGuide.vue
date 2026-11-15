@@ -1,0 +1,211 @@
+<script setup lang="ts">
+import { Head, router } from '@inertiajs/vue3';
+import { Brain, Plus, ShieldCheck } from '@lucide/vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
+import { toast } from 'vue-sonner';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useReveal } from '@/composables/useReveal';
+import { dashboard, psicologia } from '@/routes';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { useAlertsStore } from '../Alertas/Stores/useAlertsStore';
+import { useMissionStore } from '../Entorno/Stores/useMissionStore';
+import { useGamificationStore } from '../Gamificacion/Stores/useGamificationStore';
+import GuideTabs from './Components/GuideTabs.vue';
+import PsychTakeDialog from './Components/Psych/PsychTakeDialog.vue';
+import PsychTestCard from './Components/Psych/PsychTestCard.vue';
+import PsychTestEditor from './Components/Psych/PsychTestEditor.vue';
+import { usePsychStore } from './Stores/usePsychStore';
+import type { PsychSubmission, PsychTest } from './Types/psych';
+
+/**
+ * Guía psicológica (/guia/psicologica, M2): los tests de la tripulación.
+ * El astronauta responde los que le tocan; el equipo médico (guide.manage)
+ * los crea y edita. Si un test marca una respuesta de riesgo, sale sola una
+ * alerta urgente a Tierra (M5).
+ * ⚠️ Por ahora con datos de prueba guardados en este navegador.
+ */
+defineOptions({
+    layout: {
+        breadcrumbs: [{ title: 'Guía psicológica', href: psicologia() }],
+    },
+});
+
+const auth = useAuthStore();
+const psych = usePsychStore();
+const alerts = useAlertsStore();
+const mission = useMissionStore();
+const gamification = useGamificationStore();
+
+const root = ref<HTMLElement | null>(null);
+const { reveal } = useReveal(root);
+const ready = ref(false);
+const taking = ref<{ open: boolean; test: PsychTest | null }>({
+    open: false,
+    test: null,
+});
+const editing = ref<{ open: boolean; test: PsychTest | null }>({
+    open: false,
+    test: null,
+});
+
+const own = computed(() => auth.actor?.astronaut_id ?? null);
+const canEdit = computed(() => auth.can('guide.manage'));
+const today = computed(() => mission.current?.day ?? 1);
+
+const pending = computed(() =>
+    own.value === null
+        ? []
+        : psych.tests.filter((test) =>
+              psych.isDue(own.value!, test, today.value),
+          ),
+);
+
+async function submit(submission: PsychSubmission) {
+    if (own.value === null || !taking.value.test) {
+        return null;
+    }
+
+    const test = taking.value.test;
+    const result = await psych.submit(
+        own.value,
+        test.id,
+        submission,
+        today.value,
+    );
+
+    if (result) {
+        await gamification.award(
+            own.value,
+            'psych_test',
+            `${test.id}-${today.value}`,
+            today.value,
+        );
+    }
+
+    if (result?.flagged) {
+        await alerts.send(own.value, {
+            kind: 'help',
+            category: 'Ánimo o estrés',
+            note: `Alerta automática: el test ${test.code} marcó una respuesta de riesgo. Contactar con prioridad.`,
+            urgent: true,
+        });
+    }
+
+    return result;
+}
+
+async function saveTest(test: PsychTest): Promise<void> {
+    const saved = await psych.saveTest(test);
+    toast.success(test.id ? 'Test actualizado' : 'Test creado', {
+        description: saved.name,
+    });
+}
+
+onMounted(async () => {
+    if (!auth.can('crew.read')) {
+        router.visit(dashboard());
+
+        return;
+    }
+
+    await Promise.all([psych.load(), mission.load()]);
+    ready.value = true;
+    await nextTick();
+    reveal();
+});
+</script>
+
+<template>
+    <Head title="Guía psicológica" />
+
+    <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
+        <header class="flex flex-col gap-4" data-reveal>
+            <div>
+                <p
+                    class="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
+                >
+                    <Brain class="size-3.5" /> Salud mental y cognitiva
+                </p>
+                <h1
+                    class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
+                >
+                    Guía psicológica
+                </h1>
+                <p class="mt-2 max-w-2xl text-muted-foreground">
+                    El aislamiento, el encierro y la distancia de casa pesan en
+                    una misión larga. Estos tests ayudan a notarlo a tiempo. No
+                    reemplazan la conversación con un profesional.
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <GuideTabs
+                    active="psych"
+                    :show-results="auth.can('health.read.any')"
+                />
+                <Button
+                    v-if="canEdit"
+                    class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
+                    @click="editing = { open: true, test: null }"
+                >
+                    <Plus /> Nuevo test
+                </Button>
+            </div>
+        </header>
+
+        <section
+            v-if="own !== null && ready"
+            class="flex items-center gap-3 rounded-2xl border p-4"
+            :class="pending.length ? 'border-sky-500/40 bg-sky-500/5' : ''"
+            data-reveal
+        >
+            <ShieldCheck class="size-5 shrink-0 text-sky-500" />
+            <p class="text-sm">
+                <template v-if="pending.length">
+                    Tienes <strong>{{ pending.length }}</strong>
+                    {{
+                        pending.length === 1
+                            ? 'test pendiente'
+                            : 'tests pendientes'
+                    }}
+                    esta semana. Toma unos minutos en un lugar tranquilo.
+                </template>
+                <template v-else
+                    >Estás al día con tus tests. ¡Gracias!</template
+                >
+                <span class="block text-xs text-muted-foreground">
+                    Tus respuestas son privadas: el equipo médico solo ve tu
+                    puntaje.
+                </span>
+            </p>
+        </section>
+
+        <div v-if="!ready" class="grid gap-4 lg:grid-cols-2">
+            <Skeleton v-for="n in 4" :key="n" class="h-64 rounded-2xl" />
+        </div>
+
+        <div v-else class="grid gap-4 lg:grid-cols-2" data-reveal>
+            <PsychTestCard
+                v-for="test in psych.tests"
+                :key="test.id"
+                :test="test"
+                :due="own === null ? null : psych.isDue(own, test, today)"
+                :last="own === null ? null : psych.latest(own, test.id)"
+                :can-edit="canEdit"
+                @take="taking = { open: true, test }"
+                @edit="editing = { open: true, test }"
+            />
+        </div>
+
+        <PsychTakeDialog
+            v-model:open="taking.open"
+            :test="taking.test"
+            :submit="submit"
+        />
+        <PsychTestEditor
+            v-model:open="editing.open"
+            :test="editing.test"
+            :submit="saveTest"
+        />
+    </div>
+</template>

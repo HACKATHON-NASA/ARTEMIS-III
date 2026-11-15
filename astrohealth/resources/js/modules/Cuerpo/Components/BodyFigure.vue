@@ -1,0 +1,76 @@
+<script setup lang="ts">
+/**
+ * La silueta del astronauta (SVG propio, sin imágenes): un holograma azul
+ * de frente. Solo dibuja; las zonas van encima (BodyZone). Un lado se
+ * dibuja y el otro es su reflejo.
+ */
+const HALF =
+    'M160 30 C136 30 120 50 120 78 C120 104 136 124 150 126 L150 140 C126 142 106 148 98 158 C88 172 84 196 80 228 L66 330 C64 346 70 356 78 354 C86 352 88 340 90 330 L104 238 C108 222 112 212 116 206 L118 300 C118 316 114 330 114 344 L112 450 L114 596 C114 612 124 618 134 616 C144 614 146 604 146 592 L150 452 L156 360 L160 360 Z';
+</script>
+
+<template>
+    <g aria-hidden="true">
+        <defs>
+            <linearGradient id="body-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.22" />
+                <stop offset="55%" stop-color="#2563eb" stop-opacity="0.12" />
+                <stop offset="100%" stop-color="#1e3a8a" stop-opacity="0.06" />
+            </linearGradient>
+            <filter id="body-glow" x="-30%" y="-10%" width="160%" height="120%">
+                <feGaussianBlur stdDeviation="5" result="blur" />
+                <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                </feMerge>
+            </filter>
+        </defs>
+
+        <!-- Órbita: la radiación afecta a todo el cuerpo -->
+        <ellipse
+            cx="160"
+            cy="330"
+            rx="150"
+            ry="300"
+            fill="none"
+            stroke="#38bdf8"
+            stroke-opacity="0.18"
+            stroke-dasharray="3 9"
+        />
+        <text
+            x="286"
+            y="146"
+            text-anchor="middle"
+            font-size="11"
+            fill="#7dd3fc"
+            fill-opacity="0.8"
+        >
+            Radiación
+        </text>
+
+        <g filter="url(#body-glow)">
+            <path
+                :d="HALF"
+                fill="url(#body-fill)"
+                stroke="#7dd3fc"
+                stroke-opacity="0.55"
+                stroke-width="1.5"
+            />
+            <path
+                :d="HALF"
+                transform="translate(320 0) scale(-1 1)"
+                fill="url(#body-fill)"
+                stroke="#7dd3fc"
+                stroke-opacity="0.55"
+                stroke-width="1.5"
+            />
+        </g>
+
+        <!-- Detalles finos: columna y costillas -->
+        <g stroke="#7dd3fc" stroke-opacity="0.16" fill="none" stroke-width="1">
+            <path d="M160 150 L160 350" />
+            <path d="M122 182 Q160 196 198 182" />
+            <path d="M120 236 Q160 250 200 236" />
+            <path d="M126 320 Q160 332 194 320" />
+        </g>
+    </g>
+</template>

@@ -1,0 +1,23 @@
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+
+# Python (simulador)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Variables de entorno (la aplicación trae su propio .gitignore)
+.env
+.env.*
+!.env.example
+
+# Material interno del equipo (no se publica)
+interno/
