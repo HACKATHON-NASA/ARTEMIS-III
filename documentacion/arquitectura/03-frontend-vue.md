@@ -69,7 +69,7 @@ astrohealth/resources/images/      # Imágenes de la app (marca/, fondos/), opti
 | Registrar (M1) | `modules/Registro/Record.vue` | `/registrar` |
 | Dashboard (M4) | `modules/Dashboard/Dashboard.vue` | `/dashboard` |
 | Mi evolución (M4, astronauta): su historia en la misión, avisos de tendencia y sus tests | `modules/Dashboard/MyEvolution.vue` | `/evolucion` |
-| Misión (M6) | `modules/Entorno/Mission.vue` | `/mision` |
+| Mi misión (M6): el entorno, lo que cambia para el cuerpo (gravedad, retraso, radiación), riesgos, tripulación y explorar/cambiar el entorno (`mission.update`) | `modules/Entorno/Mission.vue` | `/mision` |
 | Logros (M7) | `modules/Gamificacion/Achievements.vue` | `/logros` |
 | Centro de alertas (M5) | `modules/Alertas/Alerts.vue` | `/alertas` |
 | Guía de salud · física (M2 + M5): rangos por entorno y qué hacer | `modules/Evaluacion/Guide.vue` | `/guia` |

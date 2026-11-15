@@ -5,6 +5,7 @@ import {
     BellRing,
     BookOpen,
     ChartLine,
+    Globe,
     HeartPulse,
     Rocket,
     ShieldCheck,
@@ -34,6 +35,7 @@ import {
     alertas,
     dashboard,
     logros,
+    mision,
     evolucion,
     guia,
     inicio,
@@ -74,7 +76,14 @@ const missionItems = computed<NavItem[]>(() => [
         ? [
               { title: 'Mi evolución', href: evolucion(), icon: ChartLine },
               { title: 'Logros', href: logros(), icon: Trophy },
+              { title: 'Mi misión', href: mision(), icon: Globe },
           ]
+        : []),
+    // El médico de vuelo puede ver y cambiar el entorno de la misión.
+    ...(!auth.actor?.astronaut_id &&
+    auth.can('mission.update') &&
+    !auth.can('users.manage')
+        ? [{ title: 'Misión actual', href: mision(), icon: Globe }]
         : []),
     ...(auth.can('alerts.read')
         ? [

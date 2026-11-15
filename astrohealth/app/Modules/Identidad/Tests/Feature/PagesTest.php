@@ -101,6 +101,13 @@ final class PagesTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component('Gamificacion/Achievements'));
     }
 
+    public function test_my_mission_is_the_entorno_module_principal(): void
+    {
+        $this->get('/mision')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Entorno/Mission'));
+    }
+
     public function test_the_alerts_center_is_the_alertas_module_principal(): void
     {
         $this->get('/alertas')
