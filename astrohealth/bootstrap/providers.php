@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Cuerpo\CuerpoServiceProvider;
 use App\Modules\Entorno\EntornoServiceProvider;
 use App\Modules\Evaluacion\EvaluacionServiceProvider;
 use App\Modules\Identidad\IdentidadServiceProvider;
@@ -10,6 +11,7 @@ return [
     AppServiceProvider::class,
 
     // Módulos (app/Modules/<Modulo>/<Modulo>ServiceProvider.php)
+    CuerpoServiceProvider::class,
     EntornoServiceProvider::class,
     EvaluacionServiceProvider::class,
     IdentidadServiceProvider::class,

@@ -1,18 +1,16 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+import { api } from '@/lib/api';
 import type { ClinicalNote, NoteDraft } from '../Types/notes';
-import { mockAddNote, mockNotes, mockResolveNote } from '../Utils/notesMock';
 
 /**
  * Las notas clínicas de un tripulante (expediente privado del equipo
- * médico). Solo para quien tiene el permiso clinical_notes.
+ * médico de su misión: clinical_notes.manage).
  *
- * ⚠️ HOY con datos de prueba (Utils/notesMock.ts). Con el backend:
  * GET/POST /api/v1/astronauts/{id}/clinical-notes y
- * PATCH /api/v1/clinical-notes/{id}/resolve.
+ * PATCH /api/v1/clinical-notes/{id}/resolve. El autor lo pone el backend
+ * con la sesión; las notas no se editan ni se borran.
  */
-const wait = (ms = 250) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export const useNotesStore = defineStore('notes', () => {
     const notes = ref<ClinicalNote[]>([]);
 
@@ -22,30 +20,31 @@ export const useNotesStore = defineStore('notes', () => {
     );
 
     async function load(astronautId: number): Promise<void> {
-        await wait();
-        notes.value = mockNotes()
-            .filter((note) => note.astronaut_id === astronautId)
-            .sort((a, b) => b.created_at.localeCompare(a.created_at));
+        notes.value = await api<ClinicalNote[]>(
+            `/astronauts/${astronautId}/clinical-notes`,
+        );
     }
 
+    /** `author` ya no se envía: lo decide el backend con la sesión. */
     async function add(
         astronautId: number,
-        author: string,
+        _author: string,
         draft: NoteDraft,
     ): Promise<void> {
-        await wait(350);
-        notes.value = [mockAddNote(astronautId, author, draft), ...notes.value];
+        const note = await api<ClinicalNote>(
+            `/astronauts/${astronautId}/clinical-notes`,
+            { method: 'POST', body: draft },
+        );
+        notes.value = [note, ...notes.value];
     }
 
-    async function resolve(id: number, by: string): Promise<void> {
-        await wait(250);
-        mockResolveNote(id, by);
-        const note = notes.value.find((item) => item.id === id);
-
-        if (note) {
-            note.resolved_at = new Date().toISOString();
-            note.resolved_by = by;
-        }
+    async function resolve(id: number, _by: string): Promise<void> {
+        const note = await api<ClinicalNote>(`/clinical-notes/${id}/resolve`, {
+            method: 'PATCH',
+        });
+        notes.value = notes.value.map((item) =>
+            item.id === note.id ? note : item,
+        );
     }
 
     return { notes, pending, load, add, resolve };

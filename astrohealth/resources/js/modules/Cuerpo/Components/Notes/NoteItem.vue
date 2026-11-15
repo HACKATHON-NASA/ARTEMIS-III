@@ -2,7 +2,7 @@
 import { CircleCheck, Flag } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import type { ClinicalNote } from '../../Types/notes';
-import { NOTE_KINDS } from '../../Utils/notesMock';
+import { NOTE_KINDS } from '../../Utils/noteKinds';
 
 /**
  * Una nota clínica: tipo, texto, quién y cuándo. Si requiere seguimiento,

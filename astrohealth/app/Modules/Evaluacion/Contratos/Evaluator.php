@@ -21,6 +21,14 @@ interface Evaluator
      */
     public function evaluate(string $indicatorCode, float $value, string $environment): string;
 
+    /**
+     * El estado de cada zona del cuerpo: el peor de sus lecturas. No guarda nada.
+     *
+     * @param  list<LatestReading>  $readings
+     * @return array<string, string> zona → "green" | "yellow" | "red"
+     */
+    public function bodyStatus(array $readings): array;
+
     /** Los rangos de un indicador en un entorno (para pintar las bandas de las gráficas). */
     public function thresholdFor(string $indicatorCode, string $environment): ThresholdBand;
 

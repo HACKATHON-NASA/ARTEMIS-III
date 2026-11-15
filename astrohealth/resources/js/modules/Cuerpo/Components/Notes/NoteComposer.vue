@@ -4,7 +4,7 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import type { NoteDraft, NoteKind } from '../../Types/notes';
-import { NOTE_KINDS } from '../../Utils/notesMock';
+import { NOTE_KINDS } from '../../Utils/noteKinds';
 
 /**
  * Escribir una nota clínica: el tipo, el texto y si requiere seguimiento.

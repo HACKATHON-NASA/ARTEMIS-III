@@ -184,12 +184,24 @@ flowchart LR
 
 ---
 
-## F4 · M3 Cuerpo + notas clínicas
+## F4 · M3 Cuerpo + notas clínicas · ✅ hecho (16 nov 2026)
 
-**Tablas:** `body_parts` (9 zonas) y, **nueva frente al plan**, `clinical_notes`:
+**Tablas:** `body_parts` (9 zonas) y `clinical_notes` (no se editan ni se borran; guardan el nombre del autor y de quien resuelve).
 
-| Columna | Tipo |
-|---|---|
+| Endpoint | Permiso | Caso de uso |
+|---|---|---|
+| `GET /api/v1/body-parts` | autenticado | `ListBodyParts` (indicadores de cada zona desde el catálogo de M1) |
+| `GET /api/v1/astronauts/{id}/body-status` | Gate `health.read` | `GetBodyStatus` (último valor por indicador; el estado de la zona lo decide M2 con `Evaluator::bodyStatus`) |
+| `GET` · `POST /api/v1/astronauts/{id}/clinical-notes` | `clinical_notes.manage` + Gate `health.read` | `ListClinicalNotes`, `AddClinicalNote` |
+| `PATCH /api/v1/clinical-notes/{id}/resolve` | `clinical_notes.manage` (misión revisada en el caso de uso) | `ResolveClinicalNote` (409 si no está pendiente) |
+
+**Pruebas clave:** un astronauta y el admin **nunca** ven las notas; un médico de otra misión tampoco.
+**Datos de demo** (solo fuera de producción): `DemoReadingsSeeder` guarda los últimos valores de Ares-1 pasando por M2 y `DemoClinicalNotesSeeder` las 4 notas. Los puntajes del backend coinciden con la demo (74, 90, 87, 100).
+**Frontend:** el cuerpo (`useBodyStore`), el puntaje (`useAssessmentStore`) y las notas (`useNotesStore`) usan la API; `bodyMockData.ts` y `notesMock.ts` borrados.
+**Pruebas:** 8 nuevas (230 en verde).
+**Listo cuando:** ✅ Inicio y la ficha del tripulante pintan el cuerpo con datos reales, y las notas se guardan y se resuelven.
+
+---|---|
 | `astronaut_id` | `foreignId → astronauts` |
 | `author_id` | `foreignId → users` |
 | `kind` | `enum(evolution, impression, plan, follow_up)` |

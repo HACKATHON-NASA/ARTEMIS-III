@@ -1,32 +1,39 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { mockAssessmentFor } from '@/mocks/crewHealth';
+import { api, ApiError } from '@/lib/api';
 import type { Assessment } from '../Types/assessment';
 
 /**
  * El puntaje y el estado general (M2): de un astronauta (`current`) y de
  * toda la tripulación (`crew`, para la vista de Tripulación).
  *
- * ⚠️ HOY con datos de prueba compartidos (@/mocks/crewHealth). Cuando exista
- * GET /api/v1/astronauts/{id}/assessment, las acciones pasan a usar `api()`.
+ * GET /api/v1/astronauts/{id}/assessment. El backend lo recalcula cada vez
+ * que se guardan mediciones; un 404 (EVALUATION_NO_DATA) significa que esa
+ * persona todavía no tiene datos.
  */
-const wait = (ms = 250) => new Promise((resolve) => setTimeout(resolve, ms));
+async function latestOf(astronautId: number): Promise<Assessment | null> {
+    try {
+        return await api<Assessment>(`/astronauts/${astronautId}/assessment`);
+    } catch (error) {
+        if (error instanceof ApiError && error.status === 404) {
+            return null;
+        }
+
+        throw error;
+    }
+}
 
 export const useAssessmentStore = defineStore('assessment', () => {
     const current = ref<Assessment | null>(null);
     const crew = ref<Assessment[]>([]);
 
     async function load(astronautId: number): Promise<void> {
-        await wait();
-        // null = todavía no tiene mediciones (el backend responderá 404).
-        current.value = mockAssessmentFor(astronautId);
+        current.value = await latestOf(astronautId);
     }
 
     async function loadCrew(astronautIds: number[]): Promise<void> {
-        await wait();
-        crew.value = astronautIds
-            .map((id) => mockAssessmentFor(id))
-            .filter((item) => item !== null);
+        const list = await Promise.all(astronautIds.map((id) => latestOf(id)));
+        crew.value = list.filter((item) => item !== null);
     }
 
     return { current, crew, load, loadCrew };

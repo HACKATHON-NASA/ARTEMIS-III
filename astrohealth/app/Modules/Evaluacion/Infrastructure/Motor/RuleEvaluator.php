@@ -6,6 +6,7 @@ namespace App\Modules\Evaluacion\Infrastructure\Motor;
 
 use App\Modules\Evaluacion\Contratos\AssessmentSummary;
 use App\Modules\Evaluacion\Contratos\Evaluator;
+use App\Modules\Evaluacion\Contratos\LatestReading;
 use App\Modules\Evaluacion\Contratos\ThresholdBand;
 use App\Modules\Evaluacion\Domain\Enums\Status;
 use App\Modules\Evaluacion\Domain\Excepciones\ThresholdMissing;
@@ -41,6 +42,16 @@ final class RuleEvaluator implements Evaluator
     public function evaluate(string $indicatorCode, float $value, string $environment): string
     {
         return StatusRule::classify($value, $this->threshold($indicatorCode, $environment))->value;
+    }
+
+    public function bodyStatus(array $readings): array
+    {
+        $zones = BodyStatusRule::byZone(array_map(
+            fn (LatestReading $reading): array => ['zone' => $reading->zone, 'status' => Status::from($reading->status)],
+            $readings,
+        ));
+
+        return array_map(fn (Status $status): string => $status->value, $zones);
     }
 
     public function thresholdFor(string $indicatorCode, string $environment): ThresholdBand
