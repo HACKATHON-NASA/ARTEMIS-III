@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { computed, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,9 @@ import {
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import type { NewMessage } from '../Types/alerts';
-import { HELP_CATEGORIES } from '../Utils/alertKinds';
+import { HELP_CATEGORIES, helpCategoryLabel } from '../Utils/alertKinds';
+
+const { t } = useI18n();
 
 /**
  * El formulario para hablar con Tierra. SOS: confirmar (y un texto opcional,
@@ -31,29 +34,16 @@ const note = ref('');
 const error = ref<string | null>(null);
 const saving = ref(false);
 
-const TEXT = {
-    sos: {
-        title: '¿Enviar SOS a Tierra?',
-        description:
-            'Es para emergencias. Avisa también al médico de la tripulación, que está a bordo.',
-        placeholder: 'Opcional: qué está pasando',
-        button: 'Enviar SOS',
-    },
-    help: {
-        title: 'Pedir ayuda al médico',
-        description: 'El médico de vuelo recibe tu mensaje y te responde.',
-        placeholder: '¿Qué sientes? ¿Desde cuándo?',
-        button: 'Pedir ayuda',
-    },
-    report: {
-        title: 'Contar una novedad',
-        description: 'Algo que el médico deba saber, aunque no sea urgente.',
-        placeholder: 'Ej.: dormí mal por el ruido del módulo',
-        button: 'Enviar novedad',
-    },
-};
+const text = computed(() => {
+    const kind = props.kind ?? 'report';
 
-const text = computed(() => TEXT[props.kind ?? 'report']);
+    return {
+        title: t(`Alertas.message.${kind}Title`),
+        description: t(`Alertas.message.${kind}Description`),
+        placeholder: t(`Alertas.message.${kind}Placeholder`),
+        button: t(`Alertas.message.${kind}Button`),
+    };
+});
 
 watch(open, (isOpen) => {
     if (isOpen) {
@@ -69,13 +59,13 @@ async function send(): Promise<void> {
     }
 
     if (props.kind === 'help' && category.value === '') {
-        error.value = 'Elige el motivo.';
+        error.value = t('Alertas.message.errReason');
 
         return;
     }
 
     if (props.kind !== 'sos' && note.value.trim().length < 3) {
-        error.value = 'Escribe qué pasa, aunque sea corto.';
+        error.value = t('Alertas.message.errText');
 
         return;
     }
@@ -115,9 +105,9 @@ async function send(): Promise<void> {
                 @submit.prevent="send"
             >
                 <div v-if="kind === 'help'" class="grid gap-2">
-                    <span id="help-category" class="text-sm font-medium"
-                        >Motivo</span
-                    >
+                    <span id="help-category" class="text-sm font-medium">{{
+                        t('Alertas.message.reason')
+                    }}</span>
                     <div
                         role="radiogroup"
                         aria-labelledby="help-category"
@@ -140,14 +130,16 @@ async function send(): Promise<void> {
                                 error = null;
                             "
                         >
-                            {{ option }}
+                            {{ helpCategoryLabel(option) }}
                         </button>
                     </div>
                 </div>
 
                 <div class="grid gap-2">
                     <Label for="message-note">{{
-                        kind === 'sos' ? 'Mensaje' : 'Qué pasa'
+                        kind === 'sos'
+                            ? t('Alertas.message.messageLabel')
+                            : t('Alertas.message.whatsUp')
                     }}</Label>
                     <textarea
                         id="message-note"
@@ -163,7 +155,9 @@ async function send(): Promise<void> {
             </form>
 
             <DialogFooter>
-                <Button variant="ghost" @click="open = false">Cancelar</Button>
+                <Button variant="ghost" @click="open = false">{{
+                    t('common.cancel')
+                }}</Button>
                 <Button
                     type="submit"
                     form="message-form"

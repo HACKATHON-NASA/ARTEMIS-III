@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { LifeBuoy, MessageSquareText, Siren } from '@lucide/vue';
 import type { NewMessage } from '../Types/alerts';
+
+const { t } = useI18n();
 
 /**
  * Los tres botones del astronauta para hablar con Tierra: SOS (emergencia),
@@ -26,11 +29,11 @@ defineEmits<{ choose: [kind: NewMessage['kind']] }>();
             <span>
                 <span
                     class="block text-lg leading-tight font-bold tracking-wide"
-                    >SOS</span
+                    >{{ t('Alertas.comms.sos') }}</span
                 >
-                <span v-if="!compact" class="block text-xs text-white/85"
-                    >Emergencia: avisa a Tierra ya</span
-                >
+                <span v-if="!compact" class="block text-xs text-white/85">{{
+                    t('Alertas.comms.sosHint')
+                }}</span>
             </span>
         </button>
 
@@ -46,13 +49,13 @@ defineEmits<{ choose: [kind: NewMessage['kind']] }>();
                 class="size-6 shrink-0 text-amber-600 dark:text-amber-300"
             />
             <span>
-                <span class="block leading-tight font-semibold"
-                    >Pedir ayuda</span
-                >
+                <span class="block leading-tight font-semibold">{{
+                    t('Alertas.comms.help')
+                }}</span>
                 <span
                     v-if="!compact"
                     class="block text-xs text-muted-foreground"
-                    >Un síntoma, una lesión, el ánimo…</span
+                    >{{ t('Alertas.comms.helpHint') }}</span
                 >
             </span>
         </button>
@@ -67,11 +70,13 @@ defineEmits<{ choose: [kind: NewMessage['kind']] }>();
         >
             <MessageSquareText class="size-6 shrink-0 text-sky-500" />
             <span>
-                <span class="block leading-tight font-semibold">Novedad</span>
+                <span class="block leading-tight font-semibold">{{
+                    t('Alertas.comms.report')
+                }}</span>
                 <span
                     v-if="!compact"
                     class="block text-xs text-muted-foreground"
-                    >Cuéntale algo al médico</span
+                    >{{ t('Alertas.comms.reportHint') }}</span
                 >
             </span>
         </button>

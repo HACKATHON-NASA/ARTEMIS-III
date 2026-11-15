@@ -13,7 +13,7 @@ use App\Modules\Alertas\Infrastructure\Models\Alert as AlertModel;
 final class InsertAlertRepository
 {
     /**
-     * @param  array{astronaut_id: int, measurement_id?: int|null, kind: string, indicator_code?: string|null, level: string, message: string, category?: string|null, note?: string|null, source: string, delay_seconds: int, sent_at: mixed, ground_eta_at: mixed, acknowledged_at?: mixed, acknowledged_by_name?: string|null, reply?: string|null}  $data
+     * @param  array{astronaut_id: int, measurement_id?: int|null, kind: string, indicator_code?: string|null, value?: float|int|null, level: string, message: string, category?: string|null, note?: string|null, source: string, delay_seconds: int, sent_at: mixed, ground_eta_at: mixed, acknowledged_at?: mixed, acknowledged_by_name?: string|null, reply?: string|null}  $data
      */
     public function insert(array $data): Alert
     {

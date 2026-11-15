@@ -122,6 +122,27 @@ export function t(
         : global.t(key, params ?? {}, plural);
 }
 
+/**
+ * "now" · "5 min ago" · "2 hr. ago" · "3 days ago" (o "ahora" · "hace 5 min"…)
+ * a partir de los minutos que pasaron, en el idioma de ahora.
+ */
+export function agoFromMinutes(minutes: number): string {
+    if (minutes < 1) {
+        return global.t('common.now');
+    }
+
+    const format = new Intl.RelativeTimeFormat(currentLocale(), {
+        numeric: 'always',
+        style: 'short',
+    });
+
+    return minutes < 60
+        ? format.format(-Math.round(minutes), 'minute')
+        : minutes < 1440
+          ? format.format(-Math.round(minutes / 60), 'hour')
+          : format.format(-Math.round(minutes / 1440), 'day');
+}
+
 /** Un número con el formato del idioma (1,234.5 · 1.234,5). */
 export function formatNumber(
     value: number,

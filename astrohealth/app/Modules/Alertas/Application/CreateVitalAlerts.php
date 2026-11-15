@@ -62,6 +62,7 @@ final readonly class CreateVitalAlerts
                 'measurement_id' => $item->measurementId,
                 'kind' => AlertKind::Vital->value,
                 'indicator_code' => $item->indicator,
+                'value' => $item->value,
                 'level' => $item->status,
                 'message' => GroundLink::vitalMessage($info->name, $item->value, $info->unit, $item->status === 'red'),
                 'source' => AlertSource::fromMeasurement($item->source)->value,

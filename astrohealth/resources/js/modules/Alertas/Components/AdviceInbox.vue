@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Check, Stethoscope } from '@lucide/vue';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -6,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { useAdviceStore } from '../Stores/useAdviceStore';
 import type { Advice } from '../Types/advice';
 import { ADVICE_CATEGORIES } from '../Utils/adviceCategories';
+
+const { t } = useI18n();
 
 /**
  * Las indicaciones del médico que le llegaron al astronauta y aún no ha
@@ -22,8 +25,8 @@ async function read(item: Advice): Promise<void> {
     busyId.value = item.id;
     await store.markRead(item.id);
     busyId.value = null;
-    toast.success('Indicación leída', {
-        description: 'El médico ya sabe que la viste.',
+    toast.success(t('Alertas.inbox.read'), {
+        description: t('Alertas.inbox.readHint'),
     });
 }
 
@@ -39,7 +42,7 @@ onBeforeUnmount(() => clearInterval(timer));
     <section
         v-if="store.unread.length"
         class="flex flex-col gap-3"
-        aria-label="Indicaciones del médico"
+        :aria-label="t('Alertas.inbox.aria')"
     >
         <article
             v-for="item in store.unread"
@@ -60,9 +63,14 @@ onBeforeUnmount(() => clearInterval(timer));
                 <p
                     class="text-xs font-semibold tracking-wide text-sky-600 uppercase dark:text-sky-400"
                 >
-                    Indicación del médico ·
-                    {{ ADVICE_CATEGORIES[item.category].label }}
-                    <template v-if="item.important"> · importante</template>
+                    {{
+                        t('Alertas.inbox.header', {
+                            category: ADVICE_CATEGORIES[item.category].label,
+                        })
+                    }}
+                    <template v-if="item.important">
+                        {{ t('Alertas.inbox.important') }}</template
+                    >
                 </p>
                 <p class="mt-1 font-semibold">{{ item.title }}</p>
                 <ol
@@ -75,7 +83,13 @@ onBeforeUnmount(() => clearInterval(timer));
                 <p class="mt-2 text-xs text-muted-foreground">
                     {{ item.author
                     }}<template v-if="item.valid_days">
-                        · por {{ item.valid_days }} días</template
+                        {{
+                            t(
+                                'Alertas.inbox.forDays',
+                                { n: item.valid_days },
+                                item.valid_days,
+                            )
+                        }}</template
                     >
                 </p>
             </div>
@@ -84,7 +98,7 @@ onBeforeUnmount(() => clearInterval(timer));
                 class="shrink-0 bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                 @click="read(item)"
             >
-                <Check /> Entendido
+                <Check /> {{ t('common.gotIt') }}
             </Button>
         </article>
     </section>

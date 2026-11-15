@@ -18,6 +18,8 @@ export default {
         soon: 'pronto',
         soonBadge: 'Pronto',
         today: 'hoy',
+        now: 'ahora',
+        gotIt: 'Entendido',
         yesterday: 'ayer',
         you: 'tú',
         none: '—',

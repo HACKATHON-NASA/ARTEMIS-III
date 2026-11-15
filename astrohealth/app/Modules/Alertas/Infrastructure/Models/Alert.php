@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $measurement_id
  * @property string $kind
  * @property string|null $indicator_code
+ * @property float|null $value
  * @property string $level
  * @property string $message
  * @property string|null $category
@@ -30,7 +31,7 @@ use Illuminate\Database\Eloquent\Model;
 final class Alert extends Model
 {
     protected $fillable = [
-        'astronaut_id', 'measurement_id', 'kind', 'indicator_code', 'level', 'message', 'category', 'note',
+        'astronaut_id', 'measurement_id', 'kind', 'indicator_code', 'value', 'level', 'message', 'category', 'note',
         'source', 'delay_seconds', 'sent_at', 'ground_eta_at', 'acknowledged_at', 'acknowledged_by_name', 'reply',
     ];
 
@@ -42,6 +43,7 @@ final class Alert extends Model
         return [
             'astronaut_id' => 'integer',
             'measurement_id' => 'integer',
+            'value' => 'float',
             'delay_seconds' => 'integer',
             'sent_at' => 'immutable_datetime',
             'ground_eta_at' => 'immutable_datetime',

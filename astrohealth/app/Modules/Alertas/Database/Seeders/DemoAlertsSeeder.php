@@ -23,15 +23,15 @@ final class DemoAlertsSeeder extends Seeder
 {
     private const DOCTOR = 'Dra. Sofía Ramírez';
 
-    /** [tripulante, tipo, indicador, nivel, mensaje, nota, origen, minutos atrás] */
+    /** [tripulante, tipo, indicador, valor, nivel, mensaje, nota, origen, minutos atrás] */
     private const ALERTS = [
-        [0, 'vital', 'bp_sys', 'red', 'Presión sistólica 148 mmHg (crítico)', null, 'device', 6],
-        [1, 'report', null, 'info', 'Novedad de Kenji', 'Dolor de cabeza leve desde que me levanté. Ya tomé agua.', 'astronaut', 26],
-        [2, 'vital', 'spo2', 'yellow', 'Saturación de oxígeno 93 % (precaución)', null, 'device', 70],
-        [2, 'help', null, 'yellow', 'Amara pide ayuda · Síntoma o malestar', 'Me falta un poco el aire al hacer ejercicio.', 'astronaut', 180],
-        [0, 'vital', 'sleep', 'yellow', 'Sueño 6,2 h (precaución)', null, 'device', 540],
-        [1, 'vital', 'mood', 'yellow', 'Estado de ánimo 3 de 5 (precaución)', null, 'device', 1800],
-        [2, 'vital', 'radiation', 'yellow', 'Radiación diaria 0,94 mSv (precaución)', null, 'device', 3000],
+        [0, 'vital', 'bp_sys', 148, 'red', 'Presión sistólica 148 mmHg (crítico)', null, 'device', 6],
+        [1, 'report', null, null, 'info', 'Novedad de Kenji', 'Dolor de cabeza leve desde que me levanté. Ya tomé agua.', 'astronaut', 26],
+        [2, 'vital', 'spo2', 93, 'yellow', 'Saturación de oxígeno 93 % (precaución)', null, 'device', 70],
+        [2, 'help', null, null, 'yellow', 'Amara pide ayuda · Síntoma o malestar', 'Me falta un poco el aire al hacer ejercicio.', 'astronaut', 180],
+        [0, 'vital', 'sleep', 6.2, 'yellow', 'Sueño 6,2 h (precaución)', null, 'device', 540],
+        [1, 'vital', 'mood', 3, 'yellow', 'Estado de ánimo 3 de 5 (precaución)', null, 'device', 1800],
+        [2, 'vital', 'radiation', 0.94, 'yellow', 'Radiación diaria 0,94 mSv (precaución)', null, 'device', 3000],
     ];
 
     /** Las que Tierra ya atendió: posición en ALERTS → [minutos atrás, respuesta]. */
@@ -60,7 +60,7 @@ final class DemoAlertsSeeder extends Seeder
         $now = CarbonImmutable::now();
 
         if (! Alert::query()->exists()) {
-            foreach (self::ALERTS as $position => [$index, $kind, $indicator, $level, $message, $note, $source, $minutesAgo]) {
+            foreach (self::ALERTS as $position => [$index, $kind, $indicator, $value, $level, $message, $note, $source, $minutesAgo]) {
                 $member = $crew[$index] ?? null;
                 $ack = self::REPLIES[$position] ?? null;
 
@@ -74,6 +74,7 @@ final class DemoAlertsSeeder extends Seeder
                     'astronaut_id' => $member->id,
                     'kind' => $kind,
                     'indicator_code' => $indicator,
+                    'value' => $value,
                     'level' => $level,
                     'message' => $message,
                     'category' => $kind === 'help' ? 'Síntoma o malestar' : null,

@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Gauge } from '@lucide/vue';
+
+const { t } = useI18n();
 
 /**
  * Solo para la demo: el retraso real con Marte es de 20 minutos; con ×60 las
@@ -20,14 +23,10 @@ defineEmits<{ change: [speed: number] }>();
                 : 'text-muted-foreground hover:text-foreground'
         "
         :aria-pressed="speed > 1"
-        title="Solo para la demo: acelera el retraso de las alertas nuevas"
+        :title="t('Alertas.speed.title')"
         @click="$emit('change', speed > 1 ? 1 : 60)"
     >
         <Gauge class="size-3.5" />
-        {{
-            speed > 1
-                ? 'Demo ×60: el retraso de Marte dura 20 s'
-                : 'Retraso real (20 min) · activar demo ×60'
-        }}
+        {{ speed > 1 ? t('Alertas.speed.on') : t('Alertas.speed.off') }}
     </button>
 </template>

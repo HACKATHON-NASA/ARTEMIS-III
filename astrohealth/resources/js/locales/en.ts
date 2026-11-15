@@ -18,6 +18,8 @@ export default {
         soon: 'soon',
         soonBadge: 'Soon',
         today: 'today',
+        now: 'now',
+        gotIt: 'Got it',
         yesterday: 'yesterday',
         you: 'you',
         none: '—',

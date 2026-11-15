@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import {
     Select,
     SelectContent,
@@ -7,6 +8,8 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import type { AlertFilter } from '../Utils/alertState';
+
+const { t } = useI18n();
 
 /**
  * Los filtros del centro de alertas: el estado (pestañas con su número) y,
@@ -20,11 +23,12 @@ defineProps<{
 const filter = defineModel<AlertFilter>('filter', { required: true });
 const astronaut = defineModel<number | null>('astronaut', { default: null });
 
+/** El texto de cada pestaña es una clave de i18n. */
 const TABS: { value: AlertFilter; label: string }[] = [
-    { value: 'open', label: 'Sin atender' },
-    { value: 'urgent', label: 'Urgentes' },
-    { value: 'acknowledged', label: 'Atendidas' },
-    { value: 'all', label: 'Todas' },
+    { value: 'open', label: 'Alertas.filters.open' },
+    { value: 'urgent', label: 'Alertas.filters.urgent' },
+    { value: 'acknowledged', label: 'Alertas.filters.acknowledged' },
+    { value: 'all', label: 'Alertas.filters.all' },
 ];
 </script>
 
@@ -34,7 +38,7 @@ const TABS: { value: AlertFilter; label: string }[] = [
     >
         <div
             role="tablist"
-            aria-label="Filtrar por estado"
+            :aria-label="t('Alertas.filters.byState')"
             class="inline-flex w-full flex-wrap gap-1 rounded-xl border bg-muted/40 p-1 sm:w-auto"
         >
             <button
@@ -49,7 +53,7 @@ const TABS: { value: AlertFilter; label: string }[] = [
                 }"
                 @click="filter = tab.value"
             >
-                {{ tab.label }}
+                {{ t(tab.label) }}
                 <span
                     class="rounded-full px-1.5 text-xs tabular-nums"
                     :class="
@@ -72,12 +76,14 @@ const TABS: { value: AlertFilter; label: string }[] = [
         >
             <SelectTrigger
                 class="w-full sm:w-64"
-                aria-label="Filtrar por tripulante"
+                :aria-label="t('Alertas.filters.byMember')"
             >
                 <SelectValue />
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="all">Toda la tripulación</SelectItem>
+                <SelectItem value="all">{{
+                    t('Alertas.filters.wholeCrew')
+                }}</SelectItem>
                 <SelectItem
                     v-for="member in members"
                     :key="member.id"

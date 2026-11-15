@@ -2,8 +2,11 @@ import { router } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted } from 'vue';
 import { toast } from 'vue-sonner';
 import { alertas } from '@/routes';
+import { useCrewStore } from '../../Entorno/Stores/useCrewStore';
 import { useAlertsStore } from '../Stores/useAlertsStore';
+import { alertMessage } from '../Utils/alertText';
 import type { Alert } from '../Types/alerts';
+import { t } from '@/lib/i18n';
 
 /**
  * Las alertas en vivo: cada pocos segundos vuelve a pedirlas y, si llegó
@@ -18,17 +21,19 @@ const EVERY_MS = 5000;
 
 export function useLiveAlerts(notify: () => boolean) {
     const store = useAlertsStore();
+    const crew = useCrewStore();
+    const nameOf = (id: number) => crew.find(id)?.name ?? null;
     let timer: ReturnType<typeof setInterval> | undefined;
 
     function announce(alert: Alert): void {
         const action = {
-            label: 'Ver',
+            label: t('Alertas.live.see'),
             onClick: () => router.visit(alertas()),
         };
 
         if (alert.kind === 'sos') {
-            toast.error(alert.message, {
-                description: alert.note ?? 'Emergencia: atiéndela ya.',
+            toast.error(alertMessage(alert, nameOf(alert.astronaut_id)), {
+                description: alert.note ?? t('Alertas.live.emergency'),
                 duration: Infinity,
                 action,
             });
@@ -42,8 +47,8 @@ export function useLiveAlerts(notify: () => boolean) {
                 : alert.level === 'yellow'
                   ? toast.warning
                   : toast.info;
-        show(alert.message, {
-            description: alert.note ?? 'Nueva alerta en el centro.',
+        show(alertMessage(alert, nameOf(alert.astronaut_id)), {
+            description: alert.note ?? t('Alertas.live.newAlert'),
             action,
         });
     }

@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { currentLocale } from '@/lib/i18n';
 import { computed } from 'vue';
 import type { Alert } from '../Types/alerts';
 import { alertState, replyRemainingMs } from '../Utils/alertState';
+
+const { t } = useI18n();
 
 /**
  * El recorrido de una alerta en 4 pasos: enviada (sale sola al crearse) →
@@ -13,7 +17,7 @@ const props = defineProps<{ alert: Alert; now: number }>();
 const time = (iso: string | null): string =>
     iso === null
         ? ''
-        : new Date(iso).toLocaleTimeString('es', {
+        : new Date(iso).toLocaleTimeString(currentLocale(), {
               hour: '2-digit',
               minute: '2-digit',
           });
@@ -33,19 +37,23 @@ const steps = computed(() => {
               ).toISOString();
 
     return [
-        { label: 'Enviada', done: true, at: time(props.alert.sent_at) },
         {
-            label: 'En Tierra',
+            label: t('Alertas.timeline.sent'),
+            done: true,
+            at: time(props.alert.sent_at),
+        },
+        {
+            label: t('Alertas.timeline.onEarth'),
             done: received,
             at: received ? time(props.alert.ground_eta_at) : '',
         },
         {
-            label: 'Atendida',
+            label: t('Alertas.timeline.handled'),
             done: acknowledged,
             at: time(props.alert.acknowledged_at),
         },
         {
-            label: 'Respuesta en la nave',
+            label: t('Alertas.timeline.replyOnShip'),
             done: replied,
             at: replied ? time(replyAt) : '',
         },
@@ -54,7 +62,7 @@ const steps = computed(() => {
 </script>
 
 <template>
-    <ol class="grid grid-cols-4 gap-1" aria-label="Recorrido de la alerta">
+    <ol class="grid grid-cols-4 gap-1" :aria-label="t('Alertas.timeline.aria')">
         <li
             v-for="(step, index) in steps"
             :key="step.label"
