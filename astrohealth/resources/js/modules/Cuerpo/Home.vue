@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useReveal } from '@/composables/useReveal';
-import { dashboard, inicio, registrar } from '@/routes';
+import { dashboard, inicio, logros, psicologia, registrar } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { BodyZoneCode } from '@/types/health';
 import AlertBanner from '../Alertas/Components/AlertBanner.vue';
@@ -17,7 +16,9 @@ import type { Alert, NewMessage } from '../Alertas/Types/alerts';
 import { useMissionStore } from '../Entorno/Stores/useMissionStore';
 import { useGamificationStore } from '../Gamificacion/Stores/useGamificationStore';
 import HealthScore from '../Evaluacion/Components/HealthScore.vue';
+import NoScore from '../Evaluacion/Components/NoScore.vue';
 import { useAssessmentStore } from '../Evaluacion/Stores/useAssessmentStore';
+import { usePsychStore } from '../Evaluacion/Stores/usePsychStore';
 import HeartbeatLine from '../Identidad/Components/Acceso/HeartbeatLine.vue';
 import RoutineCard from '../Recordatorios/Components/RoutineCard.vue';
 import { useRemindersStore } from '../Recordatorios/Stores/useRemindersStore';
@@ -25,8 +26,11 @@ import type { Reminder } from '../Recordatorios/Types/reminders';
 import BodyViewer from './Components/BodyViewer.vue';
 import BodyPartPanel from './Components/BodyPartPanel.vue';
 import HomeGreeting from './Components/HomeGreeting.vue';
+import HomeSkeleton from './Components/HomeSkeleton.vue';
+import TodayPlan from './Components/TodayPlan.vue';
 import VitalsGrid from './Components/VitalsGrid.vue';
 import { useBodyStore } from './Stores/useBodyStore';
+import { buildTodayPlan } from './Utils/todayPlan';
 
 /**
  * Inicio del astronauta (/inicio): cuerpo (M3) + puntaje (M2) + alertas (M5)
@@ -44,6 +48,7 @@ const alerts = useAlertsStore();
 const reminders = useRemindersStore();
 const mission = useMissionStore();
 const gamification = useGamificationStore();
+const psych = usePsychStore();
 
 const root = ref<HTMLElement | null>(null);
 const { reveal } = useReveal(root);
@@ -80,6 +85,36 @@ async function sendMessage(message: NewMessage): Promise<void> {
     sentAlert.value = await alerts.send(astronautId, message);
     groundOpen.value = true;
 }
+
+/** "Tu día": lo que falta medir, la rutina, los tests y la próxima insignia. */
+const plan = computed(() =>
+    buildTodayPlan({
+        values: Object.values(body.status ?? {}).flatMap((zone) => zone.values),
+        routine: {
+            ...reminders.progress,
+            next:
+                reminders.reminders.find((item) => item.state !== 'done') ??
+                null,
+        },
+        tests: {
+            pending: psych.tests.filter((test) =>
+                psych.isDue(
+                    auth.actor?.astronaut_id ?? 0,
+                    test,
+                    mission.current?.day ?? 1,
+                ),
+            ).length,
+            total: psych.tests.length,
+        },
+        badges: gamification.profile?.badges ?? [],
+        links: {
+            record: registrar(),
+            routine: `${inicio().url}#rutina`,
+            tests: psicologia(),
+            badges: logros(),
+        },
+    }),
+);
 
 async function completeReminder(reminder: Reminder): Promise<void> {
     busyReminder.value = reminder.id;
@@ -120,7 +155,9 @@ onMounted(async () => {
         alerts.load(astronautId),
         reminders.load(astronautId),
         mission.load(),
+        psych.load(),
     ]);
+    await gamification.load(astronautId, mission.current?.day ?? 1);
     ready.value = true;
     await nextTick();
     reveal();
@@ -131,15 +168,7 @@ onMounted(async () => {
     <Head title="Inicio" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
-        <template v-if="!ready || !body.status || !mission.current">
-            <Skeleton class="h-44 rounded-2xl" />
-            <div
-                class="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]"
-            >
-                <Skeleton class="h-[560px] rounded-2xl" />
-                <Skeleton class="h-[560px] rounded-2xl" />
-            </div>
-        </template>
+        <HomeSkeleton v-if="!ready || !body.status || !mission.current" />
 
         <template v-else>
             <section
@@ -151,12 +180,7 @@ onMounted(async () => {
                 />
                 <HomeGreeting
                     :name="auth.actor?.name ?? ''"
-                    :mission-name="mission.current.name"
-                    :environment-label="mission.current.environment_label"
-                    :day="mission.current.day"
-                    :day-count="mission.current.day_count"
-                    :gravity="mission.current.gravity_g"
-                    :delay-seconds="mission.current.ground_delay_seconds"
+                    :mission="mission.current"
                 />
             </section>
 
@@ -169,18 +193,21 @@ onMounted(async () => {
                 />
             </div>
 
+            <div data-reveal>
+                <TodayPlan :items="plan" />
+            </div>
+
             <section class="flex flex-col gap-3" data-reveal>
                 <h2 class="text-sm font-semibold text-muted-foreground">
                     ¿Necesitas a Tierra?
                 </h2>
                 <AstronautComms
-                    compact
                     @choose="compose = { open: true, kind: $event }"
                 />
             </section>
 
             <div
-                class="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]"
+                class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]"
             >
                 <section
                     class="relative overflow-hidden rounded-2xl border bg-card p-4 sm:p-6"
@@ -213,22 +240,11 @@ onMounted(async () => {
                             v-if="assessment.current"
                             :assessment="assessment.current"
                         />
-                        <div v-else class="py-6 text-center">
-                            <p class="font-semibold">Aún no tienes puntaje</p>
-                            <p class="mt-1 text-sm text-muted-foreground">
-                                Registra tus primeras mediciones y aquí verás tu
-                                estado general.
-                            </p>
-                            <Link
-                                :href="registrar()"
-                                class="mt-4 inline-flex rounded-lg bg-linear-to-r from-sky-500 to-blue-600 px-4 py-2 text-sm font-medium text-white hover:brightness-110"
-                            >
-                                Registrar datos
-                            </Link>
-                        </div>
+                        <NoScore v-else />
                     </section>
                     <section
-                        class="rounded-2xl border bg-card p-4 sm:p-6"
+                        id="rutina"
+                        class="scroll-mt-4 rounded-2xl border bg-card p-4 sm:p-6"
                         data-reveal
                     >
                         <RoutineCard

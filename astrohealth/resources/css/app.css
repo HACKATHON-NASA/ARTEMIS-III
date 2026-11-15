@@ -197,3 +197,38 @@
         @apply bg-background text-foreground;
     }
 }
+
+/*
+  Menú lateral con un degradado suave de los mismos colores del botón
+  "Iniciar sesión" (sky-500 → blue-600): arriba un toque de cielo, abajo un
+  toque de azul. La opción activa lleva el mismo degradado, más marcado.
+*/
+[data-sidebar='sidebar'] {
+    background-image: linear-gradient(
+        170deg,
+        color-mix(in srgb, #0ea5e9 13%, transparent) 0%,
+        transparent 42%,
+        transparent 58%,
+        color-mix(in srgb, #2563eb 16%, transparent) 100%
+    );
+}
+
+[data-sidebar='menu-button'][data-active='true'] {
+    background-image: linear-gradient(
+        90deg,
+        color-mix(in srgb, #0ea5e9 24%, transparent),
+        color-mix(in srgb, #2563eb 14%, transparent)
+    );
+    box-shadow: inset 2px 0 0 #0ea5e9;
+}
+
+/* En oscuro el degradado se nota menos: un poco más de color. */
+.dark [data-sidebar='sidebar'] {
+    background-image: linear-gradient(
+        170deg,
+        color-mix(in srgb, #0ea5e9 20%, transparent) 0%,
+        transparent 45%,
+        transparent 55%,
+        color-mix(in srgb, #2563eb 24%, transparent) 100%
+    );
+}

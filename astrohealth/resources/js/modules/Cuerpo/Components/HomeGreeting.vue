@@ -8,12 +8,15 @@ import { computed } from 'vue';
  */
 const props = defineProps<{
     name: string;
-    missionName: string;
-    environmentLabel: string;
-    day: number;
-    dayCount: number;
-    gravity: number;
-    delaySeconds: number;
+    /** La misión actual (M6): nombre, entorno, día, gravedad y retraso. */
+    mission: {
+        name: string;
+        environment_label: string;
+        day: number;
+        day_count: number;
+        gravity_g: number;
+        ground_delay_seconds: number;
+    };
 }>();
 
 const greeting = computed(() => {
@@ -28,9 +31,9 @@ const greeting = computed(() => {
 
 const firstName = computed(() => props.name.split(' ')[0]);
 const delay = computed(() =>
-    props.delaySeconds >= 60
-        ? `${Math.round(props.delaySeconds / 60)} min`
-        : `${props.delaySeconds} s`,
+    props.mission.ground_delay_seconds >= 60
+        ? `${Math.round(props.mission.ground_delay_seconds / 60)} min`
+        : `${props.mission.ground_delay_seconds} s`,
 );
 </script>
 
@@ -39,7 +42,8 @@ const delay = computed(() =>
         <p
             class="text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
         >
-            {{ missionName }} · Día {{ day }} de {{ dayCount }}
+            {{ mission.name }} · Día {{ mission.day }} de
+            {{ mission.day_count }}
         </p>
         <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
             {{ greeting }}, {{ firstName }}
@@ -53,13 +57,13 @@ const delay = computed(() =>
                 class="inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-1 backdrop-blur"
             >
                 <span class="size-2 rounded-full bg-sky-500" />
-                {{ environmentLabel }}
+                {{ mission.environment_label }}
             </li>
             <li
                 class="inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-1 backdrop-blur"
             >
                 <Gauge class="size-4 text-sky-500" />
-                Gravedad {{ gravity }} g
+                Gravedad {{ mission.gravity_g }} g
             </li>
             <li
                 class="inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-1 backdrop-blur"
