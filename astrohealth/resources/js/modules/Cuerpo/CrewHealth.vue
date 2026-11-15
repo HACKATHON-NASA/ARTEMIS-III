@@ -17,6 +17,7 @@ import HealthScore from '../Evaluacion/Components/HealthScore.vue';
 import { useAssessmentStore } from '../Evaluacion/Stores/useAssessmentStore';
 import AstronautPicker from './Components/AstronautPicker.vue';
 import BodyViewer from './Components/BodyViewer.vue';
+import StatusLegend from './Components/StatusLegend.vue';
 import SummaryStat from './Components/SummaryStat.vue';
 import ZoneDetailCard from './Components/ZoneDetailCard.vue';
 import { useBodyStore } from './Stores/useBodyStore';
@@ -194,6 +195,45 @@ onMounted(async () => {
 
         <template v-else>
             <section
+                class="relative overflow-hidden rounded-2xl border bg-card p-4 sm:p-6"
+                data-reveal
+            >
+                <h2 class="text-lg font-semibold">Mapa del cuerpo</h2>
+                <p class="mb-4 text-sm text-muted-foreground">
+                    Toca un órgano para ver su función, sus riesgos en el
+                    espacio y las últimas mediciones.
+                </p>
+                <div
+                    class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+                >
+                    <div class="flex flex-col gap-4">
+                        <StatusLegend />
+                        <BodyViewer
+                            :parts="body.parts"
+                            :status="body.status"
+                            :selected="body.selected"
+                            @select="body.select"
+                        />
+                    </div>
+                    <ZoneDetailCard
+                        v-if="body.selectedPart && zone"
+                        :part="body.selectedPart"
+                        :zone="zone"
+                    >
+                        <template v-if="recommendations.length" #recommendation>
+                            <div class="flex flex-col gap-3">
+                                <RecommendationCard
+                                    v-for="item in recommendations"
+                                    :key="item.title"
+                                    :recommendation="item"
+                                />
+                            </div>
+                        </template>
+                    </ZoneDetailCard>
+                </div>
+            </section>
+
+            <section
                 class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
                 data-reveal
             >
@@ -239,42 +279,6 @@ onMounted(async () => {
                     :icon="ClipboardCheck"
                     tone="sky"
                 />
-            </section>
-
-            <section
-                class="relative overflow-hidden rounded-2xl border bg-card p-4 sm:p-6"
-                data-reveal
-            >
-                <h2 class="text-lg font-semibold">Mapa del cuerpo</h2>
-                <p class="mb-4 text-sm text-muted-foreground">
-                    Toca un órgano para ver su función, sus riesgos en el
-                    espacio y las últimas mediciones.
-                </p>
-                <div
-                    class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
-                >
-                    <BodyViewer
-                        :parts="body.parts"
-                        :status="body.status"
-                        :selected="body.selected"
-                        @select="body.select"
-                    />
-                    <ZoneDetailCard
-                        v-if="body.selectedPart && zone"
-                        :part="body.selectedPart"
-                        :zone="zone"
-                    >
-                        <template v-if="recommendations.length" #recommendation>
-                            <div class="flex flex-col gap-3">
-                                <RecommendationCard
-                                    v-for="item in recommendations"
-                                    :key="item.title"
-                                    :recommendation="item"
-                                />
-                            </div>
-                        </template>
-                    </ZoneDetailCard>
-                </div>
             </section>
         </template>
     </div>
