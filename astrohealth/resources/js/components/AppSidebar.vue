@@ -147,44 +147,50 @@ onMounted(() => {
 
 <template>
     <Sidebar collapsible="icon" variant="inset">
-        <SidebarHeader>
-            <!-- Logo y, al lado, el botón de abrir/cerrar el menú (antes iba en
+        <!-- Fondo espacial siempre oscuro (estilos en app.css, "Sidebar
+             espacial"): "dark" da a todo el menú los colores del tema
+             oscuro y "sidebar-space" su paleta. display: contents, así
+             no cambia el diseño. -->
+        <div class="sidebar-space dark contents">
+            <SidebarHeader>
+                <!-- Logo y, al lado, el botón de abrir/cerrar el menú (antes iba en
                  una barra arriba que gastaba pantalla). Cerrado, van apilados. -->
-            <div
-                class="flex items-center gap-1 group-data-[collapsible=icon]:flex-col"
-            >
-                <SidebarMenu class="min-w-0 flex-1">
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" as-child>
-                            <Link :href="homeLink">
-                                <AppLogo />
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-                <SidebarTrigger
-                    class="hidden shrink-0 text-muted-foreground hover:text-foreground md:inline-flex"
-                    title="Abrir o cerrar el menú"
+                <div
+                    class="flex items-center gap-1 group-data-[collapsible=icon]:flex-col"
+                >
+                    <SidebarMenu class="min-w-0 flex-1">
+                        <SidebarMenuItem>
+                            <SidebarMenuButton size="lg" as-child>
+                                <Link :href="homeLink">
+                                    <AppLogo />
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                    <SidebarTrigger
+                        class="hidden shrink-0 text-muted-foreground hover:text-foreground md:inline-flex"
+                        title="Abrir o cerrar el menú"
+                    />
+                </div>
+            </SidebarHeader>
+
+            <SidebarContent>
+                <NavMain :items="missionItems" :label="mainLabel" />
+                <NavMain
+                    v-if="adminItems.length"
+                    :items="adminItems"
+                    label="Gestión"
                 />
-            </div>
-        </SidebarHeader>
+            </SidebarContent>
 
-        <SidebarContent>
-            <NavMain :items="missionItems" :label="mainLabel" />
-            <NavMain
-                v-if="adminItems.length"
-                :items="adminItems"
-                label="Gestión"
-            />
-        </SidebarContent>
-
-        <SidebarFooter>
-            <SidebarXp
-                v-if="auth.actor?.astronaut_id"
-                :astronaut-id="auth.actor.astronaut_id"
-            />
-            <NavUser />
-        </SidebarFooter>
+            <SidebarFooter>
+                <SidebarXp
+                    v-if="auth.actor?.astronaut_id"
+                    :astronaut-id="auth.actor.astronaut_id"
+                />
+                <NavUser />
+            </SidebarFooter>
+        </div>
     </Sidebar>
     <slot />
 </template>

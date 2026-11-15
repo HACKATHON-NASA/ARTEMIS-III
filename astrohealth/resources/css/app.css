@@ -199,36 +199,106 @@
 }
 
 /*
-  Menú lateral con un degradado suave de los mismos colores del botón
-  "Iniciar sesión" (sky-500 → blue-600): arriba un toque de cielo, abajo un
-  toque de azul. La opción activa lleva el mismo degradado, más marcado.
+  Sidebar espacial: azul marino casi negro, una luz azul tenue abajo y un
+  astronauta integrado en el tercio inferior. Es igual en tema claro y
+  oscuro. Todo es decorativo: no recibe clics ni se mueve.
 */
 [data-sidebar='sidebar'] {
-    background-image: linear-gradient(
-        170deg,
-        color-mix(in srgb, #0ea5e9 24%, transparent) 0%,
-        color-mix(in srgb, #0ea5e9 6%, transparent) 45%,
-        color-mix(in srgb, #2563eb 8%, transparent) 60%,
-        color-mix(in srgb, #2563eb 28%, transparent) 100%
-    );
+    isolation: isolate;
+    overflow: hidden;
+    background-color: #080f1e;
+    background-image:
+        radial-gradient(
+            120% 40% at 50% 104%,
+            rgb(59 130 246 / 0.2),
+            transparent 70%
+        ),
+        linear-gradient(180deg, #080f1e 0%, #101c32 58%, #1b3152 100%);
+    color: #f1f5ff;
 }
 
-[data-sidebar='menu-button'][data-active='true'] {
+/* En escritorio el menú es un panel con esquinas redondeadas. (En el
+   celular ya es fixed: no se le cambia la posición.) */
+[data-variant='inset'] [data-sidebar='sidebar'] {
+    position: relative;
+    border: 1px solid rgb(148 166 196 / 0.12);
+    border-radius: 1rem;
+    box-shadow: 0 12px 32px -12px rgb(8 15 30 / 0.55);
+}
+
+/* El astronauta: se funde con el fondo por arriba y se apaga hacia abajo. */
+[data-sidebar='sidebar']::before {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    z-index: -1;
+    height: min(58%, 440px);
+    background: url('../images/fondos/astronauta-sidebar.webp') 28% 18% / cover
+        no-repeat;
+    opacity: 0.5;
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        #000 32%,
+        #000 68%,
+        rgb(0 0 0 / 0.45) 100%
+    );
+    pointer-events: none;
+    transition: opacity 250ms ease;
+}
+
+/* Un velo abajo, para que la tarjeta de nivel y el perfil se lean bien. */
+[data-sidebar='sidebar']::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    z-index: -1;
+    height: 34%;
+    background: linear-gradient(
+        to top,
+        rgb(8 15 30 / 0.85),
+        rgb(8 15 30 / 0.35) 60%,
+        transparent
+    );
+    pointer-events: none;
+}
+
+/* Cerrado (solo íconos), el astronauta casi no se ve. */
+[data-collapsible='icon'] [data-sidebar='sidebar']::before {
+    opacity: 0.2;
+}
+
+/* La paleta del menú sobre el fondo oscuro (va después de .dark). */
+.sidebar-space {
+    --foreground: #f1f5ff;
+    --sidebar-foreground: #f1f5ff;
+    --muted-foreground: #94a6c4;
+    --sidebar-accent: rgb(56 130 246 / 0.14);
+    --sidebar-accent-foreground: #f1f5ff;
+    --sidebar-border: rgb(148 166 196 / 0.14);
+    --border: rgb(148 166 196 / 0.16);
+    --sidebar-ring: #38bdf8;
+    color: #f1f5ff;
+}
+
+.sidebar-space [data-sidebar='menu-button'] {
+    transition-property: width, height, padding, background-color, color;
+    transition-duration: 250ms;
+}
+
+/* Opción activa: azul translúcido y un acento azul brillante a la izquierda. */
+.sidebar-space [data-sidebar='menu-button'][data-active='true'] {
     background-image: linear-gradient(
         90deg,
-        color-mix(in srgb, #0ea5e9 24%, transparent),
-        color-mix(in srgb, #2563eb 14%, transparent)
+        rgb(56 130 246 / 0.3),
+        rgb(56 130 246 / 0.08)
     );
-    box-shadow: inset 2px 0 0 #0ea5e9;
+    color: #ffffff;
+    box-shadow: inset 2px 0 0 #38bdf8;
 }
 
-/* En oscuro el degradado se nota menos: un poco más de color. */
-.dark [data-sidebar='sidebar'] {
-    background-image: linear-gradient(
-        170deg,
-        color-mix(in srgb, #0ea5e9 32%, transparent) 0%,
-        color-mix(in srgb, #0ea5e9 9%, transparent) 45%,
-        color-mix(in srgb, #2563eb 12%, transparent) 60%,
-        color-mix(in srgb, #2563eb 38%, transparent) 100%
-    );
+/* La tarjeta de nivel y puntos: azul oscuro semitransparente. */
+.sidebar-space [data-sidebar='footer'] > a {
+    background-color: rgb(16 28 50 / 0.72);
+    backdrop-filter: blur(6px);
 }
