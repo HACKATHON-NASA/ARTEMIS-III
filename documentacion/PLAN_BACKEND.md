@@ -150,12 +150,26 @@ flowchart LR
 
 ---
 
-## F3 · M1 Registro + ingesta del simulador
+## F3 · M1 Registro + ingesta del simulador · ✅ hecho en Laravel (16 nov 2026)
 
-**Tablas:** `indicators` (10, con `exercise_min`), `measurements` (con `source`, `reading_id` único, índice `(astronaut_id, indicator_id, measured_at)`), `ingest_batches`.
+**Tablas:** `indicators` (10, con los textos de ayuda que tenía el frontend), `measurements` (con `source`, `reading_id` único, índice `(astronaut_id, indicator_id, measured_at)`), `ingest_batches`.
 
 | Endpoint | Permiso | Caso de uso |
 |---|---|---|
+| `GET /api/v1/indicators` | autenticado | `ListIndicators` |
+| `POST /api/v1/measurements` | `measurements.write.own` (el astronauta sale del token) | `RecordMeasurements` |
+| `POST /api/v1/ingest/readings` | `measurements.ingest` (dispositivo) · `throttle:api-ingest` | `IngestReadings` (201 nuevo · 200 repetido con el mismo resumen) |
+| `GET /api/v1/astronauts/{id}/measurements?indicator=&range=24h, 7d o 30d` | Gate `health.read` | `ListMeasurements` |
+
+**Flujo:** valida (`ReadingValidator`) → M2 pone el color con el entorno de la misión → guarda en una transacción → M2 recalcula el puntaje → `MeasurementsRecorded` después del commit.
+**Volver a colorear:** `ReevaluateLatest` escucha `MissionEnvironmentChanged` (M6) y `ThresholdUpdated` (M2) y cambia el color de la última medición de cada indicador.
+**Contratos:** `IndicatorCatalog`, `MeasurementQuery` (`latestPerIndicator`, `series`).
+**Frontend:** Registrar datos usa la API; `indicatorsMockData.ts` y `recordMock.ts` borrados. Lo guardado se copia a los datos de prueba del cuerpo y del Panel hasta F4/F6.
+**Pruebas:** 17 nuevas (222 en verde).
+**Pendiente:** el **exportador del simulador** (lado Python) que envíe los lotes con el token del dispositivo, y el comando `registro:import-file` (plan B sin red). La API ya está probada con el dispositivo real `sim-ares-1`.
+**Listo cuando:** ✅ registrar datos guarda cada valor con su color; reenviar el mismo lote no duplica nada. ⏳ Falta que el simulador cargue los 30 días de Ares-1.
+
+---|---|---|
 | `GET /api/v1/indicators` | autenticado | `ListIndicators` |
 | `POST /api/v1/measurements` | `measurements.write.own` (lo suyo) · `measurements.write.crew` (médico de la tripulación) | `RecordMeasurements` |
 | `POST /api/v1/ingest/readings` | `measurements.ingest` (dispositivo) | `IngestReadings` (idempotente por `batch_id`; repetido → devuelve el resumen original) |

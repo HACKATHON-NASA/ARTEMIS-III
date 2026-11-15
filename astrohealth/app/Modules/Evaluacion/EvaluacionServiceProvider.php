@@ -23,8 +23,10 @@ final class EvaluacionServiceProvider extends ModuleServiceProvider
 
     public function register(): void
     {
-        // scoped: una instancia por petición (RuleEvaluator recuerda los umbrales ya leídos).
-        $this->app->scoped(Evaluator::class, RuleEvaluator::class);
+        // Una instancia nueva para cada caso de uso: RuleEvaluator recuerda
+        // los umbrales que ya leyó (sirve en un lote de 500 lecturas), pero
+        // así nunca usa uno viejo después de que la Guía lo cambia.
+        $this->app->bind(Evaluator::class, RuleEvaluator::class);
         $this->app->bind(TrendAnalyzer::class, RuleTrendAnalyzer::class);
     }
 }

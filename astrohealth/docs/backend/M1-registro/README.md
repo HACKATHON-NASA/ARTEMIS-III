@@ -2,9 +2,9 @@
 
 > [← Backend](../README.md) · Código: `astrohealth/app/Modules/Registro/` · Qué construir: [ficha de M1](../../../../documentacion/modulos/M1-registro/README.md)
 
-| Estado         | Fase | Responsable |
-| -------------- | :--: | ----------- |
-| ⬜ Sin empezar |  2   | Backend     |
+| Estado        | Fase | Responsable |
+| ------------- | :--: | ----------- |
+| ✅ Hecho (F3) |  F3  | Backend     |
 
 **Qué hace:** es **la puerta de entrada de los datos de salud**. Recibe las lecturas por dos caminos y las trata igual:
 
@@ -35,7 +35,7 @@ sequenceDiagram
     U->>R: ¿ya existe batch_id? → sí: devuelve el resumen original (200)
     U->>D: cada lectura: indicador, unidad, rango, astronauta de SU misión
     D-->>U: válidas + rechazadas (con su código)
-    U->>E: evaluateMany(válidas, entorno)
+    U->>E: evaluate() de cada válida, con el entorno de su misión
     U->>R: Transaction: crea el lote + insertMany (ignora reading_id repetidos)
     U->>E: assess() de cada astronauta afectado
     U-->>C: BatchResult
@@ -122,7 +122,7 @@ sequenceDiagram
 
 > **Aceptación parcial:** un error de **forma** rechaza el lote entero (422). Un error de **contenido** rechaza solo esa lectura y el resto se guarda. El simulador nunca pierde un lote completo por una lectura mala.
 
-**Evaluación en lote:** `Evaluator::evaluateMany()` evalúa con las reglas locales de M2 (los mismos umbrales que Python, comprobado por prueba), para no hacer 500 llamadas HTTP. El registro manual (pocas lecturas) sí pasa por Python `/evaluate`.
+**Evaluación en lote:** cada lectura pasa por `Evaluator::evaluate()` de M2, que lee cada umbral una sola vez por lote. Python ya no evalúa (simulador v2), así que no hay llamadas HTTP.
 
 ### Lo que debe hacer el simulador (lado Python)
 
@@ -263,28 +263,36 @@ app/Modules/Registro/
 
 ## 9. Avance
 
-- [ ] Migraciones `indicators`, `measurements` (+ `reading_id`, `ingest_batch_id`), `ingest_batches`
-- [ ] `IndicatorSeeder` (10 indicadores)
-- [ ] `ReadingValidator` + `IngestPolicy`
-- [ ] `IngestReadings` + `POST /ingest/readings` (idempotente)
-- [ ] `RecordMeasurements` + `POST /measurements`
-- [ ] `GET /indicators`
-- [ ] Evento `MeasurementsRecorded` (después del _commit_)
-- [ ] `ReevaluateLatest` + _listener_ de M6
-- [ ] `registro:import-file` (plan B)
-- [ ] Contratos `IndicatorCatalog` y `MeasurementQuery`
-- [ ] Exportador `astrohealth_api.py` en el simulador, probado contra la API
-- [ ] Pruebas de la sección 8 en verde
+- [x] Migraciones `indicators`, `measurements` (+ `reading_id`, `ingest_batch_id`), `ingest_batches`
+- [x] `IndicatorSeeder` (10 indicadores, los mismos textos que tenía el frontend)
+- [x] `ReadingValidator` (la misión del dispositivo se revisa en `IngestReadings`)
+- [x] `IngestReadings` + `POST /ingest/readings` (idempotente, aceptación parcial)
+- [x] `RecordMeasurements` + `POST /measurements`
+- [x] `GET /indicators` y `GET /astronauts/{id}/measurements?indicator=&range=24h|7d|30d`
+- [x] Evento `MeasurementsRecorded` (después del _commit_; aún sin _listeners_: M5 y M7 llegan en F5 y F7)
+- [x] `ReevaluateLatest` + _listeners_ de `MissionEnvironmentChanged` (M6) y `ThresholdUpdated` (M2)
+- [ ] `registro:import-file` (plan B sin red)
+- [x] Contratos `IndicatorCatalog` y `MeasurementQuery`
+- [ ] Exportador `astrohealth_api.py` en el simulador (lado Python)
+- [x] Pruebas en verde: `RecordMeasurementsTest`, `IngestReadingsTest`, `ReevaluateLatestTest`
 
 ## 10. Cómo quedó hecho
 
 ### Decisiones técnicas
 
-_Pendiente._
+- **Una sola regla de color:** M2 evalúa todo (manual e ingesta) con la tabla `thresholds` y el entorno de la misión del tripulante (`CrewQuery` + `MissionQuery` de M6).
+- **El lote se crea primero** (`ingest_batches`) y las lecturas lo referencian; se guardan con `insertOrIgnore` de a 500, así un `reading_id` repetido cuenta como duplicado sin error. Al final se completa el resumen.
+- **Registro manual "todo o nada":** si un valor no sirve, no se guarda ninguno y el error va en su campo (`measurements.N.value` o `measured_at`).
+- **Después de guardar** (`AfterSaving`): M2 recalcula el puntaje con el último valor de cada indicador y se publica `MeasurementsRecorded` (uno por astronauta).
+- **Volver a colorear** solo toca la última medición de cada indicador; el historial conserva el color que tuvo.
 
 ### Diferencias con este documento
 
-_Pendiente._
+- No hay `evaluateMany()` ni llamadas a Python: Python ya no evalúa (simulador v2).
+- No hay `IngestPolicy` aparte: la regla "el astronauta es de la misión del dispositivo" vive en `IngestReadings` (`MEASUREMENTS_ASTRONAUT_NOT_ALLOWED`).
+- Límite propio para las máquinas: `throttle:api-ingest` (120 lotes por minuto por dispositivo).
+- `measurements.write.crew` (el médico de la tripulación registrando a otro) todavía no tiene ruta.
+- Pendiente: `registro:import-file` y el exportador del simulador.
 
 ### Cómo probarlo a mano
 

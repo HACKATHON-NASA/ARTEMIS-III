@@ -28,7 +28,7 @@ export type Measurement = {
     status: Status;
     body_part: BodyZoneCode;
     measured_at: string;
-    source: 'manual' | 'device';
+    source: string;
 };
 
 export type RecordPayload = {

@@ -4,6 +4,7 @@ import { computed, nextTick, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReveal } from '@/composables/useReveal';
+import { ApiError } from '@/lib/api';
 import { dashboard, registrar } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { BodyZoneCode } from '@/types/health';
@@ -18,7 +19,12 @@ import MeasurementForm from './Components/MeasurementForm.vue';
 import RecordSummary from './Components/RecordSummary.vue';
 import { useBodyLink } from './Composables/useBodyLink';
 import { useMeasurementsStore } from './Stores/useMeasurementsStore';
-import type { Flight, Indicator, RecordPayload } from './Types/measurement';
+import type {
+    Flight,
+    Indicator,
+    Measurement,
+    RecordPayload,
+} from './Types/measurement';
 
 /**
  * Registrar (/registrar, M1): el astronauta anota sus indicadores del día y
@@ -79,7 +85,23 @@ async function submit(payload: RecordPayload): Promise<void> {
     }
 
     saving.value = true;
-    const saved = await store.record(astronautId.value, payload);
+    let saved: Measurement[];
+
+    try {
+        saved = await store.record(astronautId.value, payload);
+    } catch (error) {
+        saving.value = false;
+        // El backend tiene la última palabra (rango posible, fecha, permisos).
+        toast.error('No se guardaron los datos', {
+            description:
+                error instanceof ApiError
+                    ? (Object.values(error.errors)[0]?.[0] ?? error.message)
+                    : 'Revisa tu conexión e inténtalo de nuevo.',
+        });
+
+        return;
+    }
+
     flights.value = planFlights(saved);
     form.value?.reset();
 
