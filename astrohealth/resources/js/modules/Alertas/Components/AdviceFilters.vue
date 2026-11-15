@@ -49,7 +49,7 @@ const TABS: { value: AdviceFilter; label: string }[] = [
                     type="button"
                     role="tab"
                     :aria-selected="filter === tab.value"
-                    class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-foreground sm:flex-none"
+                    class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition hover:text-foreground sm:flex-none"
                     :class="{
                         'bg-card text-foreground shadow-sm':
                             filter === tab.value,

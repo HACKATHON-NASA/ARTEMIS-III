@@ -88,7 +88,7 @@ onMounted(async () => {
         <template v-else>
             <section
                 v-if="store.profile"
-                class="grid gap-6 rounded-2xl border bg-linear-to-br from-sky-500/10 via-card to-card p-6 sm:p-8 lg:grid-cols-[minmax(0,1.6fr)_auto_auto] lg:items-center"
+                class="grid grid-cols-1 gap-6 rounded-2xl border bg-linear-to-br from-sky-500/10 via-card to-card p-6 sm:p-8 lg:grid-cols-[minmax(0,1.6fr)_auto_auto] lg:items-center"
                 data-reveal
             >
                 <XpBar
@@ -126,7 +126,7 @@ onMounted(async () => {
             </section>
 
             <div
-                class="grid items-start gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]"
+                class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]"
             >
                 <section class="rounded-2xl border bg-card" data-reveal>
                     <h2 class="border-b p-4 font-semibold sm:px-6">

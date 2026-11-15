@@ -102,7 +102,7 @@ onMounted(async () => {
 
         <template v-else>
             <section
-                class="relative grid overflow-hidden rounded-2xl border bg-linear-to-br to-card p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_16rem] md:items-center"
+                class="relative grid grid-cols-1 overflow-hidden rounded-2xl border bg-linear-to-br to-card p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_16rem] md:items-center"
                 :class="info.tint"
                 data-reveal
             >
@@ -176,7 +176,7 @@ onMounted(async () => {
             </section>
 
             <div
-                class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+                class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
             >
                 <section
                     class="rounded-2xl border bg-card p-4 sm:p-6"

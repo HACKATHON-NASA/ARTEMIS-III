@@ -196,7 +196,7 @@ onMounted(async () => {
 
         <div
             v-if="!ready"
-            class="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
+            class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
         >
             <Skeleton class="h-[640px] rounded-2xl" />
             <Skeleton class="h-[560px] rounded-2xl" />
@@ -204,7 +204,7 @@ onMounted(async () => {
 
         <div
             v-else
-            class="grid items-start gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
+            class="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
         >
             <div data-reveal>
                 <RecordSummary

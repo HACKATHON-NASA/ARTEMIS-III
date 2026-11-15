@@ -43,7 +43,7 @@ const TABS: { value: AlertFilter; label: string }[] = [
                 type="button"
                 role="tab"
                 :aria-selected="filter === tab.value"
-                class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none sm:flex-none"
+                class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none sm:flex-none"
                 :class="{
                     'bg-card text-foreground shadow-sm': filter === tab.value,
                 }"

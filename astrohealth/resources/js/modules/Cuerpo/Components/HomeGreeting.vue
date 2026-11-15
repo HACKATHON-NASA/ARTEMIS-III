@@ -63,7 +63,7 @@ const delay = computed(() =>
                 class="inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-1 backdrop-blur"
             >
                 <Gauge class="size-4 text-sky-500" />
-                Gravedad {{ mission.gravity_g }} g
+                Gravedad {{ mission.gravity_g.toLocaleString('es') }} g
             </li>
             <li
                 class="inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-1 backdrop-blur"

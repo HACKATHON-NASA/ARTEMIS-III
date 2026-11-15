@@ -134,7 +134,9 @@ async function save(): Promise<void> {
                 novalidate
                 @submit.prevent="save"
             >
-                <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_11rem_7rem]">
+                <div
+                    class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_11rem_7rem]"
+                >
                     <div class="grid gap-1.5">
                         <Label for="psych-name">Nombre</Label>
                         <Input

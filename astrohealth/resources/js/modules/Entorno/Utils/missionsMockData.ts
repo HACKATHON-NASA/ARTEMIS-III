@@ -16,7 +16,7 @@ export function mockMissions(): Mission[] {
             start_date: shiftDate(today(), -23),
             day_count: 30,
             objective:
-                'Primera estancia larga en Marte: adaptación a 0.38 g y radiación.',
+                'Primera estancia larga en Marte: adaptación a 0,38 g y radiación.',
         },
         {
             id: 2,

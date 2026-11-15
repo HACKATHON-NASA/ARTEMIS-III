@@ -45,7 +45,7 @@ const tabs = computed(() => [
             :key="tab.key"
             :href="tab.href"
             :aria-current="active === tab.key ? 'page' : undefined"
-            class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition sm:flex-none"
+            class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap transition sm:flex-none"
             :class="
                 active === tab.key
                     ? 'bg-card text-foreground shadow-sm'
