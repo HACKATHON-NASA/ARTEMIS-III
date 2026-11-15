@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { toRef } from 'vue';
+import { CircleCheck } from '@lucide/vue';
+import { ref, toRef, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -16,11 +17,18 @@ import type { Alert } from '../Types/alerts';
  * El enlace nave → Tierra: una señal de luz recorre la ruta y la cuenta
  * regresiva dice cuándo la recibe el médico (en Marte, unos 20 minutos).
  * La señal va dentro del SVG (animateMotion), así se escala con el dibujo.
+ * "⏩ ×60" acelera la cuenta para la demo (no cambia la fecha guardada).
  */
 const props = defineProps<{ alert: Alert | null }>();
 const open = defineModel<boolean>('open', { required: true });
 
-const { label } = useCountdown(toRef(() => props.alert?.ground_eta_at ?? null));
+const speed = ref(1);
+const { label, remainingMs } = useCountdown(
+    toRef(() => props.alert?.ground_eta_at ?? null),
+    speed,
+);
+
+watch(open, (isOpen) => isOpen && (speed.value = 1));
 
 const ROUTE = 'M40 110 C 140 10, 300 10, 400 110';
 const reducedMotion =
@@ -125,7 +133,7 @@ const reducedMotion =
                 </svg>
             </div>
 
-            <div class="text-center">
+            <div v-if="remainingMs > 0" class="text-center">
                 <p class="text-sm text-muted-foreground">
                     El médico de vuelo la recibe en
                 </p>
@@ -139,8 +147,27 @@ const reducedMotion =
                     sigue los pasos.
                 </p>
             </div>
+            <div v-else class="flex flex-col items-center gap-2 text-center">
+                <CircleCheck class="size-10 text-[var(--status-green)]" />
+                <p class="text-lg font-semibold">Recibida en Tierra</p>
+                <p class="text-xs text-muted-foreground">
+                    El médico de vuelo ya la tiene. Su respuesta viene en
+                    camino.
+                </p>
+            </div>
 
-            <DialogFooter>
+            <DialogFooter class="sm:justify-between">
+                <button
+                    v-if="remainingMs > 0"
+                    type="button"
+                    class="text-xs text-muted-foreground transition hover:text-foreground"
+                    :aria-pressed="speed > 1"
+                    title="Solo para la demo: acelera la cuenta, no cambia el dato"
+                    @click="speed = speed > 1 ? 1 : 60"
+                >
+                    {{ speed > 1 ? '⏸ Velocidad real' : '⏩ ×60' }}
+                </button>
+                <span v-else />
                 <Button class="w-full sm:w-auto" @click="open = false">
                     Entendido
                 </Button>

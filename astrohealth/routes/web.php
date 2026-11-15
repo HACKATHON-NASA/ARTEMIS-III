@@ -22,3 +22,6 @@ Route::inertia('inicio', 'Cuerpo/Home')->name('inicio');
 // Pasan a app/Modules/Cuerpo/web.php y Entorno/web.php con su backend.
 Route::inertia('salud', 'Cuerpo/CrewHealth')->name('salud');
 Route::inertia('tripulacion', 'Entorno/Crew')->name('tripulacion');
+
+// Centro de alertas (M5): todos los roles con alerts.read.
+Route::inertia('alertas', 'Alertas/Alerts')->name('alertas');

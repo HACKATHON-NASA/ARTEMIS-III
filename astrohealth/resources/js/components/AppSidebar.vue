@@ -24,7 +24,14 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useAlertsStore } from '@/modules/Alertas/Stores/useAlertsStore';
-import { dashboard, inicio, salud, tripulacion, usuarios } from '@/routes';
+import {
+    alertas,
+    dashboard,
+    inicio,
+    salud,
+    tripulacion,
+    usuarios,
+} from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { NavItem } from '@/types';
 
@@ -50,13 +57,16 @@ const missionItems = computed<NavItem[]>(() => [
         : []),
     { title: 'Registrar datos', href: '#', icon: SquarePlus, soon: true },
     { title: 'Historial', href: '#', icon: ChartLine, soon: true },
-    {
-        title: 'Alertas',
-        href: '#',
-        icon: BellRing,
-        soon: true,
-        badge: canSeeCrew.value ? alerts.pendingTotal : 0,
-    },
+    ...(auth.can('alerts.read')
+        ? [
+              {
+                  title: 'Alertas',
+                  href: alertas(),
+                  icon: BellRing,
+                  badge: alerts.pendingTotal,
+              },
+          ]
+        : []),
     { title: 'Guía de salud', href: '#', icon: BookOpen, soon: true },
 ]);
 
@@ -74,9 +84,13 @@ const homeLink = computed(() =>
           : dashboard(),
 );
 
+// Contador de alertas sin confirmar: de toda la tripulación o, para el
+// astronauta, solo las suyas.
 onMounted(() => {
     if (canSeeCrew.value) {
-        void alerts.loadPendingTotal();
+        void alerts.loadPendingTotal(null);
+    } else if (auth.actor?.astronaut_id) {
+        void alerts.loadPendingTotal(auth.actor.astronaut_id);
     }
 });
 </script>

@@ -57,6 +57,13 @@ final class PagesTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component('Cuerpo/Home'));
     }
 
+    public function test_the_alerts_center_is_the_alertas_module_principal(): void
+    {
+        $this->get('/alertas')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Alertas/Alerts'));
+    }
+
     public function test_app_pages_do_not_depend_on_a_server_session(): void
     {
         // Sin cookie de sesión no hay redirección del servidor: la página pide
