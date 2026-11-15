@@ -58,6 +58,68 @@ export default {
         red: 'Critical',
         none: 'No data',
     },
+    indicators: {
+        hr: {
+            name: 'Heart rate',
+            short: 'Heart rate',
+            how: 'At rest, seated for 5 minutes. Put the sensor on your finger or wrist and write down the number once it stops moving.',
+            why: 'Without gravity the heart works differently and can lose strength. Resting heart rate shows how it is adapting.',
+        },
+        bp_sys: {
+            name: 'Systolic pressure',
+            short: 'Systolic',
+            how: 'Cuff on the left arm, at heart level, without talking. It is the top number (the higher one).',
+            why: 'In space fluids shift toward the head and pressure changes. Sustained high pressure damages the heart and vessels.',
+        },
+        bp_dia: {
+            name: 'Diastolic pressure',
+            short: 'Diastolic',
+            how: 'It comes from the same cuff reading: it is the bottom number (the lower one).',
+            why: 'It is the pressure while the heart rests between beats. Together with the systolic it tells whether circulation is fine.',
+        },
+        spo2: {
+            name: 'Oxygen saturation',
+            short: 'Blood oxygen',
+            how: 'Oximeter on the index finger, with the hand still and warm. Wait 30 seconds for the number to settle.',
+            why: 'On the ship the air is made by machines. If blood oxygen drops, it may be the body or life support.',
+        },
+        temp: {
+            name: 'Temperature',
+            short: 'Temperature',
+            how: 'Thermometer on the forehead or under the tongue, before eating or exercising.',
+            why: 'Stress and radiation weaken the defenses. Fever is the first sign of an infection in a closed place.',
+        },
+        glucose: {
+            name: 'Glucose (fasting)',
+            short: 'Glucose',
+            how: 'Fasting, when you wake up. Clean the finger, prick the side of the fingertip and put the drop on the meter strip.',
+            why: 'In flight the way the body handles sugar changes; data from the Inspiration4 mission (NASA OSDR) show it.',
+        },
+        sleep: {
+            name: 'Sleep',
+            short: 'Sleep',
+            how: 'The hours you slept last night, from your watch or what you remember. 6 h 30 min is written 6.5.',
+            why: 'Without natural day and night, sleep gets disordered, and with it concentration and decisions.',
+        },
+        mood: {
+            name: 'Mood',
+            short: 'Mood',
+            how: 'Pick the face that looks most like how you feel today. There is no right answer.',
+            why: 'Isolation and distance from home weigh on you. Noticing low mood in time helps the whole crew.',
+        },
+        exercise_min: {
+            name: 'Exercise',
+            short: 'Exercise',
+            how: "Add up today's minutes of bike, treadmill and resistance machine.",
+            why: 'With no weight to carry, bones lose density and muscles waste away. Daily exercise is the defense.',
+        },
+        radiation: {
+            name: 'Daily radiation',
+            short: 'Radiation',
+            how: 'Read the day dose on your personal dosimeter (the one on your chest) at the end of the day.',
+            why: "Outside Earth's protection radiation raises the risk of cancer and tissue damage. It is watched day by day.",
+        },
+    },
     environments: {
         iss: 'Space Station',
         transit: 'Transit',

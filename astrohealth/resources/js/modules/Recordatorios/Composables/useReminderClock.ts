@@ -2,6 +2,8 @@ import { onBeforeUnmount, onMounted } from 'vue';
 import { toast } from 'vue-sonner';
 import { useNotifications } from '@/composables/useNotifications';
 import { useRemindersStore } from '../Stores/useRemindersStore';
+import { reminderTitle } from '../Utils/reminderTypes';
+import { t } from '@/lib/i18n';
 
 /**
  * El reloj de la rutina: cada 30 s adelanta la hora del store y, cuando un
@@ -51,11 +53,15 @@ export function useReminderClock(astronautId: () => number | null) {
             notified.add(key);
 
             if (!silent) {
-                toast(reminder.title, {
-                    description: `Son las ${reminder.time}: es la hora.`,
+                const title = reminderTitle(reminder);
+                const when = t('Recordatorios.itsTime', {
+                    time: reminder.time,
+                });
+                toast(title, {
+                    description: when,
                     duration: 10_000,
                 });
-                notify(reminder.title, `Son las ${reminder.time}: es la hora.`);
+                notify(title, when);
             }
         }
 

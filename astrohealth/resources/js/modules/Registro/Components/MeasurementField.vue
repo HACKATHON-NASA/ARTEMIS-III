@@ -1,9 +1,14 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { formatNumber } from '@/lib/i18n';
+import { indicatorName } from '@/lib/indicators';
 import { CircleHelp } from '@lucide/vue';
 import { computed } from 'vue';
 import { statusMeta } from '@/lib/status';
 import type { Status } from '@/types/health';
 import type { Indicator } from '../Types/measurement';
+
+const { t } = useI18n();
 
 /**
  * Un campo numérico con su unidad, el último valor guardado como referencia
@@ -30,9 +35,13 @@ const lastLabel = computed(() => {
         (Date.now() - new Date(props.last.measured_at).getTime()) / 3_600_000,
     );
     const ago =
-        hours < 1 ? 'hace un rato' : hours < 24 ? `hace ${hours} h` : 'ayer';
+        hours < 1
+            ? t('Registro.aWhileAgo')
+            : hours < 24
+              ? t('Registro.hoursAgo', { n: hours })
+              : t('Registro.yesterday');
 
-    return `${props.last.value.toLocaleString('es')} ${props.indicator.unit} · ${ago}`;
+    return `${formatNumber(props.last.value)} ${props.indicator.unit} · ${ago}`;
 });
 </script>
 
@@ -40,7 +49,7 @@ const lastLabel = computed(() => {
     <div class="flex flex-col gap-1.5">
         <div class="flex items-start justify-between gap-2">
             <label :for="id" class="text-sm font-medium">
-                {{ indicator.name }}
+                {{ indicatorName(indicator.code, indicator.name) }}
             </label>
             <button
                 type="button"
@@ -48,7 +57,7 @@ const lastLabel = computed(() => {
                 @click="$emit('help')"
             >
                 <CircleHelp class="size-3.5" />
-                ¿Cómo me mido?
+                {{ t('Registro.howToMeasure') }}
             </button>
         </div>
 
@@ -66,7 +75,7 @@ const lastLabel = computed(() => {
                 type="text"
                 inputmode="decimal"
                 autocomplete="off"
-                :placeholder="last ? last.value.toLocaleString('es') : '—'"
+                :placeholder="last ? formatNumber(last.value) : '—'"
                 :aria-invalid="error ? true : undefined"
                 :aria-describedby="error ? `${id}-error` : `${id}-hint`"
                 class="h-11 w-full min-w-0 bg-transparent px-3 text-lg font-semibold tabular-nums outline-none placeholder:font-normal placeholder:text-muted-foreground/50"
@@ -98,9 +107,9 @@ const lastLabel = computed(() => {
                     class="size-1.5 rounded-full"
                     :style="{ background: statusMeta(last.status).color }"
                 />
-                Último: {{ lastLabel }}
+                {{ t('Registro.last', { value: lastLabel }) }}
             </template>
-            <template v-else>Sin registros todavía</template>
+            <template v-else>{{ t('Registro.noRecords') }}</template>
         </p>
     </div>
 </template>

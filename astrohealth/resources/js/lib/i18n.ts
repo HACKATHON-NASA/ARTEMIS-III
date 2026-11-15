@@ -74,7 +74,11 @@ export const i18n = createI18n<false>({
  */
 const global = i18n.global as unknown as {
     locale: { value: string };
-    t: (key: string, params?: Record<string, unknown>) => string;
+    t: (
+        key: string,
+        params?: Record<string, unknown>,
+        options?: { locale: string },
+    ) => string;
     te: (key: string) => boolean;
 };
 
@@ -100,6 +104,11 @@ export function setLocale(locale: Locale): void {
     } catch {
         // Sin localStorage: el idioma dura hasta recargar.
     }
+}
+
+/** El texto de una clave en un idioma dado (no en el de ahora). */
+export function tIn(locale: Locale, key: string): string {
+    return global.t(key, {}, { locale });
 }
 
 /** Traducir fuera de un componente (stores, utilidades). */

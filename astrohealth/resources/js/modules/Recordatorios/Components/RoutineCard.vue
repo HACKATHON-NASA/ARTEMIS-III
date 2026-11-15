@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { reminderTitle } from '../Utils/reminderTypes';
 import { Bell, BellOff, BellRing, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -8,6 +10,8 @@ import { useRemindersStore } from '../Stores/useRemindersStore';
 import type { Reminder, ReminderDraft } from '../Types/reminders';
 import ReminderEditor from './ReminderEditor.vue';
 import ReminderItem from './ReminderItem.vue';
+
+const { t } = useI18n();
 
 /**
  * La rutina del día (M8) en el Inicio: el avance, la lista, crear y editar
@@ -37,10 +41,10 @@ async function save(draft: ReminderDraft): Promise<void> {
 
     toast.success(
         editor.value.reminder
-            ? 'Recordatorio actualizado'
-            : 'Recordatorio creado',
+            ? t('Recordatorios.updated')
+            : t('Recordatorios.created'),
         {
-            description: `${draft.title} · ${draft.time}`,
+            description: `${reminderTitle(draft)} · ${draft.time}`,
         },
     );
 }
@@ -48,7 +52,7 @@ async function save(draft: ReminderDraft): Promise<void> {
 async function remove(): Promise<void> {
     if (editor.value.reminder) {
         if (await store.remove(editor.value.reminder.id)) {
-            toast('Recordatorio eliminado');
+            toast(t('Recordatorios.deleted'));
         }
     }
 }
@@ -57,10 +61,17 @@ async function remove(): Promise<void> {
 <template>
     <div>
         <div class="mb-3 flex items-center justify-between gap-2">
-            <h2 class="text-lg font-semibold">Tu rutina de hoy</h2>
+            <h2 class="text-lg font-semibold">
+                {{ t('Recordatorios.routineToday') }}
+            </h2>
             <div class="flex items-center gap-1">
                 <span class="mr-1 text-sm text-muted-foreground tabular-nums">
-                    {{ store.progress.done }} de {{ store.progress.total }}
+                    {{
+                        t('Recordatorios.progress', {
+                            done: store.progress.done,
+                            total: store.progress.total,
+                        })
+                    }}
                 </span>
                 <Button
                     v-if="
@@ -71,13 +82,13 @@ async function remove(): Promise<void> {
                     :disabled="permission === 'denied'"
                     :title="
                         permission === 'denied'
-                            ? 'Los avisos están bloqueados en el navegador'
-                            : 'Activar avisos del navegador'
+                            ? t('Recordatorios.notificationsBlocked')
+                            : t('Recordatorios.enableNotifications')
                     "
                     :aria-label="
                         permission === 'denied'
-                            ? 'Avisos bloqueados'
-                            : 'Activar avisos'
+                            ? t('Recordatorios.notificationsBlockedShort')
+                            : t('Recordatorios.enableNotificationsShort')
                     "
                     @click="request"
                 >
@@ -87,13 +98,13 @@ async function remove(): Promise<void> {
                 <BellRing
                     v-else-if="permission === 'granted'"
                     class="mx-1.5 size-4 text-sky-500"
-                    aria-label="Avisos activados"
+                    :aria-label="t('Recordatorios.notificationsOn')"
                 />
                 <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Nuevo recordatorio"
-                    title="Nuevo recordatorio"
+                    :aria-label="t('Recordatorios.newTitle')"
+                    :title="t('Recordatorios.newTitle')"
                     @click="editor = { open: true, reminder: null }"
                 >
                     <Plus />
@@ -128,7 +139,7 @@ async function remove(): Promise<void> {
             v-else
             class="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground"
         >
-            No tienes recordatorios. Toca + para crear tu rutina.
+            {{ t('Recordatorios.empty') }}
         </p>
 
         <ReminderEditor

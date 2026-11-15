@@ -8,6 +8,7 @@ import type {
     ReminderState,
     StoredReminder,
 } from '../Types/reminders';
+import { t } from '@/lib/i18n';
 
 /**
  * La rutina del día de un astronauta (M8): sus recordatorios con el estado
@@ -99,7 +100,7 @@ export const useRemindersStore = defineStore('reminders', () => {
 
             return true;
         } catch (error) {
-            fail(error, 'No se pudo guardar el recordatorio.');
+            fail(error, t('Recordatorios.saveFailed'));
 
             return false;
         }
@@ -112,7 +113,7 @@ export const useRemindersStore = defineStore('reminders', () => {
 
             return true;
         } catch (error) {
-            fail(error, 'No se pudo borrar el recordatorio.');
+            fail(error, t('Recordatorios.deleteFailed'));
 
             return false;
         }
@@ -132,7 +133,7 @@ export const useRemindersStore = defineStore('reminders', () => {
             if (error instanceof ApiError && error.status === 409) {
                 await load();
             } else {
-                fail(error, 'No se pudo marcar el recordatorio.');
+                fail(error, t('Recordatorios.markFailed'));
             }
 
             return false;
