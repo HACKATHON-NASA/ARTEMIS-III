@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import type { InertiaLinkProps } from '@inertiajs/vue3';
 import { CheckCheck, Clock, Inbox } from '@lucide/vue';
 import type { Advice } from '../Types/advice';
-import { ADVICE_CATEGORIES } from '../Utils/adviceMock';
+import { ADVICE_CATEGORIES } from '../Utils/adviceCategories';
 
 /**
  * Las indicaciones que se le han dado a un tripulante (ficha del médico):

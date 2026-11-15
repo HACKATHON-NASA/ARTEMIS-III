@@ -19,11 +19,15 @@ export type AlertLevel = 'red' | 'yellow' | 'info';
 export type Alert = {
     id: number;
     astronaut_id: number;
+    /** La medición que la creó (solo las vitales). */
+    measurement_id: number | null;
     kind: AlertKind;
     /** Solo en las de signos vitales. */
     indicator: IndicatorCode | null;
     level: AlertLevel;
     message: string;
+    /** El motivo de un pedido de ayuda. */
+    category: string | null;
     /** Lo que escribió el astronauta (ayuda, novedad o SOS). */
     note: string | null;
     source: 'device' | 'manual' | 'astronaut';

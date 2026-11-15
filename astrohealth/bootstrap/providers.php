@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Alertas\AlertasServiceProvider;
 use App\Modules\Cuerpo\CuerpoServiceProvider;
 use App\Modules\Entorno\EntornoServiceProvider;
 use App\Modules\Evaluacion\EvaluacionServiceProvider;
@@ -11,6 +12,7 @@ return [
     AppServiceProvider::class,
 
     // Módulos (app/Modules/<Modulo>/<Modulo>ServiceProvider.php)
+    AlertasServiceProvider::class,
     CuerpoServiceProvider::class,
     EntornoServiceProvider::class,
     EvaluacionServiceProvider::class,

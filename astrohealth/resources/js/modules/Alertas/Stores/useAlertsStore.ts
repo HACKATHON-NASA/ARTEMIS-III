@@ -1,40 +1,25 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+import { api } from '@/lib/api';
 import type { IndicatorCode, Status } from '@/types/health';
 import type { Alert, NewMessage, Recommendation } from '../Types/alerts';
-import { readSpeed, writeSpeed } from '../Utils/alertsMockDb';
-import {
-    mockAcknowledge,
-    mockAlerts,
-    mockAlertsFromMeasurements,
-    mockPendingTotal,
-    mockSendMessage,
-    mockSimulatorTick,
-} from '../Utils/alertsMockData';
-import {
-    mockRecommendations,
-    mockSaveRecommendation,
-} from '../Utils/recommendationsMockData';
+import { atSpeed, readSpeed, writeSpeed } from '../Utils/demoSpeed';
 
 /**
  * Las alertas (M5): las de un astronauta (`alerts`, para su Inicio y el Panel
  * de salud), el historial del centro (`history`), el contador del menú y las
- * recomendaciones. Todas salen hacia Tierra solas; el astronauta además
- * manda SOS, pide ayuda o cuenta una novedad, y Tierra responde.
+ * recomendaciones.
  *
- * `refresh()` vuelve a pedir todo (lo llama useLiveAlerts cada pocos
- * segundos) y devuelve las alertas NUEVAS para avisar.
- *
- * ⚠️ HOY con datos de prueba (Utils/alertsMockData.ts). Con el backend:
- * GET /api/v1/alerts?since=, POST /api/v1/alerts y
- * PATCH /api/v1/alerts/{id}/acknowledge (o un canal en tiempo real).
+ * GET /api/v1/alerts?astronaut= (el backend solo devuelve lo que la persona
+ * puede ver), POST /api/v1/alerts (SOS, ayuda, novedad), PATCH
+ * /api/v1/alerts/{id}/acknowledge y GET/PUT /api/v1/recommendations.
+ * Las alertas vitales las crea el backend solo al guardar un valor en
+ * amarillo o rojo. `refresh()` lo llama useLiveAlerts cada pocos segundos.
  */
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export const useAlertsStore = defineStore('alerts', () => {
-    const alerts = ref<Alert[]>([]);
-    const history = ref<Alert[]>([]);
-    const recommendations = ref<Recommendation[]>(mockRecommendations());
+    const raw = ref<Alert[]>([]);
+    const rawHistory = ref<Alert[]>([]);
+    const recommendations = ref<Recommendation[]>([]);
     const pendingTotal = ref(0);
     /** Velocidad de la demo (1 = real, 60 = el retraso de Marte en 20 s). */
     const speed = ref(readSpeed());
@@ -44,6 +29,14 @@ export const useAlertsStore = defineStore('alerts', () => {
     let pendingScope: number | null = null;
     const seen = new Set<number>();
     let primed = false;
+    let recommendationsLoad: Promise<void> | null = null;
+
+    const alerts = computed(() =>
+        raw.value.map((alert) => atSpeed(alert, speed.value)),
+    );
+    const history = computed(() =>
+        rawHistory.value.map((alert) => atSpeed(alert, speed.value)),
+    );
 
     /** La alerta roja más reciente de `alerts` que Tierra aún no atendió (SOS incluido). */
     const active = computed(
@@ -54,44 +47,80 @@ export const useAlertsStore = defineStore('alerts', () => {
             ) ?? null,
     );
 
-    async function load(astronautId: number): Promise<void> {
-        alertsScope = astronautId;
-        await wait(250);
-        alerts.value = mockAlerts(astronautId);
+    function fetchAlerts(astronautId: number | null): Promise<Alert[]> {
+        return api<Alert[]>(
+            astronautId === null
+                ? '/alerts'
+                : `/alerts?astronaut=${astronautId}`,
+        );
     }
 
-    /** El historial: de un astronauta o, con `null`, de toda la tripulación. */
+    /** "Qué hacer": se pide una vez (lo usan varias pantallas sin esperar). */
+    function loadRecommendations(): Promise<void> {
+        recommendationsLoad ??= api<Recommendation[]>('/recommendations')
+            .then((list) => {
+                recommendations.value = list;
+            })
+            .catch((error: unknown) => {
+                recommendationsLoad = null;
+                throw error;
+            });
+
+        return recommendationsLoad;
+    }
+
+    async function load(astronautId: number): Promise<void> {
+        alertsScope = astronautId;
+        [raw.value] = await Promise.all([
+            fetchAlerts(astronautId),
+            loadRecommendations(),
+        ]);
+    }
+
+    /** El historial: de un astronauta o, con `null`, de todo lo que puede ver. */
     async function loadHistory(astronautId: number | null): Promise<void> {
         historyScope = astronautId;
-        await wait(250);
-        history.value = mockAlerts(astronautId);
+        [rawHistory.value] = await Promise.all([
+            fetchAlerts(astronautId),
+            loadRecommendations(),
+        ]);
     }
 
     async function loadPendingTotal(astronautId: number | null): Promise<void> {
         pendingScope = astronautId;
-        await wait(150);
-        pendingTotal.value = mockPendingTotal(astronautId);
+        const [list] = await Promise.all([
+            fetchAlerts(astronautId),
+            loadRecommendations(),
+        ]);
+        pendingTotal.value = list.filter(
+            (a) => a.acknowledged_at === null,
+        ).length;
     }
 
     /** Vuelve a pedir lo cargado. Devuelve las alertas que no se habían visto. */
-    function refresh(): Alert[] {
-        mockSimulatorTick();
-        const all = mockAlerts(pendingScope);
+    async function refresh(): Promise<Alert[]> {
+        const all = await fetchAlerts(pendingScope);
         const fresh = primed ? all.filter((alert) => !seen.has(alert.id)) : [];
         all.forEach((alert) => seen.add(alert.id));
         primed = true;
+        pendingTotal.value = all.filter(
+            (a) => a.acknowledged_at === null,
+        ).length;
 
-        pendingTotal.value = mockPendingTotal(pendingScope);
+        const [own, past] = await Promise.all([
+            alertsScope === null ? null : fetchAlerts(alertsScope),
+            historyScope === undefined ? null : fetchAlerts(historyScope),
+        ]);
 
-        if (alertsScope !== null) {
-            alerts.value = mockAlerts(alertsScope);
+        if (own !== null) {
+            raw.value = own;
         }
 
-        if (historyScope !== undefined) {
-            history.value = mockAlerts(historyScope);
+        if (past !== null) {
+            rawHistory.value = past;
         }
 
-        return fresh;
+        return fresh.map((alert) => atSpeed(alert, speed.value));
     }
 
     function recommendationFor(
@@ -121,17 +150,24 @@ export const useAlertsStore = defineStore('alerts', () => {
         );
     }
 
-    /** El astronauta manda un SOS, pide ayuda o cuenta una novedad. */
+    /** El astronauta manda un SOS, pide ayuda o cuenta una novedad (sale de la sesión). */
     async function send(
-        astronautId: number,
+        _astronautId: number,
         message: NewMessage,
     ): Promise<Alert> {
-        await wait(400);
-        const alert = mockSendMessage(astronautId, message);
+        const alert = await api<Alert>('/alerts', {
+            method: 'POST',
+            body: {
+                kind: message.kind,
+                category: message.category,
+                note: message.note,
+                urgent: message.urgent ?? false,
+            },
+        });
         seen.add(alert.id);
-        refresh();
+        await refresh();
 
-        return alert;
+        return atSpeed(alert, speed.value);
     }
 
     /** Tierra atiende la alerta y responde (la respuesta tarda en volver). */
@@ -139,22 +175,28 @@ export const useAlertsStore = defineStore('alerts', () => {
         id: number,
         reply: string,
     ): Promise<Alert | null> {
-        await wait(300);
-        const alert = mockAcknowledge(id, reply);
-        refresh();
+        const alert = await api<Alert>(`/alerts/${id}/acknowledge`, {
+            method: 'PATCH',
+            body: { reply },
+        });
+        await refresh();
 
-        return alert;
+        return atSpeed(alert, speed.value);
     }
 
-    /** Tras registrar mediciones (M1): las amarillas y rojas generan su alerta. */
+    /** Tras registrar mediciones (M1): el backend ya creó las alertas; aquí se traen. */
     async function afterMeasurements(
         astronautId: number,
-        measurements: Parameters<typeof mockAlertsFromMeasurements>[1],
+        measurements: { id: number }[],
     ): Promise<Alert[]> {
-        const created = mockAlertsFromMeasurements(astronautId, measurements);
-        created.forEach((alert) => seen.add(alert.id));
         await load(astronautId);
-        refresh();
+        const ids = new Set(measurements.map((item) => item.id));
+        const created = alerts.value.filter(
+            (alert) =>
+                alert.measurement_id !== null && ids.has(alert.measurement_id),
+        );
+        created.forEach((alert) => seen.add(alert.id));
+        await refresh();
 
         return created;
     }
@@ -163,9 +205,25 @@ export const useAlertsStore = defineStore('alerts', () => {
     async function saveRecommendation(
         recommendation: Recommendation,
     ): Promise<void> {
-        await wait(300);
-        mockSaveRecommendation(recommendation);
-        recommendations.value = mockRecommendations();
+        const saved = await api<Recommendation>(
+            `/recommendations/${recommendation.indicator}/${recommendation.status}`,
+            {
+                method: 'PUT',
+                body: {
+                    title: recommendation.title,
+                    action_text: recommendation.action_text,
+                    risk_ref: recommendation.risk_ref,
+                },
+            },
+        );
+        recommendations.value = [
+            ...recommendations.value.filter(
+                (item) =>
+                    item.indicator !== saved.indicator ||
+                    item.status !== saved.status,
+            ),
+            saved,
+        ];
     }
 
     function setSpeed(value: number): void {

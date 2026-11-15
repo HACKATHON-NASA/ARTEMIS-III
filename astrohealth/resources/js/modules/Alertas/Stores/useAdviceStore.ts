@@ -1,27 +1,30 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+import { api } from '@/lib/api';
 import type { Advice, AdviceDraft } from '../Types/advice';
-import {
-    mockAdvice,
-    mockReadAdvice,
-    mockSendAdvice,
-} from '../Utils/adviceMock';
+import { adviceAtSpeed, readSpeed } from '../Utils/demoSpeed';
 
 /**
  * Las indicaciones del médico (M5): las de un tripulante (ficha del médico)
- * o las mías (Inicio del astronauta). Solo se muestran al astronauta las que
- * ya llegaron a la nave.
+ * o las mías (Inicio del astronauta). Al astronauta solo se le muestran las
+ * que ya llegaron a la nave.
  *
- * ⚠️ HOY con datos de prueba (Utils/adviceMock.ts). Con el backend:
- * GET/POST /api/v1/advice y PATCH /api/v1/advice/{id}/read (advice.send).
+ * GET /api/v1/advice?astronaut= (el backend solo devuelve lo que la persona
+ * puede ver), POST /api/v1/advice (advice.send; el autor sale de la sesión)
+ * y PATCH /api/v1/advice/{id}/read.
  */
-const wait = (ms = 250) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export const useAdviceStore = defineStore('advice', () => {
-    const items = ref<Advice[]>([]);
+    const raw = ref<Advice[]>([]);
     /** Las de toda una tripulación (el historial por misión). */
-    const history = ref<Advice[]>([]);
+    const rawHistory = ref<Advice[]>([]);
     const now = ref(Date.now());
+
+    const items = computed(() =>
+        raw.value.map((item) => adviceAtSpeed(item, readSpeed())),
+    );
+    const history = computed(() =>
+        rawHistory.value.map((item) => adviceAtSpeed(item, readSpeed())),
+    );
 
     /** Las que ya llegaron a la nave y no se han leído (para el astronauta). */
     const unread = computed(() =>
@@ -33,42 +36,38 @@ export const useAdviceStore = defineStore('advice', () => {
     );
 
     async function load(astronautId: number): Promise<void> {
-        await wait();
+        raw.value = await api<Advice[]>(`/advice?astronaut=${astronautId}`);
         now.value = Date.now();
-        items.value = mockAdvice()
-            .filter((item) => item.astronaut_id === astronautId)
-            .sort((a, b) => b.sent_at.localeCompare(a.sent_at));
     }
 
     async function loadForCrew(astronautIds: number[]): Promise<void> {
-        await wait();
+        const list = await api<Advice[]>('/advice');
+        rawHistory.value = list.filter((item) =>
+            astronautIds.includes(item.astronaut_id),
+        );
         now.value = Date.now();
-        history.value = mockAdvice()
-            .filter((item) => astronautIds.includes(item.astronaut_id))
-            .sort((a, b) => b.sent_at.localeCompare(a.sent_at));
     }
 
     async function send(
         astronautId: number,
-        author: string,
+        _author: string,
         draft: AdviceDraft,
     ): Promise<Advice> {
-        await wait(400);
-        const advice = mockSendAdvice(astronautId, author, draft);
+        const advice = await api<Advice>('/advice', {
+            method: 'POST',
+            body: { ...draft, astronaut_id: astronautId },
+        });
         await load(astronautId);
-        history.value = [advice, ...history.value];
+        rawHistory.value = [advice, ...rawHistory.value];
 
-        return advice;
+        return adviceAtSpeed(advice, readSpeed());
     }
 
     async function markRead(id: number): Promise<void> {
-        await wait(200);
-        mockReadAdvice(id);
-        const item = items.value.find((advice) => advice.id === id);
-
-        if (item) {
-            item.read_at = new Date().toISOString();
-        }
+        const saved = await api<Advice>(`/advice/${id}/read`, {
+            method: 'PATCH',
+        });
+        raw.value = raw.value.map((item) => (item.id === id ? saved : item));
     }
 
     function tick(): void {

@@ -5,7 +5,7 @@ import { toast } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
 import { useAdviceStore } from '../Stores/useAdviceStore';
 import type { Advice } from '../Types/advice';
-import { ADVICE_CATEGORIES } from '../Utils/adviceMock';
+import { ADVICE_CATEGORIES } from '../Utils/adviceCategories';
 
 /**
  * Las indicaciones del médico que le llegaron al astronauta y aún no ha

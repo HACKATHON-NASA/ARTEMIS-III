@@ -222,16 +222,26 @@ flowchart LR
 
 ---
 
-## F5 · M5 Alertas, recomendaciones e indicaciones
+## F5 · M5 Alertas, recomendaciones e indicaciones · ✅ hecho (16 nov 2026)
 
-**Tablas:** `recommendations` (las 20 de `recommendationsMockData.ts`), `alerts` **ampliada** frente al plan, y `advice` (**nueva**).
-
-`alerts` agrega: `kind` `enum(vital, sos, help, report)` · `level` con `info` · `indicator_code` *nullable* · `category` *nullable* · `note` `text` *nullable* · `source` `enum(device, manual, astronaut)` · `urgent` `boolean` · `reply` `text` *nullable* · `replied_by` *nullable*.
-
-`advice`: `astronaut_id`, `author_id`, `category` `enum(sleep, exercise, nutrition, medication, rest, mental, other)`, `title`, `body`, `important`, `valid_days` *nullable*, `sent_at`, `arrives_at`, `read_at`.
+**Tablas:** `recommendations` (20), `alerts` (vital, SOS, ayuda, novedad; con retraso y respuesta) y `advice` (indicaciones del médico).
 
 | Endpoint | Permiso | Caso de uso |
 |---|---|---|
+| `GET /api/v1/alerts?astronaut=&mission=` | `alerts.read` (+ Gate `health.read` por tripulante) | `ListAlerts` |
+| `POST /api/v1/alerts` | `alerts.send` | `SendMessageToGround` (SOS, ayuda, novedad; el tripulante sale de la sesión) |
+| `PATCH /api/v1/alerts/{id}/acknowledge` | `alerts.acknowledge` (+ su misión) | `AcknowledgeAlert` (con respuesta; una sola vez) |
+| `GET /api/v1/recommendations` · `PUT /{indicator}/{status}` | autenticado · `guide.manage` | `ListRecommendations`, `SaveRecommendation` |
+| `GET` · `POST /api/v1/advice` · `PATCH /api/v1/advice/{id}/read` | `crew.read` · `advice.send` · el destinatario | `ListAdvice`, `SendAdvice`, `MarkAdviceRead` |
+
+**Alertas vitales:** `OnMeasurementsRecorded` crea una por cada valor amarillo o rojo de las últimas 24 h (`config/alerts.php`), una por medición.
+**Retraso:** del entorno de la misión (`config/environments.php`), guardado en cada alerta e indicación. La velocidad ×60 de la demo es solo de pantalla.
+**Frontend:** alertas, indicaciones, recomendaciones y el contador del admin usan la API; borrados `alertsMockData`, `alertsMockDb`, `adviceMock`, `recommendationsMockData` y `adminMockData`.
+**Datos de demo** (solo fuera de producción): `DemoAlertsSeeder` (7 alertas de Ares-1, 4 atendidas, y 3 indicaciones).
+**Pruebas:** 9 nuevas (239 en verde).
+**Listo cuando:** ✅ un valor rojo crea la alerta sola, el SOS llega al médico con el retraso de Marte, y el médico responde y envía indicaciones que el astronauta marca como leídas.
+
+---|---|---|
 | `GET /api/v1/alerts?since=` | `alerts.read` | `ListAlerts` (el astronauta, las suyas; el médico, las de su misión) |
 | `POST /api/v1/alerts` | `alerts.send` | `SendMessageToGround` (SOS, ayuda, novedad) |
 | `PATCH /api/v1/alerts/{id}/acknowledge` | `alerts.acknowledge` | `AcknowledgeAlert` (con `reply` opcional) |

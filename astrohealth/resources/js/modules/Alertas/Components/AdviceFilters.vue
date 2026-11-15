@@ -7,7 +7,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import type { AdviceCategory } from '../Types/advice';
-import { ADVICE_CATEGORIES } from '../Utils/adviceMock';
+import { ADVICE_CATEGORIES } from '../Utils/adviceCategories';
 import type { AdviceFilter } from '../Utils/adviceState';
 
 /**

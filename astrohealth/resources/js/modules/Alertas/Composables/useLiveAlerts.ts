@@ -12,7 +12,7 @@ import type { Alert } from '../Types/alerts';
  *
  * `notify` = solo avisa quien atiende (Tierra y el médico de la nave); el
  * astronauta ve llegar las respuestas en su pantalla.
- * ⚠️ Con el backend: GET /api/v1/alerts?since= o un canal en tiempo real.
+ * Con el backend: GET /api/v1/alerts (sondeo cada 5 s; un canal en tiempo real queda para después).
  */
 const EVERY_MS = 5000;
 
@@ -48,17 +48,21 @@ export function useLiveAlerts(notify: () => boolean) {
         });
     }
 
-    function tick(): void {
-        const fresh = store.refresh();
+    async function tick(): Promise<void> {
+        try {
+            const fresh = await store.refresh();
 
-        if (notify()) {
-            fresh.forEach(announce);
+            if (notify()) {
+                fresh.forEach(announce);
+            }
+        } catch {
+            // Sin conexión un momento: se vuelve a intentar en el próximo ciclo.
         }
     }
 
     onMounted(() => {
-        store.refresh();
-        timer = setInterval(tick, EVERY_MS);
+        void tick();
+        timer = setInterval(() => void tick(), EVERY_MS);
     });
 
     onBeforeUnmount(() => clearInterval(timer));
