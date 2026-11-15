@@ -71,6 +71,3 @@ export type AwardResult = {
     levelUp: number | null;
     newBadges: Badge[];
 };
-
-/** Lo que el tripulante reclama (POST /gamification/claims, hasta F9); lo demás lo suma M7 solo. */
-export type ClaimableReason = Extract<PointReason, 'psych_test'>;

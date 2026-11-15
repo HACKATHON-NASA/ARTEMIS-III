@@ -15,7 +15,7 @@
 | M0 Identidad | ✅ | ✅ login, refresh, logout, `me`, token de dispositivo · ❌ gestión de usuarios y dispositivos | ✅ `users`, `devices`, `refresh_tokens` | `Identidad/Utils/adminMockData.ts` |
 | M6 Entorno | ✅ | 🟡 modelos, repositorios y contratos · ❌ endpoints · ❌ pruebas | 🟡 `missions` (le faltan `objective` y `status`), `astronauts` | `Entorno/Utils/missionsMockData.ts`, `environments.ts`, `environmentFacts.ts` |
 | M1 Registro | ✅ | ❌ | ❌ | `Registro/Utils/indicatorsMockData.ts`, `recordMock.ts` |
-| M2 Evaluación | ✅ | ❌ | ❌ | `mocks/thresholds.ts`, `Evaluacion/Utils/psychMockData.ts`, `psychScoring.ts` |
+| M2 Evaluación | ✅ | ✅ (F2, F9) | ✅ (F2, F9) | `mocks/thresholds.ts` (solo el primer pintado) |
 | M3 Cuerpo | ✅ | ❌ | ❌ | `Cuerpo/Utils/bodyMockData.ts`, `notesMock.ts`, `mocks/crewProfiles.ts` |
 | M4 Dashboard | ✅ | ❌ | (no tiene tablas) | `mocks/crewHistory.ts`, `mocks/crewHealth.ts` |
 | M5 Alertas | ✅ | ❌ | ❌ | `Alertas/Utils/alertsMock*.ts`, `recommendationsMockData.ts`, `adviceMock.ts` |
@@ -321,20 +321,24 @@ Lee por contratos: `MeasurementQuery` (M1), `Evaluator` y `TrendAnalyzer` (M2), 
 
 ---
 
-## F9 · M2 Tests psicológicos (PHQ-9, GAD-7, PSS-4, PVT)
+## F9 · M2 Tests psicológicos (PHQ-9, GAD-7, PSS-4, PVT) · ✅ hecho (16 nov 2026)
 
-**Tablas nuevas:** `psych_tests` (`code`, `name`, `kind`, `description`, `instructions`, `frequency_days`, `unit`, `scale` JSON, `questions` JSON, `bands` JSON, `source`) y `psych_results` (`test_id`, `astronaut_id`, `taken_at`, `score`, `status`, `band`, `detail`, `flagged`, `answers` JSON).
+**Tablas:** `psych_tests` (`code` único, `name`, `kind`, `description`, `instructions`, `frequency_days`, `unit`, `scale` · `questions` · `bands` en JSON, `source`) y `psych_results` (`test_id`, `astronaut_id`, `day` de misión, `taken_at`, `score`, `status`, `band`, `detail`, `flagged`, `answers` JSON).
 
 | Endpoint | Permiso | Caso de uso |
 |---|---|---|
 | `GET /api/v1/psych-tests` | autenticado | `ListPsychTests` |
-| `POST` · `PUT /api/v1/psych-tests/{id}` | `guide.manage` | `CreatePsychTest`, `UpdatePsychTest` |
-| `POST /api/v1/psych-results` | rol astronauta | `SubmitPsychTest` (el **backend** puntúa) |
-| `GET /api/v1/psych-results?mission=` | `crew.read` / lo suyo | `ListPsychResults` |
+| `POST /api/v1/psych-tests` · `PUT /api/v1/psych-tests/{id}` | `guide.manage` | `SavePsychTest` |
+| `POST /api/v1/psych-results` | solo tripulantes | `SubmitPsychTest` (el **backend** puntúa) |
+| `GET /api/v1/psych-results` | Gate `health.read` por tripulante | `ListPsychResults` (las respuestas, solo el equipo médico) |
 
-**Domain:** `PsychScoringRule` (ítems invertidos, bandas), `PvtScoringRule` (mediana, lapsos > 500 ms, salidas en falso) con pruebas usando los mismos casos de `psychScoring.ts`.
-**Seguridad clínica:** el ítem crítico del PHQ-9 publica `PsychCriticalAnswered` → M5 crea una alerta **urgente** a Tierra. Prueba obligatoria. Las respuestas individuales solo las ve el equipo médico.
-**Listo cuando:** se borra `psychScoring.ts` del frontend y los resultados son los mismos.
+**Domain:** `PsychScoringRule` (suma, ítems invertidos, ítem crítico, bandas) y `PvtScoringRule` (promedio, lapsos > 500 ms, anticipos), con los casos de `psychScoring.ts`. El PVT sigue con el **promedio** que ya usaba la pantalla (no la mediana del plan), para que los resultados sean los mismos.
+**Seguridad clínica:** ✅ el ítem crítico del PHQ-9 publica `PsychCriticalAnswered` → M5 `CreatePsychRiskAlert` crea una petición de ayuda **urgente en rojo** a Tierra (sin la respuesta). Con prueba.
+**M7:** `PsychTestTaken` → `AwardForPsychTest` (+10 por test y día). Se **borró** el reclamo temporal (`POST /gamification/claims`): ya nadie pide puntos.
+**Seeders:** `PsychTestSeeder` y `DemoPsychResultsSeeder` (solo fuera de producción).
+**Frontend:** `usePsychStore` usa la API; la Guía ya no manda la alerta ni pide los puntos (lo hace el backend). Borrados `psychScoring.ts`, `psychMockData.ts` y `psychCatalog.ts`.
+**Pruebas:** 15 nuevas (5 unitarias, 10 de la API; 283 en verde).
+**Listo cuando:** ✅ se borró `psychScoring.ts` y los resultados son los mismos.
 
 ---
 

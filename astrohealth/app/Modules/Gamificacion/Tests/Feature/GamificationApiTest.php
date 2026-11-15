@@ -140,30 +140,10 @@ final class GamificationApiTest extends TestCase
         $this->assertSame(165, $profile['points']);
     }
 
-    public function test_a_crew_member_claims_a_test_only_once(): void
+    public function test_nobody_can_ask_for_points(): void
     {
         $this->postJson('/api/v1/gamification/claims', ['reason' => 'psych_test', 'reference' => '1-24'], $this->as($this->elenaUser))
-            ->assertOk()->assertJsonPath('data.awarded', true);
-        $this->postJson('/api/v1/gamification/claims', ['reason' => 'psych_test', 'reference' => '1-24'], $this->as($this->elenaUser))
-            ->assertOk()->assertJsonPath('data.awarded', false);
-
-        $this->assertSame(10, $this->profile()['points']);
-    }
-
-    public function test_points_from_events_cannot_be_claimed(): void
-    {
-        foreach (['daily_complete', 'badge', 'streak_7', 'reminder'] as $reason) {
-            $this->postJson('/api/v1/gamification/claims', ['reason' => $reason, 'reference' => '24'], $this->as($this->elenaUser))
-                ->assertUnprocessable()->assertJsonValidationErrors('reason');
-        }
-    }
-
-    public function test_only_a_crew_member_claims(): void
-    {
-        $surgeon = User::factory()->create(['role' => Role::FlightSurgeon, 'mission_id' => $this->mission->id]);
-
-        $this->postJson('/api/v1/gamification/claims', ['reason' => 'psych_test', 'reference' => '1-24'], $this->as($surgeon))
-            ->assertForbidden()->assertJsonPath('error_code', 'GAMIFICATION_NOT_CREW');
+            ->assertNotFound();
     }
 
     public function test_the_leaderboard_shows_only_my_mission_ordered_by_points(): void

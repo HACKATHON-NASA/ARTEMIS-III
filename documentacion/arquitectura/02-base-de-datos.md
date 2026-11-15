@@ -125,6 +125,12 @@ Detalle en [M0 · backend](../../astrohealth/docs/backend/M0-identidad/README.md
 | `summary` | `string(255)` | "Corazón en precaución; el resto, normal." |
 | `created_at` | `timestamp` | Sin `updated_at`: cada evaluación es una fila nueva |
 
+### M2 · `psych_tests`, `psych_results`
+| Tabla | Columnas |
+|---|---|
+| `psych_tests` | `code` (único), `name`, `kind` (`psychological` · `cognitive`), `description`, `instructions`, `frequency_days`, `unit`, `scale` JSON `[{label, points}]`, `questions` JSON `[{id, text, reverse, critical}]`, `bands` JSON `[{max, label, status}]` de menor a mayor, `source` (*nullable*) |
+| `psych_results` | `test_id` (→ `psych_tests`; no se borra un test con resultados), `astronaut_id`, `day` (día de misión), `taken_at`, `score`, `status`, `band`, `detail` (*nullable*), `flagged` (respuesta de riesgo), `answers` JSON (solo para el equipo médico), `created_at`. Índice `(astronaut_id, test_id, taken_at)`. No se editan |
+
 ### M3 · `body_parts`
 | Columna | Tipo | Notas |
 |---|---|---|
@@ -177,6 +183,7 @@ Detalle en [M0 · backend](../../astrohealth/docs/backend/M0-identidad/README.md
 | `MissionSeeder` | M6 | La misión **Ares-1** (Marte, 30 días) y 4 astronautas |
 | `UserSeeder` · `DeviceSeeder` | M0 | Admin, médico de vuelo y 4 astronautas (enlazados por `astronaut_id`) · el dispositivo del simulador |
 | `IndicatorSeeder` | M1 | Los 10 indicadores, con unidad, rango posible y texto de ayuda |
+| `PsychTestSeeder` · `DemoPsychResultsSeeder` | M2 | Los 4 tests de la guía psicológica · (solo fuera de producción) los resultados semanales de Ares-1 |
 | `ThresholdSeeder` | M2 | Los umbrales del [plan §2](../PLAN_ASTROHEALTH.md#2-umbrales-de-referencia-para-el-motor-de-evaluación) para los 4 entornos |
 | `BodyPartSeeder` | M3 | Las 9 zonas, con su función y su riesgo espacial |
 | `RecommendationSeeder` | M5 | Una recomendación por indicador, en amarillo y en rojo |

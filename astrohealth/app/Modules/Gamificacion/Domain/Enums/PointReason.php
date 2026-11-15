@@ -16,15 +16,4 @@ enum PointReason: string
     case Reminder = 'reminder';
     case PsychTest = 'psych_test';
     case Badge = 'badge';
-
-    /**
-     * Lo que el tripulante puede reclamar mientras los tests psicológicos no
-     * tienen backend (F9). Lo demás lo da M7 solo, al escuchar los eventos.
-     *
-     * @return list<string>
-     */
-    public static function claimable(): array
-    {
-        return [self::PsychTest->value];
-    }
 }

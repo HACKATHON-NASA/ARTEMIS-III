@@ -8,7 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useReveal } from '@/composables/useReveal';
 import { dashboard, psicologia } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { useAlertsStore } from '../Alertas/Stores/useAlertsStore';
 import { useMissionStore } from '../Entorno/Stores/useMissionStore';
 import { useGamificationStore } from '../Gamificacion/Stores/useGamificationStore';
 import GuideTabs from './Components/GuideTabs.vue';
@@ -33,7 +32,6 @@ defineOptions({
 
 const auth = useAuthStore();
 const psych = usePsychStore();
-const alerts = useAlertsStore();
 const mission = useMissionStore();
 const gamification = useGamificationStore();
 
@@ -66,29 +64,12 @@ async function submit(submission: PsychSubmission) {
         return null;
     }
 
-    const test = taking.value.test;
-    const result = await psych.submit(
-        own.value,
-        test.id,
-        submission,
-        today.value,
-    );
+    // El backend puntúa, suma los +10 (M7) y, si hubo una respuesta de
+    // riesgo, avisa a Tierra con urgencia (M5). Aquí solo se celebra.
+    const result = await psych.submit(taking.value.test.id, submission);
 
     if (result) {
-        await gamification.award(
-            own.value,
-            'psych_test',
-            `${test.id}-${today.value}`,
-        );
-    }
-
-    if (result?.flagged) {
-        await alerts.send(own.value, {
-            kind: 'help',
-            category: 'Ánimo o estrés',
-            note: `Alerta automática: el test ${test.code} marcó una respuesta de riesgo. Contactar con prioridad.`,
-            urgent: true,
-        });
+        await gamification.refresh(own.value);
     }
 
     return result;
@@ -96,6 +77,11 @@ async function submit(submission: PsychSubmission) {
 
 async function saveTest(test: PsychTest): Promise<void> {
     const saved = await psych.saveTest(test);
+
+    if (!saved) {
+        return;
+    }
+
     toast.success(test.id ? 'Test actualizado' : 'Test creado', {
         description: saved.name,
     });

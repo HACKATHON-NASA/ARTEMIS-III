@@ -61,23 +61,23 @@ app/Modules/Recordatorios/
 
 Todos con `reminders.manage.own` y **siempre sobre la rutina de quien pide** (el astronauta sale del token). Uno de otro tripulante responde **404**, para no revelar que existe.
 
-| Método | Ruta                            | Respuesta                                                 |
-| ------ | ------------------------------- | --------------------------------------------------------- |
-| GET    | `/api/v1/reminders`             | 200 la rutina por hora                                    |
-| POST   | `/api/v1/reminders`             | 201 `{type, title, time "HH:MM"}`                         |
-| PATCH  | `/api/v1/reminders/{id}`        | 200 cambia `type`, `title`, `time` o `active`             |
-| DELETE | `/api/v1/reminders/{id}`        | 204 (los puntos que ya dio se quedan)                     |
-| POST   | `/api/v1/reminders/{id}/done`   | 200 hecho hoy · 409 `REMINDER_ALREADY_DONE`               |
+| Método | Ruta                          | Respuesta                                     |
+| ------ | ----------------------------- | --------------------------------------------- |
+| GET    | `/api/v1/reminders`           | 200 la rutina por hora                        |
+| POST   | `/api/v1/reminders`           | 201 `{type, title, time "HH:MM"}`             |
+| PATCH  | `/api/v1/reminders/{id}`      | 200 cambia `type`, `title`, `time` o `active` |
+| DELETE | `/api/v1/reminders/{id}`      | 204 (los puntos que ya dio se quedan)         |
+| POST   | `/api/v1/reminders/{id}/done` | 200 hecho hoy · 409 `REMINDER_ALREADY_DONE`   |
 
 Cada recordatorio: `id`, `type`, `title`, `time`, `active`, `last_done_at` (ISO, UTC) y `done_today`.
 
 ## 4. Contratos y eventos
 
-| Tipo    | Nombre                    | Detalle                                         |
-| ------- | ------------------------- | ----------------------------------------------- |
-| Publica | `ReminderCompleted`       | `astronautId`, `reminderId`, `doneAt` → M7 (+5) |
-| Usa     | `CurrentActor` (M0)       | El astronauta de quien pide                     |
-| Usa     | `CrewQuery` (M6)          | En el seeder: a quién darle la rutina           |
+| Tipo    | Nombre              | Detalle                                         |
+| ------- | ------------------- | ----------------------------------------------- |
+| Publica | `ReminderCompleted` | `astronautId`, `reminderId`, `doneAt` → M7 (+5) |
+| Usa     | `CurrentActor` (M0) | El astronauta de quien pide                     |
+| Usa     | `CrewQuery` (M6)    | En el seeder: a quién darle la rutina           |
 
 ## 5. Datos iniciales y demo
 
@@ -86,10 +86,10 @@ Cada recordatorio: `id`, `type`, `title`, `time`, `active`, `last_done_at` (ISO,
 
 ## 6. Pruebas
 
-| Prueba                | Verifica                                                                                   |
-| --------------------- | ------------------------------------------------------------------------------------------ |
-| `DoneTodayRuleTest`   | "Hoy" es el día UTC (las 20:00 de Bogotá ya son el día siguiente)                          |
-| `RemindersApiTest`    | La rutina por defecto (sin duplicar) · crear, cambiar y borrar · formato · hecho → +5 una vez (409 la segunda) · al día siguiente se puede otra vez · nadie toca los de otro (404) · solo la tripulación |
+| Prueba              | Verifica                                                                                                                                                                                                 |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DoneTodayRuleTest` | "Hoy" es el día UTC (las 20:00 de Bogotá ya son el día siguiente)                                                                                                                                        |
+| `RemindersApiTest`  | La rutina por defecto (sin duplicar) · crear, cambiar y borrar · formato · hecho → +5 una vez (409 la segunda) · al día siguiente se puede otra vez · nadie toca los de otro (404) · solo la tripulación |
 
 ## 7. Cambios frente al plan
 

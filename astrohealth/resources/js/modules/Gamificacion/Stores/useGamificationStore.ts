@@ -5,7 +5,6 @@ import { api } from '@/lib/api';
 import { launchConfetti } from '../Composables/useConfetti';
 import type {
     AwardResult,
-    ClaimableReason,
     GamificationProfile,
     LeaderRow,
 } from '../Types/gamification';
@@ -13,12 +12,11 @@ import type {
 /**
  * Puntos, nivel, racha, insignias y ranking (M7).
  *
- * Los puntos los suma el backend: los del registro (día completo, sueño,
- * ejercicio, racha e insignias) al guardar las mediciones y los de un
- * recordatorio al marcarlo hecho (M8); los de un test, con
- * POST /gamification/claims (temporal hasta F9). El store solo vuelve a pedir
- * GET /astronauts/{id}/gamification, compara el antes y el después y, si hay
- * insignia nueva o sube de nivel, lanza el confeti y el aviso.
+ * Los puntos los suma SOLO el backend, al escuchar los eventos: registrar
+ * mediciones (M1), cumplir un recordatorio (M8) y hacer un test (M2). Nadie
+ * puede pedir puntos. El store vuelve a pedir
+ * GET /astronauts/{id}/gamification (refresh), compara el antes y el
+ * después y, si hay insignia nueva o sube de nivel, lanza el confeti y el aviso.
  */
 type LeaderApiRow = Omit<LeaderRow, 'name'>;
 
@@ -108,19 +106,5 @@ export const useGamificationStore = defineStore('gamification', () => {
         return result;
     }
 
-    /** Reclama los puntos de un test hecho (hasta F9). */
-    function award(
-        astronautId: number,
-        reason: ClaimableReason,
-        reference: string,
-    ): Promise<AwardResult> {
-        return refresh(astronautId, () =>
-            api('/gamification/claims', {
-                method: 'POST',
-                body: { reason, reference },
-            }),
-        );
-    }
-
-    return { profile, leaderboard, load, loadLeaderboard, refresh, award };
+    return { profile, leaderboard, load, loadLeaderboard, refresh };
 });
