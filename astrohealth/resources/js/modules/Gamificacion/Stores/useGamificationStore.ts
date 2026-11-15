@@ -14,9 +14,9 @@ import type {
  * Puntos, nivel, racha, insignias y ranking (M7).
  *
  * Los puntos los suma el backend: los del registro (día completo, sueño,
- * ejercicio, racha e insignias) al guardar las mediciones; los de un
- * recordatorio o un test, con POST /gamification/claims (temporal hasta
- * que M8 y los tests tengan backend). El store solo vuelve a pedir
+ * ejercicio, racha e insignias) al guardar las mediciones y los de un
+ * recordatorio al marcarlo hecho (M8); los de un test, con
+ * POST /gamification/claims (temporal hasta F9). El store solo vuelve a pedir
  * GET /astronauts/{id}/gamification, compara el antes y el después y, si hay
  * insignia nueva o sube de nivel, lanza el confeti y el aviso.
  */
@@ -108,7 +108,7 @@ export const useGamificationStore = defineStore('gamification', () => {
         return result;
     }
 
-    /** Reclama los puntos de un recordatorio cumplido o de un test hecho. */
+    /** Reclama los puntos de un test hecho (hasta F9). */
     function award(
         astronautId: number,
         reason: ClaimableReason,

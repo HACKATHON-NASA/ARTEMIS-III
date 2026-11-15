@@ -93,12 +93,10 @@ final class DemoPointsSeeder extends Seeder
                 }
             }
 
-            // Hoy: la primera ya midió la presión (recordatorio 11); los demás, todo.
-            if ($order === 1) {
-                $add(PointReason::Reminder, "11-{$today}", $today);
-            } else {
+            // Hoy: todos menos la primera ya completaron el registro. El
+            // recordatorio de la presión de hoy lo marca DemoRemindersSeeder (M8).
+            if ($order !== 1) {
                 $add(PointReason::DailyComplete, (string) $today, $today);
-                $add(PointReason::Reminder, "r0-{$today}", $today);
             }
 
             $awarder->checkBadges($member->id);

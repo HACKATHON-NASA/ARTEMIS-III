@@ -1,109 +1,103 @@
 # ⏰ M8 · Recordatorios · Backend
 
-> [← Backend](../README.md) · Código: `astrohealth/app/Modules/Recordatorios/` · Qué construir: [ficha de M8](../../../../documentacion/modulos/M8-recordatorios/README.md)
+> [← Backend](../README.md) · Código: `astrohealth/app/Modules/Recordatorios/` · Qué construir: [ficha de M8](../../../../documentacion/modulos/M8-recordatorios/README.md) · Plan: F8 de `documentacion/PLAN_BACKEND.md`
 
-| Estado         | Fase | Responsable |
-| -------------- | :--: | ----------- |
-| ⬜ Sin empezar |  5   | Backend     |
+| Estado   | Fase | Responsable |
+| -------- | :--: | ----------- |
+| ✅ Hecho |  F8  | Backend     |
 
-**Qué hace:** guarda **la rutina de cada astronauta** (medir la presión, ejercicio, dosímetro, ánimo, sueño), calcula si cada recordatorio está **hecho, pendiente o por venir**, y al cumplirlo publica un evento para que M7 sume puntos.
+**Qué hace:** guarda la **rutina diaria** de cada tripulante (medir la presión, ejercicio, dosímetro, ánimo, sueño u otros) y la deja **marcar hecha una vez al día**. Al marcarla publica `ReminderCompleted` y **M7 suma +5 puntos**.
 
 ---
 
-## 1. Estados y cumplimiento
+## 1. Hecho hoy, sin reiniciar nada
+
+Un recordatorio está hecho hoy si `last_done_at` es del **mismo día UTC** que ahora (`DoneTodayRule`), el mismo día que usa el día de misión (M6) y los puntos (M7). No hay un proceso que lo reinicie a medianoche: al día siguiente simplemente deja de ser "de hoy".
 
 ```mermaid
-stateDiagram-v2
-    [*] --> upcoming: empieza el día
-    upcoming --> due: pasa su hora
-    upcoming --> done: POST /done
-    due --> done: POST /done
-    done --> done: POST /done otra vez (sin evento)
-    done --> upcoming: día siguiente
+flowchart LR
+    A["POST /reminders/{id}/done"] --> B["CompleteReminder<br/>(dentro de una transacción)"]
+    B --> C{"UPDATE … WHERE last_done_at<br/>es nulo o de antes de hoy"}
+    C -- "0 filas" --> X["409 REMINDER_ALREADY_DONE"]
+    C -- "1 fila" --> E["ReminderCompleted<br/>(después del commit)"]
+    E --> M7["M7 · OnReminderCompleted<br/>+5 · referencia «id-día»"]
 ```
 
-El estado **se calcula** (`ReminderStateRule`, con la hora y `last_done_at`), no se guarda: así no hace falta un proceso que lo "reinicie" cada día.
+> **Nunca dos veces:** la condición va en el propio `UPDATE`, así dos toques a la vez no lo marcan dos veces. Y en M7 la llave única de `points_log` (`reminder`, `«id»-«día»`) lo vuelve a asegurar.
+
+El estado "ya es la hora / más tarde" lo calcula la pantalla con la hora del dispositivo (el reloj `useReminderClock` avisa cuando llega la hora); el backend solo decide lo que cuenta para los puntos: si está hecho hoy (`done_today`).
 
 ## 2. Estructura de archivos
 
 ```
 app/Modules/Recordatorios/
-├── RecordatoriosServiceProvider.php        # programa reminders:mark-due cada minuto
+├── RecordatoriosServiceProvider.php
 ├── routes.php
 ├── Domain/
-│   ├── Enums/ReminderType.php · ReminderState.php · ErrorCode.php
-│   ├── Reglas/ReminderStateRule.php
-│   └── Eventos/ReminderCompleted.php       # reminderId · astronautId · type · doneAt
+│   ├── Entidades/Reminder.php
+│   ├── Enums/ReminderType.php · ErrorCode.php
+│   ├── Eventos/ReminderCompleted.php        # ShouldDispatchAfterCommit
+│   ├── Excepciones/ReminderProblem.php      # 404 · 409 · 403
+│   └── Reglas/DoneTodayRule.php
 ├── Application/
-│   ├── ListTodayReminders.php
-│   ├── CompleteReminder.php                # ya hecho hoy → sin evento
-│   ├── CreateReminder.php · UpdateReminder.php · DeleteReminder.php
-│   └── DTOs/ReminderData.php · ReminderResult.php
+│   ├── ListReminders.php · CreateReminder.php · UpdateReminder.php · DeleteReminder.php · CompleteReminder.php
+│   └── Servicios/OwnAstronaut.php           # el tripulante sale del token
 ├── Infrastructure/
 │   ├── Models/Reminder.php
-│   └── Repositorios/Reminder/FindReminderRepository.php · InsertReminderRepository.php · UpdateReminderRepository.php · DeleteReminderRepository.php
-├── Policies/ReminderPolicy.php             # solo los del astronauta del token
+│   └── Repositorios/Reminder/Find… · Insert… · Update… (markDone condicional) · Delete… · ReminderMapper.php
 ├── Http/
-│   ├── Controllers/Api/ListRemindersController.php · StoreReminderController.php · UpdateReminderController.php · DeleteReminderController.php · CompleteReminderController.php
-│   ├── Requests/StoreReminderRequest.php · UpdateReminderRequest.php
-│   └── Resources/ReminderResource.php      # incluye state
-├── Console/MarkDueRemindersCommand.php     # reminders:mark-due → log de los pendientes
+│   ├── Controllers/Api/ReminderController.php · CompleteReminderController.php
+│   ├── Requests/ReminderRequest.php         # POST todo obligatorio · PATCH solo lo que cambia
+│   └── Resources/ReminderResource.php
 ├── Database/
-│   ├── Migrations/                         # reminders
-│   └── Seeders/ReminderSeeder.php          # 5 por astronauta
+│   ├── Migrations/                          # reminders
+│   └── Seeders/ReminderSeeder.php · DemoRemindersSeeder.php
 └── Tests/
-    ├── Unit/ReminderStateRuleTest.php
-    └── Feature/RemindersCrudTest.php · CompleteReminderTest.php · ReminderPolicyTest.php
+    ├── Unit/DoneTodayRuleTest.php
+    └── Feature/RemindersApiTest.php
 ```
 
 ## 3. Endpoints
 
-| Método | Ruta                          | Permiso                                                           | Respuesta                                                |
-| ------ | ----------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------- |
-| GET    | `/api/v1/reminders`           | `reminders.manage.own` (o `health.read.any` con `?astronaut_id=`) | 200 los de hoy, ordenados por hora, con `state`          |
-| POST   | `/api/v1/reminders`           | `reminders.manage.own`                                            | 201                                                      |
-| PATCH  | `/api/v1/reminders/{id}`      | `reminders.manage.own` + `ReminderPolicy`                         | 200                                                      |
-| DELETE | `/api/v1/reminders/{id}`      | `reminders.manage.own` + `ReminderPolicy`                         | 204                                                      |
-| POST   | `/api/v1/reminders/{id}/done` | `reminders.manage.own` + `ReminderPolicy`                         | 200 · publica `ReminderCompleted` la primera vez del día |
+Todos con `reminders.manage.own` y **siempre sobre la rutina de quien pide** (el astronauta sale del token). Uno de otro tripulante responde **404**, para no revelar que existe.
 
-> El astronauta **no envía** su `astronaut_id`: sale del token.
+| Método | Ruta                            | Respuesta                                                 |
+| ------ | ------------------------------- | --------------------------------------------------------- |
+| GET    | `/api/v1/reminders`             | 200 la rutina por hora                                    |
+| POST   | `/api/v1/reminders`             | 201 `{type, title, time "HH:MM"}`                         |
+| PATCH  | `/api/v1/reminders/{id}`        | 200 cambia `type`, `title`, `time` o `active`             |
+| DELETE | `/api/v1/reminders/{id}`        | 204 (los puntos que ya dio se quedan)                     |
+| POST   | `/api/v1/reminders/{id}/done`   | 200 hecho hoy · 409 `REMINDER_ALREADY_DONE`               |
+
+Cada recordatorio: `id`, `type`, `title`, `time`, `active`, `last_done_at` (ISO, UTC) y `done_today`.
 
 ## 4. Contratos y eventos
 
-| Tipo    | Nombre              | Detalle                        |
-| ------- | ------------------- | ------------------------------ |
-| Publica | `ReminderCompleted` | M7: +5 y la insignia `on_time` |
-| Usa     | `CrewQuery` (M6)    | Que el astronauta exista       |
-| Usa     | `CurrentActor` (M0) | El astronauta del token        |
+| Tipo    | Nombre                    | Detalle                                         |
+| ------- | ------------------------- | ----------------------------------------------- |
+| Publica | `ReminderCompleted`       | `astronautId`, `reminderId`, `doneAt` → M7 (+5) |
+| Usa     | `CurrentActor` (M0)       | El astronauta de quien pide                     |
+| Usa     | `CrewQuery` (M6)          | En el seeder: a quién darle la rutina           |
 
-## 5. Códigos de error
+## 5. Datos iniciales y demo
 
-| Código                | HTTP | Cuándo                                   |
-| --------------------- | :--: | ---------------------------------------- |
-| `VALIDATION_FAILED`   | 422  | Hora fuera de `HH:MM` o tipo desconocido |
-| `FORBIDDEN`           | 403  | Recordatorio de otro astronauta          |
-| `REMINDERS_NOT_FOUND` | 404  | No existe                                |
+- `ReminderSeeder`: los 5 recordatorios por defecto de `config/reminders.php` (**P7**) para cada tripulante que no tiene ninguno. Idempotente.
+- `DemoRemindersSeeder` (solo fuera de producción): hoy a las 08:03 UTC cada tripulante de Ares-1 ya midió la presión. Publica `ReminderCompleted` como la app, así M7 suma los puntos de verdad.
 
 ## 6. Pruebas
 
-| Prueba                  | Verifica                                                                               |
-| ----------------------- | -------------------------------------------------------------------------------------- |
-| `ReminderStateRuleTest` | 09:00 → el de las 08:00 `due` y el de las 10:00 `upcoming` · día siguiente se reinicia |
-| `CompleteReminderTest`  | Primera vez → evento y +5 en M7 · segunda vez → 200 sin evento                         |
-| `ReminderPolicyTest`    | El astronauta 2 no toca los del 3                                                      |
-| `RemindersCrudTest`     | Crear, editar, borrar · `25:00` → 422                                                  |
+| Prueba                | Verifica                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `DoneTodayRuleTest`   | "Hoy" es el día UTC (las 20:00 de Bogotá ya son el día siguiente)                          |
+| `RemindersApiTest`    | La rutina por defecto (sin duplicar) · crear, cambiar y borrar · formato · hecho → +5 una vez (409 la segunda) · al día siguiente se puede otra vez · nadie toca los de otro (404) · solo la tripulación |
 
-## 7. Avance
+## 7. Cambios frente al plan
 
-- [ ] Migración + `ReminderSeeder`
-- [ ] `ReminderStateRule`
-- [ ] CRUD + `done` con `ReminderPolicy`
-- [ ] Evento `ReminderCompleted`
-- [ ] `reminders:mark-due` en el _scheduler_
-- [ ] Pruebas en verde
+- **Sin comando `recordatorios:pending`:** el estado se calcula al leer (hecho hoy por la fecha; "es la hora" en la pantalla), así que no hay nada que marcar por consola.
+- El campo `active` existe en la API; la pantalla muestra solo los activos.
 
-## 8. Cómo quedó hecho
+## 8. Frontend
 
-_Pendiente._
+`useRemindersStore` usa la API (guardar, borrar y marcar hecho devuelven si salió bien y avisan el error). Al marcar uno hecho, Inicio llama a `gamification.refresh()` para celebrar los puntos que ya sumó el backend. Se borró `Utils/remindersMock.ts`.
 
 > 📝 **Documentar siempre:** este documento se actualiza en el mismo _pull request_ que cambia el código.

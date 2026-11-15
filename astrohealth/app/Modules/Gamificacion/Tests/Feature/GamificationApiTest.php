@@ -140,21 +140,19 @@ final class GamificationApiTest extends TestCase
         $this->assertSame(165, $profile['points']);
     }
 
-    public function test_a_crew_member_claims_a_reminder_or_a_test_only_once(): void
+    public function test_a_crew_member_claims_a_test_only_once(): void
     {
-        $this->postJson('/api/v1/gamification/claims', ['reason' => 'reminder', 'reference' => '11-24'], $this->as($this->elenaUser))
-            ->assertOk()->assertJsonPath('data.awarded', true);
-        $this->postJson('/api/v1/gamification/claims', ['reason' => 'reminder', 'reference' => '11-24'], $this->as($this->elenaUser))
-            ->assertOk()->assertJsonPath('data.awarded', false);
         $this->postJson('/api/v1/gamification/claims', ['reason' => 'psych_test', 'reference' => '1-24'], $this->as($this->elenaUser))
             ->assertOk()->assertJsonPath('data.awarded', true);
+        $this->postJson('/api/v1/gamification/claims', ['reason' => 'psych_test', 'reference' => '1-24'], $this->as($this->elenaUser))
+            ->assertOk()->assertJsonPath('data.awarded', false);
 
-        $this->assertSame(15, $this->profile()['points']);
+        $this->assertSame(10, $this->profile()['points']);
     }
 
-    public function test_points_from_measurements_cannot_be_claimed(): void
+    public function test_points_from_events_cannot_be_claimed(): void
     {
-        foreach (['daily_complete', 'badge', 'streak_7'] as $reason) {
+        foreach (['daily_complete', 'badge', 'streak_7', 'reminder'] as $reason) {
             $this->postJson('/api/v1/gamification/claims', ['reason' => $reason, 'reference' => '24'], $this->as($this->elenaUser))
                 ->assertUnprocessable()->assertJsonValidationErrors('reason');
         }
@@ -164,7 +162,7 @@ final class GamificationApiTest extends TestCase
     {
         $surgeon = User::factory()->create(['role' => Role::FlightSurgeon, 'mission_id' => $this->mission->id]);
 
-        $this->postJson('/api/v1/gamification/claims', ['reason' => 'reminder', 'reference' => '1-24'], $this->as($surgeon))
+        $this->postJson('/api/v1/gamification/claims', ['reason' => 'psych_test', 'reference' => '1-24'], $this->as($surgeon))
             ->assertForbidden()->assertJsonPath('error_code', 'GAMIFICATION_NOT_CREW');
     }
 

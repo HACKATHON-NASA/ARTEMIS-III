@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\In;
 
 /**
- * POST /api/v1/gamification/claims · solo recordatorios y tests; los puntos
+ * POST /api/v1/gamification/claims · solo tests (hasta F9); los puntos
  * los pone la configuración, no quien pide.
  */
 final class ClaimRequest extends FormRequest
@@ -38,8 +38,8 @@ final class ClaimRequest extends FormRequest
     {
         return [
             'reason.required' => 'Indica por qué son los puntos.',
-            'reason.in' => 'Solo se reclaman recordatorios y tests.',
-            'reference.required' => 'Indica de qué recordatorio o test.',
+            'reason.in' => 'Solo se reclaman los tests psicológicos.',
+            'reference.required' => 'Indica de qué test.',
             'reference.max' => 'La referencia no puede tener más de 60 caracteres.',
         ];
     }

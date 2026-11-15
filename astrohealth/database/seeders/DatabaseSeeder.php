@@ -12,6 +12,8 @@ use App\Modules\Gamificacion\Database\Seeders\AchievementSeeder;
 use App\Modules\Gamificacion\Database\Seeders\DemoPointsSeeder;
 use App\Modules\Identidad\Database\Seeders\DeviceSeeder;
 use App\Modules\Identidad\Database\Seeders\UserSeeder;
+use App\Modules\Recordatorios\Database\Seeders\DemoRemindersSeeder;
+use App\Modules\Recordatorios\Database\Seeders\ReminderSeeder;
 use App\Modules\Registro\Database\Seeders\DemoHistorySeeder;
 use App\Modules\Registro\Database\Seeders\DemoReadingsSeeder;
 use App\Modules\Registro\Database\Seeders\IndicatorSeeder;
@@ -36,12 +38,14 @@ class DatabaseSeeder extends Seeder
             BodyPartSeeder::class,  // M3: las 9 zonas del cuerpo
             RecommendationSeeder::class, // M5: "qué hacer" en amarillo y en rojo
             AchievementSeeder::class, // M7: las 9 insignias
+            ReminderSeeder::class,    // M8: la rutina por defecto de cada astronauta
             // Solo fuera de producción: los últimos valores, las notas, las alertas y las indicaciones de Ares-1.
             DemoReadingsSeeder::class,
             DemoHistorySeeder::class,
             DemoClinicalNotesSeeder::class,
             DemoAlertsSeeder::class,
             DemoPointsSeeder::class,
+            DemoRemindersSeeder::class,
         ]);
     }
 }

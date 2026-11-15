@@ -11,7 +11,7 @@ import { useRemindersStore } from '../Stores/useRemindersStore';
  * abrir la app no se avisa (para no llenar la pantalla de avisos).
  */
 const EVERY_MS = 30_000;
-const KEY = 'astrohealth.demo.reminders.notified';
+const KEY = 'astrohealth.reminders.notified';
 
 function readNotified(): Set<string> {
     try {

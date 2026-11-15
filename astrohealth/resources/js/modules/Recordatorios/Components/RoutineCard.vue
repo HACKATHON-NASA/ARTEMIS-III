@@ -31,7 +31,10 @@ const percent = computed(() =>
 );
 
 async function save(draft: ReminderDraft): Promise<void> {
-    await store.save(draft, editor.value.reminder?.id);
+    if (!(await store.save(draft, editor.value.reminder?.id))) {
+        return;
+    }
+
     toast.success(
         editor.value.reminder
             ? 'Recordatorio actualizado'
@@ -44,8 +47,9 @@ async function save(draft: ReminderDraft): Promise<void> {
 
 async function remove(): Promise<void> {
     if (editor.value.reminder) {
-        await store.remove(editor.value.reminder.id);
-        toast('Recordatorio eliminado');
+        if (await store.remove(editor.value.reminder.id)) {
+            toast('Recordatorio eliminado');
+        }
     }
 }
 </script>

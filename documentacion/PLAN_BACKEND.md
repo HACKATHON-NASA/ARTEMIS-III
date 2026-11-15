@@ -20,7 +20,7 @@
 | M4 Dashboard | ✅ | ❌ | (no tiene tablas) | `mocks/crewHistory.ts`, `mocks/crewHealth.ts` |
 | M5 Alertas | ✅ | ❌ | ❌ | `Alertas/Utils/alertsMock*.ts`, `recommendationsMockData.ts`, `adviceMock.ts` |
 | M7 Gamificación | ✅ | ✅ (F7) | ✅ (F7) | — |
-| M8 Recordatorios | ✅ | ❌ | ❌ | `Recordatorios/Utils/remindersMock.ts` |
+| M8 Recordatorios | ✅ | ✅ (F8) | ✅ (F8) | — |
 | Simulador | ✅ API propia `:8001` | ❌ no envía lotes a Laravel | — | — |
 
 **Lo que sí está bien:** M0 cumple la norma completa (capas, un repositorio por operación, entidades `readonly`, excepciones de negocio, 15 archivos de pruebas). `app/Shared` ya tiene `ApiResponse`, `BusinessError`, `Transaction` y el `ModuleServiceProvider`. No hay `DB::` fuera de `Infrastructure`, ni comprobaciones de rol fuera de M0. En el frontend ningún archivo pasa de 300 líneas y ningún módulo importa otro.
@@ -303,18 +303,21 @@ Lee por contratos: `MeasurementQuery` (M1), `Evaluator` y `TrendAnalyzer` (M2), 
 
 ---
 
-## F8 · M8 Recordatorios
+## F8 · M8 Recordatorios · ✅ hecho (16 nov 2026)
 
-**Tabla:** `reminders` con `type` (incluye `custom`), `title`, `time`, `active`, `last_done_at`.
+**Tabla:** `reminders` con `type` (incluye `custom`), `title`, `time`, `active`, `last_done_at`. "Hecho hoy" = `last_done_at` del mismo día UTC (`DoneTodayRule`), como el día de misión.
 
 | Endpoint | Permiso | Caso de uso |
 |---|---|---|
-| `GET` · `POST` · `PATCH` · `DELETE /api/v1/reminders` | el dueño | `ListReminders`, `CreateReminder`, `UpdateReminder`, `DeleteReminder` |
-| `POST /api/v1/reminders/{id}/done` | el dueño | `CompleteReminder` → evento `ReminderCompleted` (hecho hoy dos veces → no suma otra vez) |
-| Comando `recordatorios:pending` en el `schedule` | consola | Marca los pendientes de la hora |
+| `GET` · `POST /api/v1/reminders` · `PATCH` · `DELETE /api/v1/reminders/{id}` | `reminders.manage.own`, siempre la rutina propia (404 si es de otro) | `ListReminders`, `CreateReminder`, `UpdateReminder`, `DeleteReminder` |
+| `POST /api/v1/reminders/{id}/done` | ídem | `CompleteReminder` → `ReminderCompleted` (409 si ya estaba hecho hoy) |
 
-**Seeder:** los 5 recordatorios por defecto para cada astronauta.
-**Listo cuando:** completar un recordatorio suma +5 puntos una sola vez al día.
+**M7:** `OnReminderCompleted` → `AwardForReminder` (+5, referencia `«id»-«día»`). El reclamo temporal de M7 quedó solo para los tests (F9).
+**Cambios frente a lo planeado:** sin comando `recordatorios:pending`: el estado se calcula al leer, no hay nada que marcar por consola. Los 5 recordatorios por defecto viven en `config/reminders.php` (**P7**).
+**Seeders:** `ReminderSeeder` (la rutina por defecto, idempotente) y `DemoRemindersSeeder` (solo fuera de producción: la presión de hoy hecha, publicando el evento real).
+**Frontend:** `useRemindersStore` usa la API; Inicio celebra los puntos con `gamification.refresh()`. Borrado `remindersMock.ts`.
+**Pruebas:** 9 nuevas (1 unitaria, 8 de la API; 269 en verde).
+**Listo cuando:** ✅ completar un recordatorio suma +5 puntos una sola vez al día.
 
 ---
 

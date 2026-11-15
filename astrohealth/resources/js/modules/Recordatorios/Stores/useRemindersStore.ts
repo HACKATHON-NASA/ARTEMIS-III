@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
+import { api, ApiError } from '@/lib/api';
 import type {
     Reminder,
     ReminderDraft,
     ReminderState,
+    StoredReminder,
 } from '../Types/reminders';
-import { mockReadReminders, mockWriteReminders } from '../Utils/remindersMock';
 
 /**
  * La rutina del día de un astronauta (M8): sus recordatorios con el estado
@@ -13,18 +15,12 @@ import { mockReadReminders, mockWriteReminders } from '../Utils/remindersMock';
  * crear, cambiar, borrar y marcar hecho. `now` lo adelanta el reloj
  * (useReminderClock) para que los estados cambien solos.
  *
- * ⚠️ HOY con datos de prueba (Utils/remindersMock.ts, guardados en este
- * navegador). Con el backend: GET/POST/PATCH/DELETE /api/v1/reminders y
- * POST /reminders/{id}/done. Los puntos (M7) los coordina la página.
+ * GET/POST/PATCH/DELETE /api/v1/reminders y POST /reminders/{id}/done.
+ * Siempre es la rutina de quien inició sesión. "Hecho hoy" es el día UTC
+ * (como el día de misión); los puntos los suma M7 en el backend.
  */
-const wait = (ms = 250) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function isToday(iso: string | null, now: number): boolean {
-    return (
-        iso !== null &&
-        new Date(iso).toDateString() === new Date(now).toDateString()
-    );
-}
+const utcDay = (time: number | string) =>
+    new Date(time).toISOString().slice(0, 10);
 
 function minutesOf(time: string): number {
     const [hours, minutes] = time.split(':').map(Number);
@@ -32,13 +28,19 @@ function minutesOf(time: string): number {
     return hours * 60 + minutes;
 }
 
-export const useRemindersStore = defineStore('reminders', () => {
-    const items = ref<Omit<Reminder, 'state'>[]>([]);
-    const now = ref(Date.now());
-    const astronautId = ref<number | null>(null);
+function fail(error: unknown, fallback: string): void {
+    toast.error(error instanceof ApiError ? error.message : fallback);
+}
 
-    function stateOf(item: Omit<Reminder, 'state'>): ReminderState {
-        if (isToday(item.last_done_at, now.value)) {
+export const useRemindersStore = defineStore('reminders', () => {
+    const items = ref<StoredReminder[]>([]);
+    const now = ref(Date.now());
+
+    function stateOf(item: StoredReminder): ReminderState {
+        if (
+            item.last_done_at !== null &&
+            utcDay(item.last_done_at) === utcDay(now.value)
+        ) {
             return 'done';
         }
 
@@ -49,9 +51,10 @@ export const useRemindersStore = defineStore('reminders', () => {
             : 'upcoming';
     }
 
-    /** Los del día, ordenados por hora, con su estado de ahora. */
+    /** Los activos del día, ordenados por hora, con su estado de ahora. */
     const reminders = computed<Reminder[]>(() =>
         items.value
+            .filter((item) => item.active)
             .map((item) => ({ ...item, state: stateOf(item) }))
             .sort((a, b) => a.time.localeCompare(b.time)),
     );
@@ -61,16 +64,19 @@ export const useRemindersStore = defineStore('reminders', () => {
         total: reminders.value.length,
     }));
 
-    function persist(): void {
-        if (astronautId.value !== null) {
-            mockWriteReminders(astronautId.value, items.value);
+    function put(item: StoredReminder): void {
+        const index = items.value.findIndex((other) => other.id === item.id);
+
+        if (index === -1) {
+            items.value.push(item);
+        } else {
+            items.value[index] = item;
         }
     }
 
-    async function load(id: number): Promise<void> {
-        await wait(200);
-        astronautId.value = id;
-        items.value = mockReadReminders(id);
+    /** La rutina de quien inició sesión (el id es el de su astronauta). */
+    async function load(_astronautId?: number): Promise<void> {
+        items.value = await api<StoredReminder[]>('/reminders');
         now.value = Date.now();
     }
 
@@ -78,43 +84,59 @@ export const useRemindersStore = defineStore('reminders', () => {
         now.value = Date.now();
     }
 
-    /** Crea (sin id) o cambia un recordatorio. */
-    async function save(draft: ReminderDraft, id?: number): Promise<void> {
-        await wait();
-        const existing = items.value.find((item) => item.id === id);
+    /** Crea (sin id) o cambia un recordatorio. Devuelve si se guardó. */
+    async function save(draft: ReminderDraft, id?: number): Promise<boolean> {
+        try {
+            put(
+                await api<StoredReminder>(
+                    id === undefined ? '/reminders' : `/reminders/${id}`,
+                    {
+                        method: id === undefined ? 'POST' : 'PATCH',
+                        body: draft,
+                    },
+                ),
+            );
 
-        if (existing) {
-            Object.assign(existing, draft);
-        } else {
-            items.value.push({
-                ...draft,
-                id: Math.max(0, ...items.value.map((item) => item.id)) + 1,
-                last_done_at: null,
-            });
+            return true;
+        } catch (error) {
+            fail(error, 'No se pudo guardar el recordatorio.');
+
+            return false;
         }
-
-        persist();
     }
 
-    async function remove(id: number): Promise<void> {
-        await wait();
-        items.value = items.value.filter((item) => item.id !== id);
-        persist();
+    async function remove(id: number): Promise<boolean> {
+        try {
+            await api(`/reminders/${id}`, { method: 'DELETE' });
+            items.value = items.value.filter((item) => item.id !== id);
+
+            return true;
+        } catch (error) {
+            fail(error, 'No se pudo borrar el recordatorio.');
+
+            return false;
+        }
     }
 
     /** Lo marca hecho hoy. Devuelve false si ya estaba hecho (no suma dos veces). */
     async function markDone(id: number): Promise<boolean> {
-        await wait(300);
-        const item = items.value.find((reminder) => reminder.id === id);
+        try {
+            put(
+                await api<StoredReminder>(`/reminders/${id}/done`, {
+                    method: 'POST',
+                }),
+            );
 
-        if (!item || isToday(item.last_done_at, Date.now())) {
+            return true;
+        } catch (error) {
+            if (error instanceof ApiError && error.status === 409) {
+                await load();
+            } else {
+                fail(error, 'No se pudo marcar el recordatorio.');
+            }
+
             return false;
         }
-
-        item.last_done_at = new Date().toISOString();
-        persist();
-
-        return true;
     }
 
     return { reminders, progress, now, load, tick, save, remove, markDone };

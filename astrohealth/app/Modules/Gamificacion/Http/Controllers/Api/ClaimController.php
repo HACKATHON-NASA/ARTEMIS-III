@@ -10,8 +10,8 @@ use App\Shared\Http\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
 /**
- * POST /api/v1/gamification/claims {reason, reference}: TEMPORAL hasta F8/F9.
- * El tripulante reclama los puntos de un recordatorio o de un test; si esa
+ * POST /api/v1/gamification/claims {reason, reference}: TEMPORAL hasta F9.
+ * El tripulante reclama los puntos de un test hecho; si esa
  * acción ya había sumado, responde awarded=false (idempotente).
  */
 final class ClaimController

@@ -18,13 +18,13 @@ enum PointReason: string
     case Badge = 'badge';
 
     /**
-     * Los que el tripulante puede reclamar mientras M8 y los tests no tienen
-     * backend (F8, F9). Los de las mediciones los da M7 solo.
+     * Lo que el tripulante puede reclamar mientras los tests psicológicos no
+     * tienen backend (F9). Lo demás lo da M7 solo, al escuchar los eventos.
      *
      * @return list<string>
      */
     public static function claimable(): array
     {
-        return [self::Reminder->value, self::PsychTest->value];
+        return [self::PsychTest->value];
     }
 }

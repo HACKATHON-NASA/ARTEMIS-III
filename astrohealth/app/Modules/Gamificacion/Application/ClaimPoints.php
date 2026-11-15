@@ -11,10 +11,10 @@ use App\Modules\Gamificacion\Domain\Excepciones\NotCrewMember;
 use App\Modules\Identidad\Contratos\CurrentActor;
 
 /**
- * Caso de uso TEMPORAL: el tripulante reclama los puntos de un recordatorio
- * cumplido o de un test hecho, mientras M8 (F8) y los tests (F9) no tienen
- * backend que publique su evento. Solo esos dos motivos; cuántos puntos da
- * lo decide la configuración, nunca quien pide. Se borra con F8 y F9.
+ * Caso de uso TEMPORAL: el tripulante reclama los puntos de un test hecho,
+ * mientras los tests psicológicos (F9) no tienen backend que publique su
+ * evento. Solo ese motivo; cuántos puntos da lo decide la configuración,
+ * nunca quien pide. Se borra con F9.
  */
 final readonly class ClaimPoints
 {

@@ -72,5 +72,5 @@ export type AwardResult = {
     newBadges: Badge[];
 };
 
-/** Lo que el tripulante reclama (POST /gamification/claims); lo demás lo suma M7 solo. */
-export type ClaimableReason = Extract<PointReason, 'reminder' | 'psych_test'>;
+/** Lo que el tripulante reclama (POST /gamification/claims, hasta F9); lo demás lo suma M7 solo. */
+export type ClaimableReason = Extract<PointReason, 'psych_test'>;

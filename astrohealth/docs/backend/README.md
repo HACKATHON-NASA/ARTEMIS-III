@@ -108,7 +108,7 @@ flowchart LR
 | 🚨  | [M5 · Alertas](M5-alertas/README.md)                  | `Alertas`       | Alertas rojas, recomendaciones, envío a Tierra                      |     4     |   ⬜   |
 | 🌍  | [M6 · Entorno](M6-entorno/README.md)                  | `Entorno`       | Misión, tripulación, entornos                                       | **1** · 4 |   🟨   |
 | 🏆  | [M7 · Gamificación](M7-gamificacion/README.md)        | `Gamificacion`  | Puntos, niveles, insignias, ranking                                 |     5     |   ✅   |
-| ⏰  | [M8 · Recordatorios](M8-recordatorios/README.md)      | `Recordatorios` | Rutina diaria y su evento                                           |     5     |   ⬜   |
+| ⏰  | [M8 · Recordatorios](M8-recordatorios/README.md)      | `Recordatorios` | Rutina diaria y su evento                                           |     5     |   ✅   |
 | 🧱  | [Shared](shared.md)                                   | `Shared`        | `ApiResponse`, `BusinessError`, `Transaction`, manejador de errores |   **1**   |   ✅   |
 
 ## 5. Orden de construcción (backend)

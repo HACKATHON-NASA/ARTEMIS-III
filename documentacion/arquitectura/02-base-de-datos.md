@@ -167,7 +167,8 @@ Detalle en [M0 · backend](../../astrohealth/docs/backend/M0-identidad/README.md
 | `type` | `enum(measure_bp, exercise, log_sleep, mood_check, dosimeter, custom)` | |
 | `title` | `string(80)` | "Hora de medir tu presión 🩺" |
 | `time` | `time` | Hora del día |
-| `last_done_at` | `timestamp`, *nullable* | Si es de hoy, el recordatorio está hecho |
+| `active` | `boolean`, por defecto `true` | Los inactivos no salen en la rutina del día |
+| `last_done_at` | `datetime`, *nullable* | Si es de hoy (día UTC, como el día de misión), el recordatorio está hecho |
 
 ## 4. Datos iniciales (*seeders*)
 
@@ -180,7 +181,7 @@ Detalle en [M0 · backend](../../astrohealth/docs/backend/M0-identidad/README.md
 | `BodyPartSeeder` | M3 | Las 9 zonas, con su función y su riesgo espacial |
 | `RecommendationSeeder` | M5 | Una recomendación por indicador, en amarillo y en rojo |
 | `AchievementSeeder` · `DemoPointsSeeder` | M7 | Las 9 insignias · (solo fuera de producción) los puntos e insignias de Ares-1 hasta hoy |
-| `ReminderSeeder` | M8 | Los 5 recordatorios por defecto para cada astronauta |
+| `ReminderSeeder` · `DemoRemindersSeeder` | M8 | Los 5 recordatorios por defecto (`config/reminders.php`) para cada astronauta · (solo fuera de producción) la presión de hoy ya hecha en Ares-1 |
 | **El simulador** (ingesta) | M1 | Los 30 días simulados llegan por `POST /api/v1/ingest/readings`. Plan B sin red: `registro:import-file <json>` |
 
 ```powershell

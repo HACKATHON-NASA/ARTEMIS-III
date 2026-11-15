@@ -124,10 +124,9 @@ async function completeReminder(reminder: Reminder): Promise<void> {
         return;
     }
 
-    const { gained } = await gamification.award(
+    // Los +5 los suma M7 en el backend al marcarlo hecho; aquí solo se celebran.
+    const { gained } = await gamification.refresh(
         auth.actor?.astronaut_id ?? 0,
-        'reminder',
-        `${reminder.id}-${mission.current?.day ?? 1}`,
     );
     busyReminder.value = null;
 
