@@ -41,7 +41,3 @@ export function isOnline(lastSeenAt: string | null): boolean {
         Date.now() - new Date(lastSeenAt).getTime() < 5 * 60 * 1000
     );
 }
-
-export function minutesAgo(minutes: number): string {
-    return new Date(Date.now() - minutes * 60 * 1000).toISOString();
-}

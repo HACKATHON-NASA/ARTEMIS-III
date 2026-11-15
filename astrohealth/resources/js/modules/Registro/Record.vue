@@ -31,7 +31,7 @@ const { t } = useI18n();
 /**
  * Registrar (/registrar, M1): el astronauta anota sus indicadores del día y
  * cada valor vuela a su órgano en el cuerpo (M3). Los amarillos y rojos
- * generan su alerta (M5). ⚠️ Por ahora con datos de prueba (ver los stores).
+ * generan su alerta (M5). Todo viene de la API.
  */
 defineOptions({
     layout: { breadcrumbs: [{ title: 'nav.record', href: registrar() }] },
@@ -89,7 +89,7 @@ async function submit(payload: RecordPayload): Promise<void> {
     let saved: Measurement[];
 
     try {
-        saved = await store.record(astronautId.value, payload);
+        saved = await store.record(payload);
     } catch (error) {
         saving.value = false;
         // El backend tiene la última palabra (rango posible, fecha, permisos).

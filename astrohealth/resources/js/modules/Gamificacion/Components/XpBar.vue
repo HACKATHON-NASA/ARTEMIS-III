@@ -5,7 +5,7 @@ import { ref, watch } from 'vue';
 const { t } = useI18n();
 
 /**
- * El nivel y la barra hacia el siguiente (cada 100 puntos). Cuando suben
+ * El nivel y la barra hacia el siguiente (cada `size` puntos, según el backend). Cuando suben
  * los puntos, un "+N" flota y se desvanece sobre la barra.
  * `compact` = versión pequeña (menú lateral).
  */
@@ -14,6 +14,8 @@ const props = withDefaults(
         points: number;
         level: number;
         progress: number;
+        /** Puntos por nivel. */
+        size: number;
         compact?: boolean;
     }>(),
     { compact: false },
@@ -46,7 +48,7 @@ watch(
                 t('Gamificacion.level', { n: level })
             }}</span>
             <span class="text-muted-foreground tabular-nums">{{
-                t('Gamificacion.levelProgress', { progress, points })
+                t('Gamificacion.levelProgress', { progress, size, points })
             }}</span>
         </div>
         <div
@@ -55,12 +57,14 @@ watch(
             role="progressbar"
             :aria-valuenow="progress"
             aria-valuemin="0"
-            aria-valuemax="100"
-            :aria-label="t('Gamificacion.levelAria', { level, progress })"
+            :aria-valuemax="size"
+            :aria-label="t('Gamificacion.levelAria', { level, progress, size })"
         >
             <div
                 class="h-full origin-left rounded-full bg-linear-to-r from-sky-400 to-blue-600 transition-transform duration-700 ease-out"
-                :style="{ transform: `scaleX(${progress / 100})` }"
+                :style="{
+                    transform: `scaleX(${progress / Math.max(1, size)})`,
+                }"
             />
         </div>
         <TransitionGroup

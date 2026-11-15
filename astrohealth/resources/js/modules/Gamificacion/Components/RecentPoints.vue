@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import type { PointEntry } from '../Types/gamification';
-import { POINTS, reasonLabel } from '../Utils/rules';
+import type { GamificationProfile, PointEntry } from '../Types/gamification';
+import { reasonLabel } from '../Utils/rules';
 
 const { t } = useI18n();
 
@@ -9,12 +9,12 @@ const { t } = useI18n();
  * Lo último que sumó puntos y, debajo, cómo se ganan (para que sea claro
  * qué hábito premia cada cosa).
  */
-defineProps<{ recent: PointEntry[]; today: number }>();
-
-const HOW = Object.entries(POINTS).map(([reason, points]) => ({
-    reason,
-    points,
-}));
+defineProps<{
+    recent: PointEntry[];
+    today: number;
+    /** Cómo se ganan (lo manda el backend con el perfil). */
+    earning: GamificationProfile['earning'];
+}>();
 </script>
 
 <template>
@@ -50,7 +50,7 @@ const HOW = Object.entries(POINTS).map(([reason, points]) => ({
             </p>
             <ul class="flex flex-col gap-1 text-sm">
                 <li
-                    v-for="item in HOW"
+                    v-for="item in earning"
                     :key="item.reason"
                     class="flex justify-between gap-3"
                 >

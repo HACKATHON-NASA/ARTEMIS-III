@@ -46,7 +46,7 @@ const { t } = useI18n();
  * Indicaciones (/indicaciones, M5): el historial de lo que los médicos le
  * han indicado a la tripulación de una misión, a quién, cuándo y si ya lo
  * entendieron. Médicos y administración lo ven; advice.send escribe.
- * ⚠️ Por ahora con datos de prueba (ver Stores/useAdviceStore.ts).
+ * Los datos vienen de la API (ver Stores/useAdviceStore.ts).
  */
 defineOptions({
     layout: { breadcrumbs: [{ title: 'nav.advice', href: indicaciones() }] },

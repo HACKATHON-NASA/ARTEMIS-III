@@ -14,8 +14,8 @@ import { useMissionsStore } from './useMissionsStore';
  * Los demás empiezan en la misión actual y pueden cambiarla. El Panel de
  * salud pide `activeOnly`: allí solo se monitorean las misiones en curso.
  *
- * ⚠️ HOY sale de los datos de prueba de useMissionsStore. Con el backend:
- * GET /api/v1/missions y GET /api/v1/astronauts?mission={id}.
+ * Sale de la API a través de useMissionsStore (GET /api/v1/missions y
+ * GET /api/v1/astronauts?mission={id}).
  */
 export const useCrewStore = defineStore('crew', () => {
     const missions = useMissionsStore();

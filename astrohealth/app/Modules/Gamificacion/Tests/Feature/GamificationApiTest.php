@@ -87,6 +87,9 @@ final class GamificationApiTest extends TestCase
         // 10 (registro completo) + 5 (7 h de sueño) + 15 (ejercicio) + 5 (bono de "Primer registro").
         $this->assertSame(35, $profile['points']);
         $this->assertSame(1, $profile['level']);
+        $this->assertSame(100, $profile['level_size']);
+        $this->assertSame(['reason' => 'streak_7', 'points' => 50], $profile['earning'][1]);
+        $this->assertNotContains('badge', array_column($profile['earning'], 'reason'));
         $this->assertSame(1, $profile['streak_days']);
         $this->assertSame(['badge', 'daily_complete', 'exercise', 'sleep_7h'], $reasons);
         $this->assertSame(24, $profile['recent'][0]['day']);

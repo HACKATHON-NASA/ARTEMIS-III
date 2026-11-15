@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { api } from '@/lib/api';
-import { primeThresholds } from '@/mocks/thresholds';
 import type { IndicatorCode } from '@/types/health';
 import type { GuideEnvironment, Threshold } from '../Types/threshold';
 
@@ -25,8 +24,6 @@ export const useThresholdsStore = defineStore('thresholds', () => {
         if (environment.value === env) {
             thresholds.value = list;
         }
-
-        primeThresholds(env, list);
     }
 
     function find(indicator: IndicatorCode): Threshold | null {
@@ -54,7 +51,6 @@ export const useThresholdsStore = defineStore('thresholds', () => {
         thresholds.value = thresholds.value.map((item) =>
             item.indicator === saved.indicator ? saved : item,
         );
-        primeThresholds(env, thresholds.value);
     }
 
     return { environment, thresholds, load, find, save };

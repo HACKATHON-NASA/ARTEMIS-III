@@ -25,7 +25,7 @@ const { t } = useI18n();
  * El astronauta responde los que le tocan; el equipo médico (guide.manage)
  * los crea y edita. Si un test marca una respuesta de riesgo, sale sola una
  * alerta urgente a Tierra (M5).
- * ⚠️ Por ahora con datos de prueba guardados en este navegador.
+ * Los tests y los resultados vienen de la API (ver Stores/usePsychStore.ts).
  */
 defineOptions({
     layout: {

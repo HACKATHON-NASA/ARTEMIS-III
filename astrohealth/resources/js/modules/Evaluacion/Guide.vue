@@ -31,7 +31,7 @@ const { t } = useI18n();
  * Guía de salud (/guia, M2 + M5): cada indicador con sus rangos (verde,
  * amarillo, rojo) por entorno y qué hacer en amarillo y en rojo. Todos la
  * consultan; administración y médicos de vuelo (guide.manage) la editan.
- * ⚠️ Por ahora con datos de prueba guardados en este navegador.
+ * Los umbrales y las recomendaciones vienen de la API (M2 y M5).
  */
 defineOptions({
     layout: { breadcrumbs: [{ title: 'nav.healthGuide', href: guia() }] },
