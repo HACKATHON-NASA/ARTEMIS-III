@@ -1,29 +1,49 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { mockSeries } from '@/mocks/crewHistory';
-import { mockThresholds } from '@/mocks/thresholds';
-import type { IndicatorCode } from '@/types/health';
+import { api } from '@/lib/api';
+import type { IndicatorCode, Status } from '@/types/health';
 import type {
     Bands,
     CrewSeries,
     CrewSnapshotRow,
     DoseRow,
     HealthChange,
+    TrendPoint,
     TrendRange,
 } from '../Types/crewTrends';
-import { CHART_INDICATORS, seriesColor } from '../Utils/indicatorMeta';
+import { seriesColor } from '../Utils/indicatorMeta';
 
 /**
  * La comparación de la tripulación de una misión (M4): el mapa de riesgos
- * (último valor de cada indicador), la serie de un indicador para todos y la
- * dosis de radiación acumulada.
+ * (último valor de cada indicador), la serie de un indicador para todos, la
+ * dosis de radiación acumulada y lo que cambió de color.
  *
- * ⚠️ HOY con datos de prueba (@/mocks/crewHistory). Con el backend:
- * GET /api/v1/missions/{id}/crew-measurements?indicator=&range=.
+ * GET /api/v1/crew/overview?astronauts= y GET /api/v1/crew/series. El
+ * backend solo devuelve a quien la persona puede ver; aquí se ponen los
+ * nombres y los colores de cada tripulante (presentación).
  */
 export type CrewMemberRef = { id: number; name: string };
 
-const wait = (ms = 250) => new Promise((resolve) => setTimeout(resolve, ms));
+type Overview = {
+    snapshot: {
+        astronaut_id: number;
+        values: CrewSnapshotRow['values'];
+        attention: number;
+    }[];
+    doses: { astronaut_id: number; total: number; days: number }[];
+    changes: {
+        astronaut_id: number;
+        indicator: IndicatorCode;
+        from: { value: number; status: Status };
+        to: { value: number; status: Status };
+        worse: boolean;
+    }[];
+};
+
+type SeriesResponse = {
+    bands: Bands | null;
+    series: { astronaut_id: number; points: TrendPoint[] }[];
+};
 
 export const useCrewTrendsStore = defineStore('crewTrends', () => {
     const snapshot = ref<CrewSnapshotRow[]>([]);
@@ -33,98 +53,74 @@ export const useCrewTrendsStore = defineStore('crewTrends', () => {
     const changes = ref<HealthChange[]>([]);
 
     let crew: CrewMemberRef[] = [];
-    let today = 0;
 
-    function fromDay(range: TrendRange): number {
-        return range === 'mission' ? 1 : Math.max(1, today - range + 1);
+    function ids(): string {
+        return crew.map((member) => member.id).join(',');
     }
 
-    /** Fija la tripulación y el día de misión, y calcula el mapa y las dosis. */
-    async function load(members: CrewMemberRef[], day: number): Promise<void> {
+    function nameOf(id: number): string {
+        return crew.find((member) => member.id === id)?.name ?? 'Tripulante';
+    }
+
+    function colorOf(id: number): string {
+        return seriesColor(
+            Math.max(
+                0,
+                crew.findIndex((member) => member.id === id),
+            ),
+        );
+    }
+
+    /** Fija la tripulación y trae el mapa, las dosis y los cambios. */
+    async function load(members: CrewMemberRef[], _day: number): Promise<void> {
         crew = members;
-        today = day;
-        await wait();
 
-        snapshot.value = crew.map((member, index) => {
-            const values: CrewSnapshotRow['values'] = {};
+        if (crew.length === 0) {
+            snapshot.value = [];
+            doses.value = [];
+            changes.value = [];
 
-            for (const { code } of CHART_INDICATORS) {
-                const last = mockSeries(member.id, code, today, today).at(-1);
-
-                if (last) {
-                    values[code] = { value: last.value, status: last.status };
-                }
-            }
-
-            return {
-                astronaut_id: member.id,
-                name: member.name,
-                color: seriesColor(index),
-                values,
-                attention: Object.values(values).filter(
-                    (item) => item.status !== 'green',
-                ).length,
-            };
-        });
-
-        doses.value = crew.map((member, index) => {
-            const points = mockSeries(member.id, 'radiation', today);
-
-            return {
-                astronaut_id: member.id,
-                name: member.name,
-                color: seriesColor(index),
-                total: points.reduce((sum, point) => sum + point.value, 0),
-                days: points.length,
-            };
-        });
-
-        changes.value = computeChanges();
-    }
-
-    /** Lo que cambió de color en los últimos `days` días: lo que empeoró, primero. */
-    function computeChanges(days = 3): HealthChange[] {
-        const rank = { green: 0, yellow: 1, red: 2 } as const;
-        const found: HealthChange[] = [];
-
-        for (const member of crew) {
-            for (const { code } of CHART_INDICATORS) {
-                const points = mockSeries(member.id, code, today, today - days);
-                const [first, last] = [points[0], points.at(-1)];
-
-                if (first && last && first.status !== last.status) {
-                    found.push({
-                        astronaut_id: member.id,
-                        name: member.name,
-                        indicator: code,
-                        from: { value: first.value, status: first.status },
-                        to: { value: last.value, status: last.status },
-                        worse: rank[last.status] > rank[first.status],
-                    });
-                }
-            }
+            return;
         }
 
-        return found.sort(
-            (a, b) =>
-                Number(b.worse) - Number(a.worse) ||
-                rank[b.to.status] - rank[a.to.status],
+        const overview = await api<Overview>(
+            `/crew/overview?astronauts=${ids()}`,
         );
+
+        snapshot.value = overview.snapshot.map((row) => ({
+            ...row,
+            name: nameOf(row.astronaut_id),
+            color: colorOf(row.astronaut_id),
+        }));
+        doses.value = overview.doses.map((row) => ({
+            ...row,
+            name: nameOf(row.astronaut_id),
+            color: colorOf(row.astronaut_id),
+        }));
+        changes.value = overview.changes.map((row) => ({
+            ...row,
+            name: nameOf(row.astronaut_id),
+        }));
     }
 
     async function loadSeries(
         indicator: IndicatorCode,
         range: TrendRange,
     ): Promise<void> {
-        await wait(150);
-        const [green_min, green_max, yellow_min, yellow_max] =
-            mockThresholds()[indicator];
-        bands.value = { green_min, green_max, yellow_min, yellow_max };
-        series.value = crew.map((member, index) => ({
-            astronaut_id: member.id,
-            name: member.name,
-            color: seriesColor(index),
-            points: mockSeries(member.id, indicator, today, fromDay(range)),
+        if (crew.length === 0) {
+            series.value = [];
+
+            return;
+        }
+
+        const result = await api<SeriesResponse>(
+            `/crew/series?astronauts=${ids()}&indicator=${indicator}&range=${range}`,
+        );
+        bands.value = result.bands;
+        series.value = result.series.map((row) => ({
+            ...row,
+            name: nameOf(row.astronaut_id),
+            color: colorOf(row.astronaut_id),
         }));
     }
 

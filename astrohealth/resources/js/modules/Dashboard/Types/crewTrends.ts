@@ -26,6 +26,18 @@ export type Bands = {
 /** 7 o 14 días, o toda la misión. */
 export type TrendRange = 7 | 14 | 'mission';
 
+/**
+ * La tendencia de la semana de un indicador, como la calcula el backend
+ * (M2): el promedio de hace una semana contra hoy, y si eso es empeorar
+ * (alejarse del centro del rango sano).
+ */
+export type Trend = {
+    direction: 'up' | 'down' | 'stable';
+    worse: boolean;
+    from: number;
+    to: number;
+};
+
 /** Una fila del mapa de riesgos: el último valor de cada indicador. */
 export type CrewSnapshotRow = {
     astronaut_id: number;

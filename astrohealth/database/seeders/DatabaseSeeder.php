@@ -10,6 +10,7 @@ use App\Modules\Entorno\Database\Seeders\MissionSeeder;
 use App\Modules\Evaluacion\Database\Seeders\ThresholdSeeder;
 use App\Modules\Identidad\Database\Seeders\DeviceSeeder;
 use App\Modules\Identidad\Database\Seeders\UserSeeder;
+use App\Modules\Registro\Database\Seeders\DemoHistorySeeder;
 use App\Modules\Registro\Database\Seeders\DemoReadingsSeeder;
 use App\Modules\Registro\Database\Seeders\IndicatorSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -34,6 +35,7 @@ class DatabaseSeeder extends Seeder
             RecommendationSeeder::class, // M5: "qué hacer" en amarillo y en rojo
             // Solo fuera de producción: los últimos valores, las notas, las alertas y las indicaciones de Ares-1.
             DemoReadingsSeeder::class,
+            DemoHistorySeeder::class,
             DemoClinicalNotesSeeder::class,
             DemoAlertsSeeder::class,
         ]);

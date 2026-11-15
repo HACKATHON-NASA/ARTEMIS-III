@@ -6,8 +6,10 @@ namespace App\Modules\Evaluacion\Infrastructure\Motor;
 
 use App\Modules\Evaluacion\Contratos\TrendAnalyzer;
 use App\Modules\Evaluacion\Contratos\TrendSummary;
+use App\Modules\Evaluacion\Contratos\WeekTrendSummary;
 use App\Modules\Evaluacion\Domain\Excepciones\ThresholdMissing;
 use App\Modules\Evaluacion\Domain\Reglas\TrendRule;
+use App\Modules\Evaluacion\Domain\Reglas\WeekTrendRule;
 use App\Modules\Evaluacion\Infrastructure\Configuracion\EvaluationSettings;
 use App\Modules\Evaluacion\Infrastructure\Repositorios\Threshold\FindThresholdRepository;
 
@@ -35,5 +37,15 @@ final readonly class RuleTrendAnalyzer implements TrendAnalyzer
         );
 
         return new TrendSummary($trend->direction->value, $trend->alert);
+    }
+
+    public function weekTrend(string $indicatorCode, array $daily, string $environment): ?WeekTrendSummary
+    {
+        $threshold = $this->findThreshold->find($indicatorCode, $environment)
+            ?? throw new ThresholdMissing($indicatorCode, $environment);
+
+        $trend = WeekTrendRule::analyze(array_map('floatval', $daily), $threshold, $this->settings->minChange($indicatorCode));
+
+        return $trend === null ? null : new WeekTrendSummary($trend->direction->value, $trend->worse, $trend->from, $trend->to);
     }
 }

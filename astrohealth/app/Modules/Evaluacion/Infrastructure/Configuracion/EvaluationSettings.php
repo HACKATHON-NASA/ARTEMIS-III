@@ -52,6 +52,14 @@ final readonly class EvaluationSettings
         return (float) $this->number('trend.stable_band_pct');
     }
 
+    /** El cambio mínimo de la semana para no ser "estable" (0 si el indicador no lo tiene). */
+    public function minChange(string $indicatorCode): float
+    {
+        $value = $this->config->get("evaluation.trend.min_change.{$indicatorCode}");
+
+        return is_int($value) || is_float($value) ? (float) $value : 0.0;
+    }
+
     public function zoneName(string $zone): string
     {
         $name = $this->config->get("evaluation.zones.{$zone}");

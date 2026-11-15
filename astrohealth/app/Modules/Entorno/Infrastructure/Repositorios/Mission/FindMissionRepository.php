@@ -7,6 +7,7 @@ namespace App\Modules\Entorno\Infrastructure\Repositorios\Mission;
 use App\Modules\Entorno\Contratos\MissionQuery;
 use App\Modules\Entorno\Domain\Entidades\Mission;
 use App\Modules\Entorno\Infrastructure\Models\Mission as MissionModel;
+use Carbon\CarbonImmutable;
 
 /**
  * BUSCAR misiones (tabla missions). Solo lectura. Implementa el contrato MissionQuery.
@@ -31,6 +32,11 @@ final class FindMissionRepository implements MissionQuery
         $environment = MissionModel::query()->whereKey($missionId)->value('environment');
 
         return is_string($environment) ? $environment : null;
+    }
+
+    public function startDateOf(int $missionId): ?CarbonImmutable
+    {
+        return $this->findById($missionId)?->startDate;
     }
 
     public function findById(int $missionId): ?Mission

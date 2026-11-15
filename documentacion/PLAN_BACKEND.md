@@ -255,12 +255,24 @@ flowchart LR
 
 ---
 
-## F6 · M4 Dashboard (sin tablas)
+## F6 · M4 Dashboard (sin tablas) · ✅ hecho (16 nov 2026)
 
-Solo lee por contratos (`MeasurementQuery`, `Evaluator`, `TrendAnalyzer`, `CrewQuery`, `AlertQuery`).
+Lee por contratos: `MeasurementQuery` (M1), `Evaluator` y `TrendAnalyzer` (M2), `CrewQuery` y `MissionQuery` (M6).
 
 | Endpoint | Permiso | Caso de uso |
 |---|---|---|
+| `GET /api/v1/astronauts/{id}/evolution` | Gate `health.read` | `GetEvolution` (puntos por día, tendencia de la semana y bandas de cada indicador) |
+| `GET /api/v1/crew/overview?astronauts=` | `crew.read` + `health.read` por tripulante | `GetCrewOverview` (mapa de riesgos, dosis acumulada, cambios de color en 3 días) |
+| `GET /api/v1/crew/series?astronauts=&indicator=&range=` | `crew.read` + `health.read` por tripulante | `GetCrewSeries` (una serie por tripulante y las bandas) |
+
+**Cambios frente a lo planeado:** en vez de `GET /missions/{id}/…` los endpoints de la tripulación reciben los ids (`?astronauts=`), que es lo que ya maneja la pantalla, y cada uno se revisa con `health.read`. El resumen del Panel (sin atender, urgentes, mediciones de hoy) ya sale de M5 y M3, así que no hizo falta `health-summary`.
+**Tendencia en el backend:** `WeekTrendRule` (M2) con mínimos por indicador en `config/evaluation.php`; se borró el cálculo del frontend (`Utils/trends.ts`, P4).
+**Datos de demo:** `DemoHistorySeeder` (M1, solo fuera de producción) con la historia diaria de Ares-1.
+**Frontend:** `useMyEvolutionStore` y `useCrewTrendsStore` usan la API. `mocks/crewHistory.ts` queda solo para Logros (F7).
+**Pruebas:** 7 nuevas (246 en verde).
+**Listo cuando:** ✅ Panel de salud y Mi evolución funcionan con la historia de la base de datos.
+
+---|---|---|
 | `GET /api/v1/astronauts/{id}/trends` | `health.read` | `GetTrends` (Python `/trends` con respaldo `TrendRule`) |
 | `GET /api/v1/missions/{id}/crew-measurements?indicator=&range=` | `crew.read` | `GetCrewSeries` |
 | `GET /api/v1/missions/{id}/health-summary` | `crew.read` | `GetHealthSummary` (sin atender, urgentes, en precaución, mediciones de hoy, quién necesita atención) |

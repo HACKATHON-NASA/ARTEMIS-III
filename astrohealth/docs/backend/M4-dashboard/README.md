@@ -1,98 +1,58 @@
 # 📈 M4 · Dashboard · Backend
 
-> [← Backend](../README.md) · Código: `astrohealth/app/Modules/Dashboard/` · Qué construir: [ficha de M4](../../../../documentacion/modulos/M4-dashboard/README.md)
+> [← Backend](../README.md) · Código: `astrohealth/app/Modules/Dashboard/` · Qué construir: [ficha de M4](../../../../documentacion/modulos/M4-dashboard/README.md) · Plan: F6 de `documentacion/PLAN_BACKEND.md`
 
-| Estado         | Fase | Responsable |
-| -------------- | :--: | ----------- |
-| ⬜ Sin empezar |  3   | Backend     |
+| Estado   | Fase | Responsable |
+| -------- | :--: | ----------- |
+| ✅ Hecho |  F6  | Backend     |
 
-**Qué hace:** entrega **la historia** de un indicador (7 o 30 días) con sus bandas de color, y **la tendencia** de los 10 indicadores con el mensaje listo para mostrar. **No tiene tablas:** todo lo lee por contratos.
+**Qué hace:** arma las **gráficas** (un punto por día de misión), la **tendencia de la semana** y la **comparación de la tripulación** (mapa de riesgos, dosis de radiación acumulada y lo que cambió de color). **No tiene tablas:** lee por los contratos de M1 (mediciones), M2 (bandas y tendencia) y M6 (misión y entorno).
 
 ---
 
-## 1. Cómo arma una serie
+## 1. Endpoints
 
-```mermaid
-flowchart LR
-    Q["GET …/measurements?indicator=sleep&range=30d"] --> S["MeasurementQuery::series()<br/>(M1)"]
-    S --> A{"¿30d?"}
-    A -- sí --> D["promedio por día<br/>(en SQL, en el repositorio de M1)"]
-    A -- no --> P["todos los puntos"]
-    Q --> B["MissionQuery → entorno (M6)<br/>Evaluator::thresholdFor() (M2)"]
-    D & P & B --> R["{bands, points}"]
-```
+| Método | Ruta                                                              | Permiso                                    | Caso de uso       | Respuesta                                                                                                                                                           |
+| ------ | ----------------------------------------------------------------- | ------------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/v1/astronauts/{id}/evolution`                               | Gate `health.read`                         | `GetEvolution`    | Por indicador: `points` (día, valor, color), `trend` (`direction`, `worse`, `from`, `to`) y `bands`                                                                 |
+| GET    | `/api/v1/crew/overview?astronauts=1,2,3`                          | `crew.read` + `health.read` por tripulante | `GetCrewOverview` | `snapshot` (último valor de cada indicador y cuántos piden atención), `doses` (radiación acumulada), `changes` (cambios de color en 3 días, lo que empeoró primero) |
+| GET    | `/api/v1/crew/series?astronauts=&indicator=&range=7\|14\|mission` | `crew.read` + `health.read` por tripulante | `GetCrewSeries`   | `bands` y una serie por tripulante                                                                                                                                  |
 
-## 2. Estructura de archivos
+Los tripulantes que la persona no puede ver **se quitan en silencio** de la respuesta.
+
+## 2. Cómo se arma una serie
+
+`Servicios/DailySeries`: toma las mediciones de M1 (`MeasurementQuery::series`) y deja **el último valor de cada día de misión** (el día 1 es el inicio; los días se cuentan en UTC, como `MissionCalendar` de M6). El color de cada punto es el que le puso M2 al guardarlo.
+
+## 3. La tendencia de la semana (decide M2)
+
+`TrendAnalyzer::weekTrend()` → regla `WeekTrendRule` de M2:
+
+- compara el valor de hoy con el promedio de hace una semana (3 días);
+- si se movió menos que el mínimo del indicador (`config/evaluation.php` → `trend.min_change`), es **estable**;
+- **empeora** si se aleja del centro del rango sano (sirve igual para lo que sube y para lo que baja).
+
+Antes esta cuenta la hacía el frontend (`Utils/trends.ts`, borrado): ahora Vue solo la muestra (P4).
+
+## 4. Estructura de archivos
 
 ```
 app/Modules/Dashboard/
-├── DashboardServiceProvider.php
-├── routes.php                              # astronauts/{id}/measurements · astronauts/{id}/trends
-├── Domain/
-│   ├── Enums/Range.php                     # 7d · 30d
-│   └── Reglas/TrendMessage.php             # "Tu sueño ha bajado 3 días seguidos"
-├── Application/
-│   ├── GetIndicatorSeries.php
-│   ├── GetTrends.php                       # 10 indicadores → TrendAnalyzer (M2) → mensaje
-│   └── DTOs/SeriesResult.php · TrendItem.php
-├── Http/
-│   ├── Controllers/Api/ShowSeriesController.php · ShowTrendsController.php
-│   ├── Requests/SeriesRequest.php          # indicator ∈ catálogo · range ∈ {7d, 30d}
-│   └── Resources/SeriesResource.php · TrendResource.php
-└── Tests/
-    ├── Unit/TrendMessageTest.php
-    └── Feature/SeriesTest.php · TrendsTest.php
+├── DashboardServiceProvider.php · routes.php
+├── Application/GetEvolution · GetCrewOverview · GetCrewSeries · Servicios/DailySeries · DTOs/DayPoint
+├── Http/Controllers/Api/Evolution · CrewOverview · CrewSeries · Requests/CrewRequest · Resources/DayPoints
+└── Tests/Feature/DashboardApiTest
 ```
 
-## 3. Endpoints
+## 5. Pruebas
 
-| Método | Ruta                                                            | Permiso              | Respuesta                                                                    |
-| ------ | --------------------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------- |
-| GET    | `/api/v1/astronauts/{id}/measurements?indicator=&range=7d\|30d` | `can:health.read,id` | 200 `{indicator, unit, range, bands, points[]}`                              |
-| GET    | `/api/v1/astronauts/{id}/trends`                                | `can:health.read,id` | 200 lista de `{indicator, direction, trend_alert, current, status, message}` |
+| Prueba                   | Verifica                                                                                                                                                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DashboardApiTest`       | Un punto por día (el último del día) · tendencia del sueño que cae · bandas · nadie más ve mi evolución · mapa, cambios y serie de la tripulación solo con quienes puede ver · validación |
+| `WeekTrendRuleTest` (M2) | El sueño que cae empeora · la presión que vuelve a lo normal no · cambios chicos son estables · con pocos días no hay tendencia                                                           |
 
-Ejemplos de JSON en la [ficha](../../../../documentacion/modulos/M4-dashboard/README.md#4-api).
+## 6. Datos de la demo
 
-## 4. Contratos y eventos
-
-| Tipo | Nombre                             | Detalle                                  |
-| ---- | ---------------------------------- | ---------------------------------------- |
-| Usa  | `MeasurementQuery` (M1)            | `series()`, agrupada por día con 30d     |
-| Usa  | `TrendAnalyzer` · `Evaluator` (M2) | Tendencia y bandas                       |
-| Usa  | `MissionQuery` (M6)                | El entorno, para las bandas de radiación |
-
-## 5. Rendimiento
-
-- Con 30 días: máximo 30 puntos por serie (promedio diario en SQL).
-- `GetTrends` hace **una** consulta para los 10 indicadores (los últimos 7 de cada uno) y no 10 consultas.
-- Si Python cae, las 10 tendencias salen del respaldo local sin esperar 10 _timeouts_ (circuito abierto de M2).
-
-## 6. Códigos de error
-
-| Código              | HTTP | Cuándo                          |
-| ------------------- | :--: | ------------------------------- |
-| `VALIDATION_FAILED` | 422  | `indicator` o `range` inválidos |
-| `FORBIDDEN`         | 403  | Datos de otro astronauta        |
-| `NOT_FOUND`         | 404  | El astronauta no existe         |
-
-## 7. Pruebas
-
-| Prueba             | Verifica                                                                                                        |
-| ------------------ | --------------------------------------------------------------------------------------------------------------- |
-| `SeriesTest`       | 7d → todos los puntos · 30d → uno por día · bandas correctas · `range=90d` → 422                                |
-| `TrendsTest`       | El evento de demo del sueño (astronauta 2, días 18–21) → `trend_alert` y mensaje · menos de 3 puntos → `stable` |
-| `TrendMessageTest` | Textos en español para subir y bajar                                                                            |
-
-## 8. Avance
-
-- [ ] `MeasurementQuery::series()` con promedio diario (en M1)
-- [ ] `GetIndicatorSeries` + endpoint
-- [ ] `GetTrends` + endpoint (una sola consulta)
-- [ ] `TrendMessage`
-- [ ] Pruebas en verde
-
-## 9. Cómo quedó hecho
-
-_Pendiente._
+`DemoHistorySeeder` (M1, solo fuera de producción) carga un valor por día del día 1 a ayer para Ares-1, que termina en el último valor de cada indicador y cuenta las historias de la demo: la presión de Elena sube, el sueño de Kenji cae, el oxígeno de Amara baja y una tormenta solar sube la radiación de todos unos días antes de hoy. Cada valor pasa por M2. Cuando el simulador envíe los 30 días, este seeder ya no hace falta.
 
 > 📝 **Documentar siempre:** este documento se actualiza en el mismo _pull request_ que cambia el código.

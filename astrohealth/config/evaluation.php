@@ -43,6 +43,21 @@ return [
         'worsening_steps' => 3,
         // Cambio por medición, en % del ancho del verde, que ya cuenta como subida o bajada.
         'stable_band_pct' => 2.0,
+        // Tendencia de la semana (Mi evolución): cuánto tiene que moverse el
+        // valor de hoy frente al promedio de hace una semana para no ser
+        // "estable" (el ruido normal de un día a otro).
+        'min_change' => [
+            'hr' => 6,
+            'bp_sys' => 6,
+            'bp_dia' => 5,
+            'glucose' => 6,
+            'temp' => 0.3,
+            'spo2' => 1.5,
+            'sleep' => 0.5,
+            'mood' => 0.8,
+            'exercise_min' => 15,
+            'radiation' => 0.12,
+        ],
     ],
 
     // Nombre de cada zona del cuerpo para el resumen ("Corazón en precaución").
