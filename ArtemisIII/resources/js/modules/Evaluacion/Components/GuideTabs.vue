@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { Brain, ChartColumn, HeartPulse } from '@lucide/vue';
 import { computed } from 'vue';
 import { guia, psicologia, psicologiaTripulacion } from '@/routes';
+
+const { t } = useI18n();
 
 /**
  * Las tres partes de la Guía de salud: lo físico (rangos y qué hacer), lo
@@ -15,10 +18,15 @@ const props = defineProps<{
 }>();
 
 const tabs = computed(() => [
-    { key: 'physical', label: 'Salud física', icon: HeartPulse, href: guia() },
+    {
+        key: 'physical',
+        label: t('Evaluacion.tabs.physical'),
+        icon: HeartPulse,
+        href: guia(),
+    },
     {
         key: 'psych',
-        label: 'Guía psicológica',
+        label: t('Evaluacion.tabs.psych'),
         icon: Brain,
         href: psicologia(),
     },
@@ -26,7 +34,7 @@ const tabs = computed(() => [
         ? [
               {
                   key: 'results',
-                  label: 'Resultados de la tripulación',
+                  label: t('Evaluacion.tabs.results'),
                   icon: ChartColumn,
                   href: psicologiaTripulacion(),
               },
@@ -37,7 +45,7 @@ const tabs = computed(() => [
 
 <template>
     <nav
-        aria-label="Partes de la guía"
+        :aria-label="t('Evaluacion.tabs.aria')"
         class="inline-flex w-full flex-wrap gap-1 rounded-xl border bg-muted/40 p-1 sm:w-auto"
     >
         <Link

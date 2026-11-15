@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Plus, Trash2 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { PsychOption } from '../../Types/psych';
+
+const { t } = useI18n();
 
 /**
  * La escala de respuestas (la misma para todas las preguntas): el texto que
@@ -27,21 +30,23 @@ function add(): void {
         >
             <Input
                 v-model="option.label"
-                :aria-label="`Respuesta ${index + 1}`"
-                placeholder="Ej.: Varios días"
+                :aria-label="t('Evaluacion.editor.answerN', { n: index + 1 })"
+                :placeholder="t('Evaluacion.editor.answerPlaceholder')"
             />
             <Input
                 v-model.number="option.points"
                 type="number"
                 min="0"
                 class="w-20 tabular-nums"
-                :aria-label="`Puntos de la respuesta ${index + 1}`"
+                :aria-label="t('Evaluacion.editor.pointsOf', { n: index + 1 })"
             />
             <span class="text-xs text-muted-foreground">pts</span>
             <Button
                 variant="ghost"
                 size="icon-sm"
-                :aria-label="`Quitar la respuesta ${index + 1}`"
+                :aria-label="
+                    t('Evaluacion.editor.removeAnswer', { n: index + 1 })
+                "
                 @click="scale = scale.filter((_, i) => i !== index)"
             >
                 <Trash2 />
@@ -52,7 +57,7 @@ function add(): void {
             size="sm"
             class="justify-self-start"
             @click="add"
-            ><Plus /> Agregar respuesta</Button
+            ><Plus /> {{ t('Evaluacion.editor.addAnswer') }}</Button
         >
     </fieldset>
 </template>

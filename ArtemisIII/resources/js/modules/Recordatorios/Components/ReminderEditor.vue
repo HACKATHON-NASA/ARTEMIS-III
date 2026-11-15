@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Trash2 } from '@lucide/vue';
 import { reactive, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
@@ -15,7 +16,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import type { Reminder, ReminderDraft, ReminderType } from '../Types/reminders';
-import { REMINDER_TYPES } from '../Utils/reminderTypes';
+import { REMINDER_TYPES, isSuggestion } from '../Utils/reminderTypes';
+
+const { t } = useI18n();
 
 /**
  * Crear o cambiar un recordatorio: qué es (el tipo pone un título sugerido),
@@ -57,26 +60,23 @@ watch(open, (isOpen) => {
 
 function pick(type: ReminderType): void {
     const suggested = REMINDER_TYPES.find((item) => item.type === type);
-    const isSuggestion = REMINDER_TYPES.some(
-        (item) => item.suggestion === form.title,
-    );
 
     form.type = type;
 
-    if (suggested && (form.title === '' || isSuggestion)) {
+    if (suggested && (form.title === '' || isSuggestion(form.title))) {
         form.title = suggested.suggestion;
     }
 }
 
 async function save(): Promise<void> {
     if (form.title.trim().length < 3) {
-        error.value = 'Escribe qué hay que hacer.';
+        error.value = t('Recordatorios.errTitle');
 
         return;
     }
 
     if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(form.time)) {
-        error.value = 'Elige una hora válida.';
+        error.value = t('Recordatorios.errTime');
 
         return;
     }
@@ -114,12 +114,13 @@ async function destroy(): Promise<void> {
         <DialogContent class="sm:max-w-md">
             <DialogHeader>
                 <DialogTitle>{{
-                    reminder ? 'Editar recordatorio' : 'Nuevo recordatorio'
+                    reminder
+                        ? t('Recordatorios.editTitle')
+                        : t('Recordatorios.newTitle')
                 }}</DialogTitle>
-                <DialogDescription
-                    >Se repite todos los días a la misma
-                    hora.</DialogDescription
-                >
+                <DialogDescription>{{
+                    t('Recordatorios.repeats')
+                }}</DialogDescription>
             </DialogHeader>
 
             <form
@@ -129,9 +130,9 @@ async function destroy(): Promise<void> {
                 @submit.prevent="save"
             >
                 <div class="grid gap-2">
-                    <span id="reminder-type" class="text-sm font-medium"
-                        >Qué es</span
-                    >
+                    <span id="reminder-type" class="text-sm font-medium">{{
+                        t('Recordatorios.what')
+                    }}</span>
                     <div
                         role="radiogroup"
                         aria-labelledby="reminder-type"
@@ -157,17 +158,21 @@ async function destroy(): Promise<void> {
                     </div>
                 </div>
                 <div class="grid gap-2">
-                    <Label for="reminder-title">Título</Label>
+                    <Label for="reminder-title">{{
+                        t('Recordatorios.title')
+                    }}</Label>
                     <Input
                         id="reminder-title"
                         v-model="form.title"
                         maxlength="80"
-                        placeholder="Ej.: Tomar la vitamina D"
+                        :placeholder="t('Recordatorios.titlePlaceholder')"
                         @input="error = null"
                     />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="reminder-time">Hora</Label>
+                    <Label for="reminder-time">{{
+                        t('Recordatorios.time')
+                    }}</Label>
                     <Input
                         id="reminder-time"
                         v-model="form.time"
@@ -188,13 +193,17 @@ async function destroy(): Promise<void> {
                     @click="destroy"
                 >
                     <Trash2 />
-                    {{ confirming ? '¿Seguro? Tocar otra vez' : 'Eliminar' }}
+                    {{
+                        confirming
+                            ? t('Recordatorios.confirmDelete')
+                            : t('common.delete')
+                    }}
                 </Button>
                 <span v-else />
                 <div class="flex gap-2">
-                    <Button variant="ghost" @click="open = false"
-                        >Cancelar</Button
-                    >
+                    <Button variant="ghost" @click="open = false">{{
+                        t('common.cancel')
+                    }}</Button>
                     <Button
                         type="submit"
                         form="reminder-form"
@@ -202,7 +211,7 @@ async function destroy(): Promise<void> {
                         class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                     >
                         <Spinner v-if="saving" />
-                        Guardar
+                        {{ t('common.save') }}
                     </Button>
                 </div>
             </DialogFooter>

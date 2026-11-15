@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import InputError from '@/components/InputError.vue';
 import { Input } from '@/components/ui/input';
 import { statusMeta } from '@/lib/status';
+
+const { t } = useI18n();
 
 /**
  * "Qué hacer" en un nivel (amarillo o rojo): un título y los pasos, uno por
@@ -25,18 +28,30 @@ const steps = defineModel<string>('steps', { required: true });
                 class="size-2 rounded-full"
                 :style="{ background: statusMeta(level).color }"
             />
-            Qué hacer si sale en {{ statusMeta(level).label.toLowerCase() }}
+            {{
+                t('Evaluacion.guide.whatIf', {
+                    status: statusMeta(level).label.toLowerCase(),
+                })
+            }}
         </legend>
         <Input
             v-model="title"
-            :aria-label="`Título para ${statusMeta(level).label}`"
-            placeholder="Título (ej.: Presión alta)"
+            :aria-label="
+                t('Evaluacion.guide.adviceTitle', {
+                    status: statusMeta(level).label,
+                })
+            "
+            :placeholder="t('Evaluacion.guide.adviceTitlePlaceholder')"
         />
         <textarea
             v-model="steps"
             rows="3"
-            :aria-label="`Pasos para ${statusMeta(level).label}, uno por línea`"
-            placeholder="Un paso por línea"
+            :aria-label="
+                t('Evaluacion.guide.adviceSteps', {
+                    status: statusMeta(level).label,
+                })
+            "
+            :placeholder="t('Evaluacion.guide.adviceStepsPlaceholder')"
             class="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30"
         />
         <InputError :message="error" />

@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
+import quickAccess from './quick-access'
 /**
 * @see \App\Modules\Identidad\Http\Controllers\Api\LoginController::__invoke
 * @see app/Modules/Identidad/Http/Controllers/Api/LoginController.php:20
@@ -306,6 +307,7 @@ me.form = meForm
 
 const auth = {
     login: Object.assign(login, login),
+    quickAccess: Object.assign(quickAccess, quickAccess),
     refresh: Object.assign(refresh, refresh),
     deviceToken: Object.assign(deviceToken, deviceToken),
     logout: Object.assign(logout, logout),

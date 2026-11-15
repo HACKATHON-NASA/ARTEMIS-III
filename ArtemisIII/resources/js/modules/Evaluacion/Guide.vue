@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { indicatorName } from '@/lib/indicators';
 import { Head, router } from '@inertiajs/vue3';
 import { BookOpen, Lock } from '@lucide/vue';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
@@ -23,6 +25,8 @@ import type {
     GuideEnvironment,
 } from './Types/threshold';
 
+const { t } = useI18n();
+
 /**
  * Guía de salud (/guia, M2 + M5): cada indicador con sus rangos (verde,
  * amarillo, rojo) por entorno y qué hacer en amarillo y en rojo. Todos la
@@ -30,7 +34,7 @@ import type {
  * ⚠️ Por ahora con datos de prueba guardados en este navegador.
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Guía de salud', href: guia() }] },
+    layout: { breadcrumbs: [{ title: 'nav.healthGuide', href: guia() }] },
 });
 
 const auth = useAuthStore();
@@ -125,8 +129,14 @@ async function save(change: GuideEdit): Promise<void> {
                 : [],
         ),
     );
-    toast.success('Guía actualizada', {
-        description: `${current.value?.item.name}: los nuevos rangos se usan desde ya en ${envName.value}.`,
+    toast.success(t('Evaluacion.guide.updated'), {
+        description: t('Evaluacion.guide.updatedHint', {
+            name: indicatorName(
+                current.value?.item.code ?? '',
+                current.value?.item.name ?? '',
+            ),
+            env: envName.value,
+        }),
     });
 }
 
@@ -153,7 +163,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Guía de salud" />
+    <Head :title="t('Evaluacion.guide.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <header
@@ -164,30 +174,29 @@ onMounted(async () => {
                 <p
                     class="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
                 >
-                    <BookOpen class="size-3.5" /> Protocolos médicos
+                    <BookOpen class="size-3.5" />
+                    {{ t('Evaluacion.guide.eyebrow') }}
                 </p>
                 <h1
                     class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
                 >
-                    Guía de salud
+                    {{ t('Evaluacion.guide.title') }}
                 </h1>
                 <p class="mt-2 max-w-2xl text-muted-foreground">
-                    Cuándo un valor es normal, de precaución o crítico, y qué
-                    hacer en cada caso. Los rangos cambian según el entorno de
-                    la misión.
+                    {{ t('Evaluacion.guide.subtitle') }}
                 </p>
                 <p
                     v-if="!canEdit"
                     class="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground"
                 >
-                    <Lock class="size-3.5" /> Solo los médicos de vuelo y
-                    administración pueden cambiarla.
+                    <Lock class="size-3.5" />
+                    {{ t('Evaluacion.guide.onlyDoctors') }}
                 </p>
             </div>
             <div
                 class="inline-flex flex-wrap gap-1 rounded-xl border bg-muted/40 p-1"
                 role="tablist"
-                aria-label="Entorno"
+                :aria-label="t('Evaluacion.guide.environment')"
             >
                 <button
                     v-for="env in ENVIRONMENTS"
@@ -224,7 +233,7 @@ onMounted(async () => {
             <GuideCard
                 v-for="card in cards"
                 :key="card.item.code"
-                :name="card.item.name"
+                :name="indicatorName(card.item.code, card.item.name)"
                 :unit="card.item.unit"
                 :zone-name="card.zoneName"
                 :min="card.item.min"
@@ -241,7 +250,7 @@ onMounted(async () => {
         <GuideEditDialog
             v-if="current"
             v-model:open="dialogOpen"
-            :name="current.item.name"
+            :name="indicatorName(current.item.code, current.item.name)"
             :unit="current.item.unit"
             :environment-name="envName"
             :min="current.item.min"

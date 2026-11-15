@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { agoFromMinutes } from '@/lib/i18n';
+import { useAlertText } from '../Composables/useAlertText';
 import { ChevronDown, MessageCircleReply, Stethoscope } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 import StatusBadge from '@/components/StatusBadge.vue';
@@ -6,13 +9,12 @@ import { Button } from '@/components/ui/button';
 import { useCountdown } from '../Composables/useCountdown';
 import type { Alert, Recommendation } from '../Types/alerts';
 import { KIND_META } from '../Utils/alertKinds';
-import {
-    STATE_LABELS,
-    alertState,
-    replyRemainingMs,
-} from '../Utils/alertState';
+import { alertState, replyRemainingMs, stateLabel } from '../Utils/alertState';
 import AlertTimeline from './AlertTimeline.vue';
 import RecommendationCard from './RecommendationCard.vue';
+
+const { t } = useI18n();
+const text = useAlertText();
 
 /**
  * Una alerta: qué pasó (o qué dijo el astronauta), de quién, en qué paso va
@@ -33,19 +35,11 @@ const state = computed(() => alertState(props.alert, now.value));
 const kind = computed(() => KIND_META[props.alert.kind]);
 const replyIn = computed(() => replyRemainingMs(props.alert, now.value));
 
-const ago = computed(() => {
-    const minutes = Math.round(
+const ago = computed(() =>
+    agoFromMinutes(
         (now.value - new Date(props.alert.created_at).getTime()) / 60_000,
-    );
-
-    return minutes < 1
-        ? 'ahora'
-        : minutes < 60
-          ? `hace ${minutes} min`
-          : minutes < 60 * 24
-            ? `hace ${Math.round(minutes / 60)} h`
-            : `hace ${Math.round(minutes / 1440)} d`;
-});
+    ),
+);
 
 const mmss = (ms: number) => {
     const total = Math.ceil(ms / 1000);
@@ -82,7 +76,7 @@ const ICON_CLASS = {
 
             <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
-                    <p class="font-semibold">{{ alert.message }}</p>
+                    <p class="font-semibold">{{ text(alert) }}</p>
                     <StatusBadge
                         v-if="alert.level !== 'info'"
                         :status="alert.level"
@@ -102,15 +96,13 @@ const ICON_CLASS = {
                                 state === 'traveling',
                         }"
                     >
-                        {{ STATE_LABELS[state]
-                        }}<template v-if="state === 'traveling'">
-                            (llega en
-                            <span class="tabular-nums">{{ label }}</span
-                            >)</template
-                        >
+                        {{ stateLabel(state) }}
+                        <template v-if="state === 'traveling'">{{
+                            t('Alertas.item.arrivesIn', { time: label })
+                        }}</template>
                     </span>
                     <template v-if="alert.source === 'device'">
-                        · por sensores</template
+                        {{ t('Alertas.item.bySensors') }}</template
                     >
                 </p>
 
@@ -136,9 +128,9 @@ const ICON_CLASS = {
                         <p
                             class="text-xs font-medium text-sky-700 dark:text-sky-300"
                         >
-                            Respuesta de Tierra
+                            {{ t('Alertas.item.earthReply') }}
                             <template v-if="replyIn > 0">
-                                · llega a la nave en
+                                {{ t('Alertas.item.replyArrives') }}
                                 <span class="tabular-nums">{{
                                     mmss(replyIn)
                                 }}</span>
@@ -156,7 +148,7 @@ const ICON_CLASS = {
                     @click="$emit('attend')"
                 >
                     <Stethoscope />
-                    Atender
+                    {{ t('Alertas.item.attend') }}
                 </Button>
                 <Button
                     v-if="recommendation"
@@ -165,7 +157,7 @@ const ICON_CLASS = {
                     :aria-expanded="open"
                     @click="open = !open"
                 >
-                    Qué hacer
+                    {{ t('Alertas.item.whatToDo') }}
                     <ChevronDown
                         class="transition-transform"
                         :class="{ 'rotate-180': open }"

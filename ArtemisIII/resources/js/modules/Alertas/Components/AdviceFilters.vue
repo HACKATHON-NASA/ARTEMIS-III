@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import {
     Select,
     SelectContent,
@@ -9,6 +10,8 @@ import {
 import type { AdviceCategory } from '../Types/advice';
 import { ADVICE_CATEGORIES } from '../Utils/adviceCategories';
 import type { AdviceFilter } from '../Utils/adviceState';
+
+const { t } = useI18n();
 
 /**
  * Los filtros del historial de indicaciones: en qué van (con su número),
@@ -25,11 +28,12 @@ const category = defineModel<AdviceCategory | null>('category', {
     required: true,
 });
 
+/** El texto de cada pestaña es una clave de i18n. */
 const TABS: { value: AdviceFilter; label: string }[] = [
-    { value: 'all', label: 'Todas' },
-    { value: 'traveling', label: 'Viajando' },
-    { value: 'unread', label: 'Sin leer' },
-    { value: 'read', label: 'Entendidas' },
+    { value: 'all', label: 'Alertas.filters.adviceAll' },
+    { value: 'traveling', label: 'Alertas.filters.adviceTraveling' },
+    { value: 'unread', label: 'Alertas.filters.adviceUnread' },
+    { value: 'read', label: 'Alertas.filters.adviceRead' },
 ];
 </script>
 
@@ -40,7 +44,7 @@ const TABS: { value: AdviceFilter; label: string }[] = [
         >
             <div
                 role="tablist"
-                aria-label="Filtrar por estado"
+                :aria-label="t('Alertas.filters.byState')"
                 class="inline-flex w-full flex-wrap gap-1 rounded-xl border bg-muted/40 p-1 sm:w-auto"
             >
                 <button
@@ -56,7 +60,7 @@ const TABS: { value: AdviceFilter; label: string }[] = [
                     }"
                     @click="filter = tab.value"
                 >
-                    {{ tab.label }}
+                    {{ t(tab.label) }}
                     <span
                         class="rounded-full bg-muted px-1.5 text-xs tabular-nums"
                         >{{ counts[tab.value] }}</span
@@ -71,11 +75,13 @@ const TABS: { value: AdviceFilter; label: string }[] = [
             >
                 <SelectTrigger
                     class="w-full sm:w-64"
-                    aria-label="Filtrar por tripulante"
+                    :aria-label="t('Alertas.filters.byMember')"
                     ><SelectValue
                 /></SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="all">Toda la tripulación</SelectItem>
+                    <SelectItem value="all">{{
+                        t('Alertas.filters.wholeCrew')
+                    }}</SelectItem>
                     <SelectItem
                         v-for="member in members"
                         :key="member.id"
@@ -88,7 +94,7 @@ const TABS: { value: AdviceFilter; label: string }[] = [
         <div
             class="flex flex-wrap gap-1.5"
             role="group"
-            aria-label="Filtrar por tema"
+            :aria-label="t('Alertas.filters.byTopic')"
         >
             <button
                 type="button"
@@ -101,7 +107,7 @@ const TABS: { value: AdviceFilter; label: string }[] = [
                 :aria-pressed="category === null"
                 @click="category = null"
             >
-                Todos los temas
+                {{ t('Alertas.filters.allTopics') }}
             </button>
             <button
                 v-for="(meta, code) in ADVICE_CATEGORIES"

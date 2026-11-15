@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { KeyRound, TriangleAlert } from '@lucide/vue';
 import { ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
@@ -29,6 +30,8 @@ import type {
 } from '../../Types/admin';
 import CopyButton from './CopyButton.vue';
 
+const { t } = useI18n();
+
 /**
  * Registrar una máquina en dos pasos: los datos y, después, sus credenciales.
  * El secreto se muestra UNA sola vez (el backend solo guarda su hash).
@@ -58,7 +61,7 @@ watch(open, (isOpen) => {
 
 async function save(): Promise<void> {
     if (name.value.trim().length < 3) {
-        error.value = 'Escribe un nombre que lo identifique.';
+        error.value = t('Identidad.admin.errDeviceName');
 
         return;
     }
@@ -91,10 +94,11 @@ async function save(): Promise<void> {
         <DialogContent class="sm:max-w-md">
             <template v-if="created === null">
                 <DialogHeader>
-                    <DialogTitle>Registrar dispositivo</DialogTitle>
+                    <DialogTitle>{{
+                        t('Identidad.admin.registerDevice')
+                    }}</DialogTitle>
                     <DialogDescription>
-                        Un sensor de un astronauta o un gateway que envía las
-                        lecturas de toda la misión.
+                        {{ t('Identidad.admin.deviceHint') }}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -105,24 +109,30 @@ async function save(): Promise<void> {
                     @submit.prevent="save"
                 >
                     <div class="grid gap-2">
-                        <Label for="device-name">Nombre</Label>
+                        <Label for="device-name">{{
+                            t('Identidad.admin.name')
+                        }}</Label>
                         <Input
                             id="device-name"
                             v-model="name"
-                            placeholder="Pulsera biométrica"
+                            :placeholder="
+                                t('Identidad.admin.devicePlaceholder')
+                            "
                             autocomplete="off"
                         />
                         <InputError :message="error" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="device-target">¿A quién mide?</Label>
+                        <Label for="device-target">{{
+                            t('Identidad.admin.whoMeasures')
+                        }}</Label>
                         <Select v-model="target">
                             <SelectTrigger id="device-target" class="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem :value="GATEWAY">
-                                    Toda la misión (gateway)
+                                    {{ t('Identidad.admin.wholeMission') }}
                                 </SelectItem>
                                 <SelectItem
                                     v-for="member in crew"
@@ -137,9 +147,9 @@ async function save(): Promise<void> {
                 </form>
 
                 <DialogFooter>
-                    <Button variant="ghost" @click="open = false"
-                        >Cancelar</Button
-                    >
+                    <Button variant="ghost" @click="open = false">{{
+                        t('common.cancel')
+                    }}</Button>
                     <Button
                         type="submit"
                         form="device-form"
@@ -147,7 +157,7 @@ async function save(): Promise<void> {
                         class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                     >
                         <Spinner v-if="saving" />
-                        Registrar
+                        {{ t('Identidad.admin.register') }}
                     </Button>
                 </DialogFooter>
             </template>
@@ -156,10 +166,14 @@ async function save(): Promise<void> {
                 <DialogHeader>
                     <DialogTitle class="flex items-center gap-2">
                         <KeyRound class="size-5 text-sky-500" />
-                        Credenciales de {{ created.device.name }}
+                        {{
+                            t('Identidad.admin.credentialsOf', {
+                                name: created.device.name,
+                            })
+                        }}
                     </DialogTitle>
                     <DialogDescription>
-                        Configúralas en el dispositivo (o en simulador/.env).
+                        {{ t('Identidad.admin.credentialsHint') }}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -189,7 +203,11 @@ async function save(): Promise<void> {
                             }}</code>
                             <CopyButton
                                 :value="item.value"
-                                :label="`Copiar ${item.label}`"
+                                :label="
+                                    t('Identidad.admin.copy', {
+                                        what: item.label,
+                                    })
+                                "
                             />
                         </dd>
                     </div>
@@ -199,11 +217,13 @@ async function save(): Promise<void> {
                     class="flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-200"
                 >
                     <TriangleAlert class="mt-0.5 size-4 shrink-0" />
-                    Guarda el secreto ahora: no se vuelve a mostrar.
+                    {{ t('Identidad.admin.saveSecret') }}
                 </p>
 
                 <DialogFooter>
-                    <Button @click="open = false">Listo, ya lo guardé</Button>
+                    <Button @click="open = false">{{
+                        t('Identidad.admin.savedIt')
+                    }}</Button>
                 </DialogFooter>
             </template>
         </DialogContent>

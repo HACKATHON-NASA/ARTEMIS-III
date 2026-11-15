@@ -24,6 +24,8 @@ export type Alert = {
     kind: AlertKind;
     /** Solo en las de signos vitales. */
     indicator: IndicatorCode | null;
+    /** Solo en las vitales: el valor que la creó (para armar el texto en cada idioma). */
+    value: number | null;
     level: AlertLevel;
     message: string;
     /** El motivo de un pedido de ayuda. */

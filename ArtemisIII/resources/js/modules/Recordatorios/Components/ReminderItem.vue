@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { reminderTitle } from '../Utils/reminderTypes';
 import { Check, Pencil } from '@lucide/vue';
 import { computed } from 'vue';
 import type { Reminder } from '../Types/reminders';
 import { reminderIcon } from '../Utils/reminderTypes';
+
+const { t } = useI18n();
 
 /**
  * Un recordatorio: su ícono, su hora, editarlo y la casilla para marcarlo
@@ -33,14 +37,14 @@ const isDone = computed(() => props.reminder.state === 'done');
                 class="truncate text-sm font-medium transition-colors"
                 :class="{ 'text-muted-foreground line-through': isDone }"
             >
-                {{ reminder.title }}
+                {{ reminderTitle(reminder) }}
             </p>
             <p class="text-xs text-muted-foreground">
                 {{ reminder.time }}
                 <span
                     v-if="reminder.state === 'due'"
                     class="ml-1 font-medium text-sky-600 dark:text-sky-400"
-                    >· Es la hora</span
+                    >{{ t('Recordatorios.dueNow') }}</span
                 >
             </p>
         </div>
@@ -48,8 +52,10 @@ const isDone = computed(() => props.reminder.state === 'done');
         <button
             type="button"
             class="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
-            :aria-label="`Editar: ${reminder.title}`"
-            title="Editar"
+            :aria-label="
+                t('Recordatorios.editWho', { title: reminderTitle(reminder) })
+            "
+            :title="t('common.edit')"
             @click="$emit('edit')"
         >
             <Pencil class="size-3.5" />
@@ -66,8 +72,12 @@ const isDone = computed(() => props.reminder.state === 'done');
             :disabled="isDone || busy"
             :aria-label="
                 isDone
-                    ? `${reminder.title}: hecho`
-                    : `Marcar hecho: ${reminder.title}`
+                    ? t('Recordatorios.doneWho', {
+                          title: reminderTitle(reminder),
+                      })
+                    : t('Recordatorios.markDone', {
+                          title: reminderTitle(reminder),
+                      })
             "
             @click="$emit('done')"
         >

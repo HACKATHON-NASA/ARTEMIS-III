@@ -1,4 +1,5 @@
 import LoginController from './LoginController'
+import QuickAccessController from './QuickAccessController'
 import RefreshController from './RefreshController'
 import DeviceTokenController from './DeviceTokenController'
 import LogoutController from './LogoutController'
@@ -13,6 +14,7 @@ import SetDeviceActiveController from './SetDeviceActiveController'
 
 const Api = {
     LoginController: Object.assign(LoginController, LoginController),
+    QuickAccessController: Object.assign(QuickAccessController, QuickAccessController),
     RefreshController: Object.assign(RefreshController, RefreshController),
     DeviceTokenController: Object.assign(DeviceTokenController, DeviceTokenController),
     LogoutController: Object.assign(LogoutController, LogoutController),

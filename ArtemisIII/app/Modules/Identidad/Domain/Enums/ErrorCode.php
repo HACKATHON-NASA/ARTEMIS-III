@@ -30,4 +30,5 @@ enum ErrorCode: string
     case OwnAccessLocked = 'AUTH_OWN_ACCESS_LOCKED';
     case UserNotFound = 'AUTH_USER_NOT_FOUND';
     case DeviceNotFound = 'AUTH_DEVICE_NOT_FOUND';
+    case QuickAccessOff = 'AUTH_QUICK_ACCESS_OFF';
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import {
     Select,
     SelectContent,
@@ -8,7 +9,9 @@ import {
 } from '@/components/ui/select';
 import type { MissionView } from '../Types/missions';
 import { environmentInfo } from '../Utils/environments';
-import { STATUS_LABELS } from '../Utils/missionDates';
+import { statusLabel } from '../Utils/missionDates';
+
+const { t } = useI18n();
 
 /**
  * Elegir de qué misión se ve la tripulación, la salud o las alertas. Quien
@@ -21,14 +24,16 @@ const model = defineModel<number | null>({ required: true });
 
 <template>
     <div class="grid gap-2">
-        <label for="mission-picker" class="text-sm font-medium">Misión</label>
+        <label for="mission-picker" class="text-sm font-medium">{{
+            t('Entorno.mission')
+        }}</label>
         <Select
             :model-value="model?.toString() ?? ''"
             :disabled="locked"
             @update:model-value="model = Number($event)"
         >
             <SelectTrigger id="mission-picker" class="w-full sm:w-72">
-                <SelectValue placeholder="Elige una misión" />
+                <SelectValue :placeholder="t('Entorno.chooseMission')" />
             </SelectTrigger>
             <SelectContent>
                 <SelectItem
@@ -39,7 +44,7 @@ const model = defineModel<number | null>({ required: true });
                     {{ mission.name }}
                     <span class="text-muted-foreground">
                         · {{ environmentInfo(mission.environment).name }} ·
-                        {{ STATUS_LABELS[mission.status] }}
+                        {{ statusLabel(mission.status) }}
                     </span>
                 </SelectItem>
             </SelectContent>

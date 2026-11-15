@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Identidad;
 
 use App\Modules\Entorno\Contratos\CrewQuery;
+use App\Modules\Identidad\Application\QuickAccess;
 use App\Modules\Identidad\Console\CreateDeviceCommand;
 use App\Modules\Identidad\Console\JwtSecretCommand;
 use App\Modules\Identidad\Console\SetUserPasswordCommand;
@@ -41,6 +42,7 @@ final class IdentidadServiceProvider extends ModuleServiceProvider
     public function register(): void
     {
         $this->app->singleton(JwtConfig::class, fn (): JwtConfig => JwtConfig::fromArray(self::configArray('jwt')));
+        $this->app->when(QuickAccess::class)->needs('$enabled')->give(fn (): bool => (bool) config('identidad.quick_access', false));
 
         $this->app->singleton(PermissionMatrix::class, fn (): PermissionMatrix => new PermissionMatrix(self::permissionsConfig()));
 
@@ -130,6 +132,8 @@ final class IdentidadServiceProvider extends ModuleServiceProvider
     {
         RateLimiter::for('api-login', fn (Request $request): Limit => Limit::perMinute(5)
             ->by($request->string('email')->lower()->trim()->toString().'|'.$request->ip()));
+
+        RateLimiter::for('api-quick', fn (Request $request): Limit => Limit::perMinute(20)->by((string) $request->ip()));
 
         RateLimiter::for('api-refresh', fn (Request $request): Limit => Limit::perMinute(30)->by((string) $request->ip()));
 

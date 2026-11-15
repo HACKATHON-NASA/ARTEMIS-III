@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Head, router } from '@inertiajs/vue3';
 import {
     CheckCheck,
@@ -39,6 +40,8 @@ import type { AdviceCategory, AdviceDraft } from './Types/advice';
 import { adviceState } from './Utils/adviceState';
 import type { AdviceFilter } from './Utils/adviceState';
 
+const { t } = useI18n();
+
 /**
  * Indicaciones (/indicaciones, M5): el historial de lo que los médicos le
  * han indicado a la tripulación de una misión, a quién, cuándo y si ya lo
@@ -46,7 +49,7 @@ import type { AdviceFilter } from './Utils/adviceState';
  * ⚠️ Por ahora con datos de prueba (ver Stores/useAdviceStore.ts).
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Indicaciones', href: indicaciones() }] },
+    layout: { breadcrumbs: [{ title: 'nav.advice', href: indicaciones() }] },
 });
 
 const auth = useAuthStore();
@@ -120,7 +123,7 @@ const readPct = computed(() =>
 );
 
 function nameOf(id: number): string {
-    return crew.find(id)?.name ?? 'Tripulante';
+    return crew.find(id)?.name ?? t('Dashboard.crewMember');
 }
 
 async function send(draft: AdviceDraft, to: number | null): Promise<void> {
@@ -128,9 +131,13 @@ async function send(draft: AdviceDraft, to: number | null): Promise<void> {
         return;
     }
 
-    await store.send(to, auth.actor?.name ?? 'Equipo médico', draft);
-    toast.success(`Indicación enviada a ${nameOf(to)}`, {
-        description: `Llega a la nave en ${delay.value}.`,
+    await store.send(
+        to,
+        auth.actor?.name ?? t('Cuerpo.member.medicalTeam'),
+        draft,
+    );
+    toast.success(t('Alertas.advicePage.sentTo', { name: nameOf(to) }), {
+        description: t('Alertas.advicePage.arrivesIn', { delay: delay.value }),
     });
 }
 
@@ -161,7 +168,7 @@ onBeforeUnmount(() => clearInterval(timer));
 </script>
 
 <template>
-    <Head title="Indicaciones" />
+    <Head :title="t('Alertas.advicePage.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <header
@@ -172,16 +179,15 @@ onBeforeUnmount(() => clearInterval(timer));
                 <p
                     class="text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
                 >
-                    {{ crew.mission?.name ?? 'Misión' }}
+                    {{ crew.mission?.name ?? t('Alertas.advicePage.mission') }}
                 </p>
                 <h1
                     class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
                 >
-                    Indicaciones
+                    {{ t('Alertas.advicePage.title') }}
                 </h1>
                 <p class="mt-2 max-w-2xl text-muted-foreground">
-                    Lo que el equipo médico le ha indicado a la tripulación, y
-                    si ya lo entendieron.
+                    {{ t('Alertas.advicePage.subtitle') }}
                 </p>
             </div>
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -196,7 +202,7 @@ onBeforeUnmount(() => clearInterval(timer));
                     class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                     @click="composing = true"
                 >
-                    <ClipboardPen /> Nueva indicación
+                    <ClipboardPen /> {{ t('Alertas.advicePage.newAdvice') }}
                 </Button>
             </div>
         </header>
@@ -222,31 +228,33 @@ onBeforeUnmount(() => clearInterval(timer));
                     data-reveal
                 >
                     <SummaryStat
-                        label="Viajando a la nave"
+                        :label="t('Alertas.advicePage.traveling')"
                         :value="counts.traveling"
-                        hint="Aún no llegan"
+                        :hint="t('Alertas.advicePage.travelingHint')"
                         :icon="Clock"
                         tone="sky"
                     />
                     <SummaryStat
-                        label="Sin leer"
+                        :label="t('Alertas.advicePage.unread')"
                         :value="counts.unread"
-                        hint="Ya llegaron, falta el 'Entendido'"
+                        :hint="t('Alertas.advicePage.unreadHint')"
                         :icon="Inbox"
                         :tone="counts.unread ? 'red' : 'green'"
                     />
                     <SummaryStat
-                        label="Entendidas"
+                        :label="t('Alertas.advicePage.read')"
                         :value="counts.read"
                         :total="counts.all"
-                        :hint="`${readPct} % de las indicaciones`"
+                        :hint="
+                            t('Alertas.advicePage.readHint', { pct: readPct })
+                        "
                         :icon="CheckCheck"
                         tone="green"
                     />
                     <SummaryStat
-                        label="Importantes sin leer"
+                        :label="t('Alertas.advicePage.importantUnread')"
                         :value="importantUnread"
-                        hint="Para hacerles seguimiento"
+                        :hint="t('Alertas.advicePage.importantHint')"
                         :icon="TriangleAlert"
                         :tone="importantUnread ? 'red' : 'green'"
                     />
@@ -271,7 +279,7 @@ onBeforeUnmount(() => clearInterval(timer));
                         :now="store.now"
                         :name-of="nameOf"
                         :href-of="(id) => tripulante(id)"
-                        empty="No hay indicaciones con estos filtros."
+                        :empty="t('Alertas.advicePage.empty')"
                     />
                 </section>
             </template>

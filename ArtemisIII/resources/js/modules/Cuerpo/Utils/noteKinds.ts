@@ -1,9 +1,23 @@
+import { t } from '@/lib/i18n';
 import type { NoteKind } from '../Types/notes';
 
-/** El nombre y la pista de cada tipo de nota clínica (presentación). */
-export const NOTE_KINDS: Record<NoteKind, { label: string; hint: string }> = {
-    evolution: { label: 'Evolución', hint: 'Cómo va desde la última vez' },
-    impression: { label: 'Impresión', hint: 'Lo que crees que pasa' },
-    plan: { label: 'Plan', hint: 'Qué se va a hacer' },
-    follow_up: { label: 'Seguimiento', hint: 'Qué revisar más adelante' },
+/** El nombre y la pista de cada tipo de nota clínica (en el idioma de ahora). */
+type NoteKindInfo = { readonly label: string; readonly hint: string };
+
+function kind(code: NoteKind): NoteKindInfo {
+    return {
+        get label() {
+            return t(`Cuerpo.noteKinds.${code}.label`);
+        },
+        get hint() {
+            return t(`Cuerpo.noteKinds.${code}.hint`);
+        },
+    };
+}
+
+export const NOTE_KINDS: Record<NoteKind, NoteKindInfo> = {
+    evolution: kind('evolution'),
+    impression: kind('impression'),
+    plan: kind('plan'),
+    follow_up: kind('follow_up'),
 };

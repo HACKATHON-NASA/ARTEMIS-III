@@ -1,1 +1,0 @@
-var e={red:0,yellow:1,green:2};function t(t,n){return[...t[n].values].sort((t,n)=>e[t.status]-e[n.status])[0]??null}function n(e,t){return e.find(e=>e.code===t)?.name??t}export{n,t};

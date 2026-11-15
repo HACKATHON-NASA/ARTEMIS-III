@@ -1,3 +1,4 @@
+import { currentLocale, t } from '@/lib/i18n';
 import type { MissionStatus } from '../Types/missions';
 
 /**
@@ -64,15 +65,14 @@ export function daysUntil(start: string, on: string = today()): number {
 }
 
 export function formatDate(value: string): string {
-    return toDate(value).toLocaleDateString('es', {
+    return toDate(value).toLocaleDateString(currentLocale(), {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
     });
 }
 
-export const STATUS_LABELS: Record<MissionStatus, string> = {
-    planned: 'Planificada',
-    active: 'En curso',
-    finished: 'Terminada',
-};
+/** "Planificada" · "In progress"… en el idioma de ahora. */
+export function statusLabel(status: MissionStatus): string {
+    return t(`Entorno.status.${status}`);
+}

@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { assessmentSummary } from '../Utils/summary';
 import gsap from 'gsap';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import { statusMeta } from '@/lib/status';
 import type { Assessment } from '../Types/assessment';
+
+const { t } = useI18n();
 
 /**
  * El puntaje general 0–100 (M2): un anillo que se llena hasta el valor, con
@@ -79,16 +83,20 @@ onBeforeUnmount(() => tween?.kill());
                 <span class="text-4xl font-semibold tabular-nums">
                     {{ Math.round(shown) }}
                 </span>
-                <span class="text-xs text-muted-foreground">de 100</span>
+                <span class="text-xs text-muted-foreground">{{
+                    t('Evaluacion.score.of100')
+                }}</span>
             </div>
         </div>
 
         <div class="flex flex-col items-center gap-2 sm:items-start">
             <p class="text-sm font-medium text-muted-foreground">
-                Estado general
+                {{ t('Evaluacion.score.overall') }}
             </p>
             <StatusBadge :status="assessment.status" size="md" />
-            <p class="max-w-xs text-sm">{{ assessment.summary }}</p>
+            <p class="max-w-xs text-sm">
+                {{ assessmentSummary(assessment.body_status) }}
+            </p>
         </div>
     </div>
 </template>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { crewRoleLabel } from '../../../Entorno/Utils/environments';
 import { Pencil, Power } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { getInitials } from '@/composables/useInitials';
@@ -6,6 +8,8 @@ import type { ManagedUser } from '../../Types/admin';
 import { timeAgo } from '../../Utils/time';
 import RoleBadge from './RoleBadge.vue';
 import StatusDot from './StatusDot.vue';
+
+const { t } = useI18n();
 
 /**
  * Una persona: quién es, su rol y su misión, su estado, su último acceso y sus acciones.
@@ -43,7 +47,7 @@ defineEmits<{ edit: []; toggle: [] }>();
             >
                 {{ user.mission_name
                 }}<template v-if="user.crew_role">
-                    · {{ user.crew_role }}</template
+                    · {{ crewRoleLabel(user.crew_role) }}</template
                 >
             </p>
         </div>
@@ -52,11 +56,15 @@ defineEmits<{ edit: []; toggle: [] }>();
             class="col-start-1 flex items-center gap-2 text-sm md:col-start-auto"
         >
             <StatusDot :state="user.active ? 'online' : 'inactive'" />
-            {{ user.active ? 'Activo' : 'Desactivado' }}
+            {{
+                user.active
+                    ? t('Identidad.admin.active')
+                    : t('Identidad.admin.stateInactive')
+            }}
         </div>
 
         <p class="col-start-1 text-sm text-muted-foreground md:col-start-auto">
-            <span class="md:hidden">Último acceso: </span>
+            <span class="md:hidden">{{ t('Identidad.admin.lastAccess') }}</span>
             {{ timeAgo(user.last_login_at) }}
         </p>
 
@@ -66,8 +74,8 @@ defineEmits<{ edit: []; toggle: [] }>();
             <Button
                 variant="ghost"
                 size="icon-sm"
-                :aria-label="`Editar a ${user.name}`"
-                title="Editar"
+                :aria-label="t('Identidad.admin.editWho', { name: user.name })"
+                :title="t('common.edit')"
                 @click="$emit('edit')"
             >
                 <Pencil />
@@ -76,8 +84,21 @@ defineEmits<{ edit: []; toggle: [] }>();
                 variant="ghost"
                 size="icon-sm"
                 :disabled="busy"
-                :aria-label="`${user.active ? 'Desactivar' : 'Activar'} a ${user.name}`"
-                :title="user.active ? 'Desactivar' : 'Activar'"
+                :aria-label="
+                    t(
+                        user.active
+                            ? 'Identidad.admin.deactivateWho'
+                            : 'Identidad.admin.activateWho',
+                        {
+                            name: user.name,
+                        },
+                    )
+                "
+                :title="
+                    user.active
+                        ? t('Identidad.admin.deactivate')
+                        : t('Identidad.admin.activate')
+                "
                 :class="
                     user.active
                         ? 'hover:text-destructive'

@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { CircleHelp } from '@lucide/vue';
 import { ref } from 'vue';
+
+const { t } = useI18n();
 
 /**
  * El ánimo con 5 caritas. Es un grupo de radio: Tab entra, las flechas
@@ -11,11 +14,11 @@ const model = defineModel<string>({ default: '' });
 defineEmits<{ help: []; focus: [] }>();
 
 const FACES = [
-    { value: '1', face: '😞', label: 'Muy mal' },
-    { value: '2', face: '😕', label: 'Mal' },
-    { value: '3', face: '😐', label: 'Regular' },
-    { value: '4', face: '🙂', label: 'Bien' },
-    { value: '5', face: '😄', label: 'Muy bien' },
+    { value: '1', face: '😞' },
+    { value: '2', face: '😕' },
+    { value: '3', face: '😐' },
+    { value: '4', face: '🙂' },
+    { value: '5', face: '😄' },
 ];
 
 const buttons = ref<HTMLButtonElement[]>([]);
@@ -35,7 +38,7 @@ function move(index: number, step: number): void {
     <div class="flex flex-col gap-1.5">
         <div class="flex items-center justify-between gap-2">
             <span id="mood-label" class="text-sm font-medium">
-                Estado de ánimo
+                {{ t('indicators.mood.name') }}
             </span>
             <button
                 type="button"
@@ -43,7 +46,7 @@ function move(index: number, step: number): void {
                 @click="$emit('help')"
             >
                 <CircleHelp class="size-3.5" />
-                ¿Cómo me mido?
+                {{ t('Registro.howToMeasure') }}
             </button>
         </div>
 
@@ -60,7 +63,7 @@ function move(index: number, step: number): void {
                 type="button"
                 role="radio"
                 :aria-checked="model === item.value"
-                :aria-label="item.label"
+                :aria-label="t(`Registro.moods.${item.value}`)"
                 :tabindex="
                     model === item.value || (!model && index === 0) ? 0 : -1
                 "
@@ -85,15 +88,17 @@ function move(index: number, step: number): void {
                     {{ item.face }}
                 </span>
                 <span class="text-[10px] text-muted-foreground">
-                    {{ item.label }}
+                    {{ t(`Registro.moods.${item.value}`) }}
                 </span>
             </button>
         </div>
         <p class="text-xs text-muted-foreground">
             {{
                 model
-                    ? `Elegiste: ${FACES[Number(model) - 1].label}`
-                    : 'Toca la carita de hoy'
+                    ? t('Registro.youChose', {
+                          mood: t(`Registro.moods.${model}`),
+                      })
+                    : t('Registro.tapFace')
             }}
         </p>
     </div>

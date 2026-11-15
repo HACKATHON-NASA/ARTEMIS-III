@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { computed, reactive, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,8 @@ import { ApiError } from '@/lib/api';
 import type { GuideAdvice, GuideEdit, Threshold } from '../Types/threshold';
 import AdviceFields from './AdviceFields.vue';
 import RangeBar from './RangeBar.vue';
+
+const { t } = useI18n();
 
 /**
  * Editar un indicador de la guía: sus rangos (con la barra en vivo) y qué
@@ -49,11 +52,12 @@ const form = reactive({
 const error = ref<string | null>(null);
 const saving = ref(false);
 
+/** El texto de cada campo es una clave de i18n. */
 const FIELDS = [
-    { key: 'ymin', label: 'Amarillo desde' },
-    { key: 'gmin', label: 'Verde desde' },
-    { key: 'gmax', label: 'Verde hasta' },
-    { key: 'ymax', label: 'Amarillo hasta' },
+    { key: 'ymin', label: 'Evaluacion.guide.yellowFrom' },
+    { key: 'gmin', label: 'Evaluacion.guide.greenFrom' },
+    { key: 'gmax', label: 'Evaluacion.guide.greenTo' },
+    { key: 'ymax', label: 'Evaluacion.guide.yellowTo' },
 ] as const;
 
 const parse = (value: string) => Number(value.replace(',', '.'));
@@ -116,7 +120,10 @@ function advice(title: string, steps: string): GuideAdvice {
 
 async function save(): Promise<void> {
     if (!valid.value || !draft.value) {
-        error.value = `Revisa los rangos: ${props.min} ≤ amarillo desde ≤ verde desde < verde hasta ≤ amarillo hasta ≤ ${props.max}.`;
+        error.value = t('Evaluacion.guide.errRanges', {
+            min: props.min,
+            max: props.max,
+        });
 
         return;
     }
@@ -152,9 +159,12 @@ async function save(): Promise<void> {
             <DialogHeader>
                 <DialogTitle>{{ name }}</DialogTitle>
                 <DialogDescription>
-                    Rangos para {{ environmentName }}, en {{ unit }}. Dentro del
-                    verde es normal, dentro del amarillo es precaución y fuera
-                    es crítico.
+                    {{
+                        t('Evaluacion.guide.editHint', {
+                            env: environmentName,
+                            unit,
+                        })
+                    }}
                 </DialogDescription>
             </DialogHeader>
 
@@ -170,7 +180,7 @@ async function save(): Promise<void> {
                         :key="field.key"
                         class="grid gap-1.5 text-xs font-medium"
                     >
-                        {{ field.label }}
+                        {{ t(field.label) }}
                         <Input
                             v-model="form[field.key]"
                             inputmode="decimal"
@@ -201,7 +211,9 @@ async function save(): Promise<void> {
             </form>
 
             <DialogFooter>
-                <Button variant="ghost" @click="open = false">Cancelar</Button>
+                <Button variant="ghost" @click="open = false">{{
+                    t('common.cancel')
+                }}</Button>
                 <Button
                     type="submit"
                     form="guide-form"
@@ -209,7 +221,7 @@ async function save(): Promise<void> {
                     class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                 >
                     <Spinner v-if="saving" />
-                    Guardar cambios
+                    {{ t('Identidad.admin.saveChanges') }}
                 </Button>
             </DialogFooter>
         </DialogContent>

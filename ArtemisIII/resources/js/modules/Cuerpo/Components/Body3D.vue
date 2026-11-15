@@ -1,13 +1,16 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Minus, Plus, RotateCcw } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { Spinner } from '@/components/ui/spinner';
 import type { BodyZoneCode } from '@/types/health';
 import { useBodyScene } from '../Composables/useBodyScene';
 import type { BodyPart, BodyStatus } from '../Types/body';
-import { MODEL_CREDIT, MODEL_CREDIT_URL } from '../Utils/bodyModel';
+import { MODEL_CREDIT_URL } from '../Utils/bodyModel';
 import { worstValue, zoneName } from '../Utils/zoneValues';
 import BodyTooltip from './BodyTooltip.vue';
+
+const { t } = useI18n();
 
 /**
  * El cuerpo en 3D (M3 ⭐): modelo anatómico real con piel translúcida y los
@@ -64,7 +67,7 @@ const tooltip = computed(() =>
             ref="canvas"
             class="absolute inset-0 size-full cursor-grab touch-none active:cursor-grabbing"
             role="img"
-            aria-label="Cuerpo del astronauta en 3D. Usa los botones de zonas para elegir con el teclado."
+            :aria-label="t('Cuerpo.body3d.aria')"
         />
 
         <div
@@ -72,7 +75,7 @@ const tooltip = computed(() =>
             class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-sm text-muted-foreground"
         >
             <Spinner class="size-6" />
-            Cargando el modelo anatómico…
+            {{ t('Cuerpo.body3d.loading') }}
         </div>
 
         <BodyTooltip v-if="tooltip" v-bind="tooltip" />
@@ -83,10 +86,18 @@ const tooltip = computed(() =>
         >
             <button
                 v-for="action in [
-                    { label: 'Acercar', icon: Plus, run: () => zoom(0.8) },
-                    { label: 'Alejar', icon: Minus, run: () => zoom(1.25) },
                     {
-                        label: 'Volver al frente',
+                        label: t('Cuerpo.body3d.zoomIn'),
+                        icon: Plus,
+                        run: () => zoom(0.8),
+                    },
+                    {
+                        label: t('Cuerpo.body3d.zoomOut'),
+                        icon: Minus,
+                        run: () => zoom(1.25),
+                    },
+                    {
+                        label: t('Cuerpo.body3d.reset'),
                         icon: RotateCcw,
                         run: resetView,
                     },
@@ -109,7 +120,7 @@ const tooltip = computed(() =>
             rel="noopener"
             class="absolute inset-x-0 bottom-2 px-4 text-center text-[10px] text-muted-foreground/80 hover:underline"
         >
-            {{ MODEL_CREDIT }}
+            {{ t('Cuerpo.body3d.credit') }}
         </a>
     </div>
 </template>

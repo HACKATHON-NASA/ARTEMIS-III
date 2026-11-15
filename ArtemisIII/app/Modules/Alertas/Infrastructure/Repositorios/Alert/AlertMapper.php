@@ -23,6 +23,7 @@ final class AlertMapper
             measurementId: $row->measurement_id,
             kind: AlertKind::from($row->kind),
             indicatorCode: $row->indicator_code,
+            value: $row->value,
             level: AlertLevel::from($row->level),
             message: $row->message,
             category: $row->category,

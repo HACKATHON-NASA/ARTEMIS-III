@@ -1,1 +1,0 @@
-var e={hr:`Frecuencia cardíaca`,bp_sys:`Presión sistólica`,bp_dia:`Presión diastólica`,glucose:`Glucosa`,temp:`Temperatura`,spo2:`Saturación de oxígeno`,sleep:`Sueño`,mood:`Estado de ánimo`,radiation:`Radiación diaria`,exercise_min:`Ejercicio`};export{e as t};

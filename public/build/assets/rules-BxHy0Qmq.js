@@ -1,0 +1,1 @@
+import{l as e,s as t}from"./i18n-CW8jgLAV.js";var n={daily_complete:10,streak_7:50,sleep_7h:5,exercise:15,reminder:5,psych_test:10};function r(e){return t(`Gamificacion.reasons.${e}`)}function i(t){return e(`Gamificacion.badges.${t.code}.name`,t.name)}function a(t){return e(`Gamificacion.badges.${t.code}.condition`,t.condition)}export{r as i,a as n,i as r,n as t};

@@ -1,12 +1,15 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { Activity, CalendarDays, UserPlus } from '@lucide/vue';
 import { computed } from 'vue';
 import { getInitials } from '@/composables/useInitials';
 import { salud, usuarios } from '@/routes';
 import type { MissionView } from '../Types/missions';
-import { environmentInfo } from '../Utils/environments';
-import { STATUS_LABELS, daysUntil, formatDate } from '../Utils/missionDates';
+import { crewRoleLabel, environmentInfo } from '../Utils/environments';
+import { statusLabel, daysUntil, formatDate } from '../Utils/missionDates';
+
+const { t } = useI18n();
 
 /**
  * Una misión: dónde, cuándo, en qué día va y quiénes la tripulan. La en
@@ -54,13 +57,13 @@ const STATUS_CLASS = {
                         v-if="current"
                         class="rounded-full border border-sky-500/30 bg-background/70 px-2.5 py-0.5 text-xs font-medium"
                     >
-                        Misión actual
+                        {{ t('Entorno.card.current') }}
                     </span>
                     <span
                         class="rounded-full border px-2.5 py-0.5 text-xs font-medium"
                         :class="STATUS_CLASS[mission.status]"
                     >
-                        {{ STATUS_LABELS[mission.status] }}
+                        {{ statusLabel(mission.status) }}
                     </span>
                 </div>
             </div>
@@ -68,7 +71,13 @@ const STATUS_CLASS = {
                 {{ mission.name }}
             </h3>
             <p class="text-sm text-muted-foreground">
-                {{ env.name }} · {{ env.gravity }} · retraso {{ env.delay }}
+                {{
+                    t('Entorno.envLine', {
+                        name: env.name,
+                        gravity: env.gravity,
+                        delay: env.delay,
+                    })
+                }}
             </p>
         </div>
 
@@ -84,19 +93,28 @@ const STATUS_CLASS = {
                 <div class="mb-1.5 flex justify-between text-xs">
                     <span class="font-medium">
                         <template v-if="mission.status === 'active'">
-                            Día {{ mission.current_day }} de
-                            {{ mission.day_count }}
+                            {{
+                                t('Entorno.dayOf', {
+                                    day: mission.current_day,
+                                    total: mission.day_count,
+                                })
+                            }}
                         </template>
                         <template v-else-if="mission.status === 'planned'">
-                            Empieza en {{ daysUntil(mission.start_date) }}
                             {{
-                                daysUntil(mission.start_date) === 1
-                                    ? 'día'
-                                    : 'días'
+                                t(
+                                    'Entorno.startsIn',
+                                    { n: daysUntil(mission.start_date) },
+                                    daysUntil(mission.start_date),
+                                )
                             }}
                         </template>
                         <template v-else>
-                            Completada · {{ mission.day_count }} días
+                            {{
+                                t('Entorno.card.completed', {
+                                    n: mission.day_count,
+                                })
+                            }}
                         </template>
                     </span>
                     <span class="text-muted-foreground tabular-nums">
@@ -121,7 +139,7 @@ const STATUS_CLASS = {
 
             <div class="mt-auto border-t pt-4">
                 <p class="mb-2 text-xs font-medium text-muted-foreground">
-                    Tripulación · {{ mission.crew.length }}
+                    {{ t('Entorno.card.crew', { n: mission.crew.length }) }}
                 </p>
                 <ul v-if="mission.crew.length" class="flex flex-col gap-2">
                     <li
@@ -139,14 +157,18 @@ const STATUS_CLASS = {
                         <span
                             class="ml-auto truncate text-xs text-muted-foreground"
                         >
-                            {{ member.crew_role }}
+                            {{ crewRoleLabel(member.crew_role) }}
                         </span>
                     </li>
                     <li
                         v-if="mission.crew.length > shownCrew.length"
                         class="text-xs text-muted-foreground"
                     >
-                        y {{ mission.crew.length - shownCrew.length }} más
+                        {{
+                            t('Entorno.card.more', {
+                                n: mission.crew.length - shownCrew.length,
+                            })
+                        }}
                     </li>
                 </ul>
                 <Link
@@ -155,10 +177,10 @@ const STATUS_CLASS = {
                     class="flex items-center gap-2 rounded-lg border border-dashed px-3 py-2.5 text-sm text-muted-foreground transition hover:border-sky-500/50 hover:text-foreground"
                 >
                     <UserPlus class="size-4" />
-                    Sin tripulantes: créalos en Usuarios
+                    {{ t('Entorno.card.noCrewCreate') }}
                 </Link>
                 <p v-else class="text-sm text-muted-foreground">
-                    Sin tripulantes registrados.
+                    {{ t('Entorno.card.noCrew') }}
                 </p>
 
                 <Link
@@ -167,7 +189,7 @@ const STATUS_CLASS = {
                     class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-sky-600 hover:underline dark:text-sky-400"
                 >
                     <Activity class="size-4" />
-                    Ver la salud de la tripulación
+                    {{ t('Entorno.card.seeHealth') }}
                 </Link>
             </div>
         </div>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { assessmentSummary } from '../Evaluacion/Utils/summary';
 import { Head, router } from '@inertiajs/vue3';
 import { Activity, BellRing, ClipboardCheck, Siren } from '@lucide/vue';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
@@ -23,6 +25,8 @@ import SummaryStat from './Components/Panel/SummaryStat.vue';
 import { useCrewTrendsStore } from './Stores/useCrewTrendsStore';
 import type { WatchRow } from './Types/crewTrends';
 
+const { t } = useI18n();
+
 /**
  * Panel de salud (/salud): el tablero de quien monitorea una misión en
  * curso. Lo importante de hoy, en vivo: las novedades que llegan (SOS,
@@ -31,7 +35,7 @@ import type { WatchRow } from './Types/crewTrends';
  * ⚠️ Por ahora con datos de prueba (ver los stores de cada módulo).
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Panel de salud', href: salud() }] },
+    layout: { breadcrumbs: [{ title: 'nav.healthPanel', href: salud() }] },
 });
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -95,7 +99,9 @@ const crewRows = computed<WatchRow[]>(() =>
                 name: member.name,
                 score: result?.score ?? null,
                 status: result?.status ?? null,
-                summary: result?.summary ?? 'Todavía no registra mediciones.',
+                summary: result
+                    ? assessmentSummary(result.body_status)
+                    : t('Evaluacion.summary.noMeasurements'),
             };
         })
         .sort((a, b) => (a.score ?? 101) - (b.score ?? 101)),
@@ -122,14 +128,14 @@ const measured = computed(() => {
 });
 
 function nameOf(id: number): string {
-    return crew.find(id)?.name ?? 'Tripulante';
+    return crew.find(id)?.name ?? t('Dashboard.crewMember');
 }
 
 async function reply(text: string): Promise<void> {
     if (attend.value.alert) {
         await alerts.acknowledge(attend.value.alert.id, text);
-        toast.success('Alerta atendida', {
-            description: 'La respuesta va en camino a la nave.',
+        toast.success(t('Dashboard.alertAttended'), {
+            description: t('Dashboard.replyOnItsWay'),
         });
     }
 }
@@ -153,7 +159,7 @@ watch(
 
 onMounted(async () => {
     if (!auth.can('health.read.any')) {
-        toast.error('El Panel de salud es para médicos y administración.');
+        toast.error(t('common.medicalOnly'));
         router.visit(dashboard());
 
         return;
@@ -169,7 +175,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Panel de salud" />
+    <Head :title="t('Dashboard.panel.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <header
@@ -180,15 +186,15 @@ onMounted(async () => {
                 <p
                     class="text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
                 >
-                    {{ crew.mission?.name ?? 'Monitoreo' }}
+                    {{ crew.mission?.name ?? t('Dashboard.panel.monitoring') }}
                 </p>
                 <h1
                     class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
                 >
-                    Panel de salud
+                    {{ t('Dashboard.panel.title') }}
                 </h1>
                 <p class="mt-2 text-muted-foreground">
-                    Lo importante de hoy, en vivo.
+                    {{ t('Dashboard.panel.subtitle') }}
                 </p>
             </div>
             <MissionPicker
@@ -210,8 +216,7 @@ onMounted(async () => {
             v-else-if="!crew.mission"
             class="rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground"
         >
-            No hay misiones en curso. El Panel de salud monitorea a las
-            tripulaciones que están volando.
+            {{ t('Dashboard.panel.noMissions') }}
         </p>
 
         <template v-else>
@@ -229,40 +234,40 @@ onMounted(async () => {
                     data-reveal
                 >
                     <SummaryStat
-                        label="Sin atender"
+                        :label="t('Dashboard.panel.unattended')"
                         :value="open.length"
                         :hint="
                             open.length
-                                ? 'Alertas y mensajes esperando respuesta'
-                                : 'Todo atendido'
+                                ? t('Dashboard.panel.unattendedHint')
+                                : t('Dashboard.panel.allAttended')
                         "
                         :icon="BellRing"
                         :tone="open.length ? 'red' : 'green'"
                     />
                     <SummaryStat
-                        label="Urgentes"
+                        :label="t('Dashboard.panel.urgent')"
                         :value="urgent.length"
                         :hint="
                             urgent.length
-                                ? 'SOS o valores críticos sin atender'
-                                : 'Nada crítico pendiente'
+                                ? t('Dashboard.panel.urgentHint')
+                                : t('Dashboard.panel.nothingCritical')
                         "
                         :icon="Siren"
                         :tone="urgent.length ? 'red' : 'green'"
                     />
                     <SummaryStat
-                        label="En precaución o crítico"
+                        :label="t('Dashboard.panel.atRisk')"
                         :value="atRisk"
                         :total="crew.members.length"
-                        hint="Tripulantes que hay que vigilar"
+                        :hint="t('Dashboard.panel.atRiskHint')"
                         :icon="Activity"
                         :tone="atRisk ? 'red' : 'green'"
                     />
                     <SummaryStat
-                        label="Mediciones de hoy"
+                        :label="t('Dashboard.panel.measurementsToday')"
                         :value="measured.done"
                         :total="measured.total"
-                        hint="De toda la tripulación, últimas 24 h"
+                        :hint="t('Dashboard.panel.measurementsHint')"
                         :icon="ClipboardCheck"
                         tone="sky"
                     />

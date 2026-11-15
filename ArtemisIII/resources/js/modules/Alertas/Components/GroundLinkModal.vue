@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { CircleCheck } from '@lucide/vue';
 import { computed, toRef } from 'vue';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,8 @@ import {
 import { useCountdown } from '../Composables/useCountdown';
 import type { Alert } from '../Types/alerts';
 
+const { t } = useI18n();
+
 /**
  * El enlace nave → Tierra: una señal de luz recorre la ruta y la cuenta
  * regresiva dice cuándo la recibe el médico (en Marte, unos 20 minutos).
@@ -26,14 +29,8 @@ const { label, remainingMs } = useCountdown(
     toRef(() => props.alert?.ground_eta_at ?? null),
 );
 
-const title = computed(
-    () =>
-        ({
-            sos: 'SOS enviado a Tierra',
-            help: 'Pedido de ayuda enviado',
-            report: 'Novedad enviada',
-            vital: 'Alerta en camino a Tierra',
-        })[props.alert?.kind ?? 'vital'],
+const title = computed(() =>
+    t(`Alertas.ground.${props.alert?.kind ?? 'vital'}`),
 );
 
 const ROUTE = 'M40 110 C 140 10, 300 10, 400 110';
@@ -48,8 +45,7 @@ const reducedMotion =
             <DialogHeader>
                 <DialogTitle>{{ title }}</DialogTitle>
                 <DialogDescription>
-                    La señal viaja a la velocidad de la luz, pero la Tierra está
-                    lejos.
+                    {{ t('Alertas.ground.hint') }}
                 </DialogDescription>
             </DialogHeader>
 
@@ -91,7 +87,7 @@ const reducedMotion =
                         font-size="11"
                         fill="#bae6fd"
                     >
-                        Nave
+                        {{ t('Alertas.ground.ship') }}
                     </text>
 
                     <circle
@@ -111,7 +107,7 @@ const reducedMotion =
                         font-size="11"
                         fill="#bae6fd"
                     >
-                        Tierra
+                        {{ t('Alertas.ground.earth') }}
                     </text>
 
                     <g v-if="!reducedMotion">
@@ -141,7 +137,7 @@ const reducedMotion =
 
             <div v-if="remainingMs > 0" class="text-center">
                 <p class="text-sm text-muted-foreground">
-                    El médico de vuelo la recibe en
+                    {{ t('Alertas.ground.receivesIn') }}
                 </p>
                 <p
                     class="mt-1 text-5xl font-semibold tracking-tight tabular-nums"
@@ -149,22 +145,22 @@ const reducedMotion =
                     {{ label }}
                 </p>
                 <p class="mt-2 text-xs text-muted-foreground">
-                    Su respuesta tardará lo mismo en volver. Mientras tanto,
-                    sigue los pasos.
+                    {{ t('Alertas.ground.sameBack') }}
                 </p>
             </div>
             <div v-else class="flex flex-col items-center gap-2 text-center">
                 <CircleCheck class="size-10 text-[var(--status-green)]" />
-                <p class="text-lg font-semibold">Recibida en Tierra</p>
+                <p class="text-lg font-semibold">
+                    {{ t('Alertas.ground.received') }}
+                </p>
                 <p class="text-xs text-muted-foreground">
-                    El médico de vuelo ya la tiene. Su respuesta viene en
-                    camino.
+                    {{ t('Alertas.ground.receivedHint') }}
                 </p>
             </div>
 
             <DialogFooter>
                 <Button class="w-full sm:w-auto" @click="open = false">
-                    Entendido
+                    {{ t('common.gotIt') }}
                 </Button>
             </DialogFooter>
         </DialogContent>

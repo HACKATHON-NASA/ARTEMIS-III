@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { alertMessage } from './Utils/alertText';
 import { Head, router } from '@inertiajs/vue3';
 import { BellOff } from '@lucide/vue';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
@@ -22,6 +24,8 @@ import type { Alert, NewMessage } from './Types/alerts';
 import { matchesFilter } from './Utils/alertState';
 import type { AlertFilter } from './Utils/alertState';
 
+const { t } = useI18n();
+
 /**
  * Centro de alertas (/alertas, M5): aquí llega SOLO todo lo de la salud de
  * la tripulación (valores fuera de rango, SOS, pedidos de ayuda y novedades)
@@ -30,7 +34,7 @@ import type { AlertFilter } from './Utils/alertState';
  * ⚠️ Por ahora con datos de prueba (ver Stores/useAlertsStore.ts).
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Alertas', href: alertas() }] },
+    layout: { breadcrumbs: [{ title: 'nav.alerts', href: alertas() }] },
 });
 
 const auth = useAuthStore();
@@ -126,8 +130,10 @@ async function reply(text: string): Promise<void> {
     }
 
     const done = await store.acknowledge(attend.value.alert.id, text);
-    toast.success('Alerta atendida', {
-        description: `Respuesta enviada: ${done?.message ?? ''}`,
+    toast.success(t('Alertas.alertsPage.attended'), {
+        description: t('Alertas.alertsPage.replySent', {
+            message: done ? alertMessage(done, nameOf(done.astronaut_id)) : '',
+        }),
     });
 }
 
@@ -156,7 +162,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Alertas" />
+    <Head :title="t('Alertas.alertsPage.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <header
@@ -167,25 +173,24 @@ onMounted(async () => {
                 <p
                     class="text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
                 >
-                    Enlace con Tierra · en vivo
+                    {{ t('Alertas.alertsPage.eyebrow') }}
                 </p>
                 <h1
                     class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
                 >
-                    Centro de alertas
+                    {{ t('Alertas.alertsPage.title') }}
                 </h1>
                 <p class="mt-2 max-w-2xl text-muted-foreground">
-                    Aquí llega solo todo lo de la salud de la tripulación:
-                    valores fuera de rango, SOS, pedidos de ayuda y novedades.
-                    En Marte, cada mensaje tarda unos 20 minutos en cada
-                    sentido.
+                    {{ t('Alertas.alertsPage.subtitle') }}
                 </p>
             </div>
             <DemoSpeedToggle :speed="store.speed" @change="store.setSpeed" />
         </header>
 
         <section v-if="canMessage" class="flex flex-col gap-3" data-reveal>
-            <h2 class="text-lg font-semibold">Comunicarse con Tierra</h2>
+            <h2 class="text-lg font-semibold">
+                {{ t('Alertas.alertsPage.talkToEarth') }}
+            </h2>
             <AstronautComms @choose="compose = { open: true, kind: $event }" />
         </section>
 
@@ -244,9 +249,9 @@ onMounted(async () => {
             data-reveal
         >
             <BellOff class="size-8 text-muted-foreground" />
-            <p class="font-medium">Nada en este filtro</p>
+            <p class="font-medium">{{ t('Alertas.alertsPage.emptyTitle') }}</p>
             <p class="text-sm text-muted-foreground">
-                Cuando llegue algo de la tripulación, aparece aquí solo.
+                {{ t('Alertas.alertsPage.emptyHint') }}
             </p>
         </div>
 

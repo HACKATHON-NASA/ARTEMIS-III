@@ -20,6 +20,8 @@ final readonly class Alert
         public ?int $measurementId,
         public AlertKind $kind,
         public ?string $indicatorCode,
+        /** Solo en las vitales: el valor que la creó. */
+        public ?float $value,
         public AlertLevel $level,
         public string $message,
         public ?string $category,

@@ -1,4 +1,5 @@
 import type { Ref } from 'vue';
+import { formatNumber } from '@/lib/i18n';
 import type { BodyZoneCode } from '@/types/health';
 import type { Flight, Measurement } from '../Types/measurement';
 import { FIELD_GROUPS, ZONE_HEIGHT } from '../Utils/fieldGroups';
@@ -45,7 +46,7 @@ export function useBodyLink(
             return [
                 {
                     id: `${item.id}`,
-                    label: `${item.value.toLocaleString('es')} ${unit}`,
+                    label: `${formatNumber(item.value)} ${unit}`,
                     status: item.status,
                     from: {
                         x: from.left + from.width / 2,

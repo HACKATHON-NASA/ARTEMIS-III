@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { ref, watch } from 'vue';
+
+const { t } = useI18n();
 
 /**
  * El nivel y la barra hacia el siguiente (cada 100 puntos). Cuando suben
@@ -39,12 +42,12 @@ watch(
 <template>
     <div class="relative" :class="compact ? 'text-xs' : ''">
         <div class="mb-1.5 flex items-baseline justify-between gap-2">
-            <span class="font-semibold" :class="compact ? '' : 'text-lg'"
-                >Nivel {{ level }}</span
-            >
-            <span class="text-muted-foreground tabular-nums"
-                >{{ progress }}/100 · {{ points }} pts</span
-            >
+            <span class="font-semibold" :class="compact ? '' : 'text-lg'">{{
+                t('Gamificacion.level', { n: level })
+            }}</span>
+            <span class="text-muted-foreground tabular-nums">{{
+                t('Gamificacion.levelProgress', { progress, points })
+            }}</span>
         </div>
         <div
             class="overflow-hidden rounded-full bg-muted"
@@ -53,7 +56,7 @@ watch(
             :aria-valuenow="progress"
             aria-valuemin="0"
             aria-valuemax="100"
-            :aria-label="`Nivel ${level}: ${progress} de 100 puntos para el siguiente`"
+            :aria-label="t('Gamificacion.levelAria', { level, progress })"
         >
             <div
                 class="h-full origin-left rounded-full bg-linear-to-r from-sky-400 to-blue-600 transition-transform duration-700 ease-out"

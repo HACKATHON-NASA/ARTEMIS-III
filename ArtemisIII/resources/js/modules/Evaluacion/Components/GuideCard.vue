@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { formatNumber } from '@/lib/i18n';
 import { Pencil } from '@lucide/vue';
 import { computed } from 'vue';
 import { statusMeta } from '@/lib/status';
 import type { GuideAdvice, Threshold } from '../Types/threshold';
 import RangeBar from './RangeBar.vue';
+
+const { t } = useI18n();
 
 /**
  * Un indicador en la Guía de salud: su rango sano, la barra del semáforo y
@@ -36,32 +40,39 @@ const levels = computed(() => [
             <div class="min-w-0">
                 <h2 class="font-semibold">{{ name }}</h2>
                 <p class="text-xs text-muted-foreground">
-                    {{ zoneName }} · se mide en {{ unit }}
+                    {{ zoneName }} · {{ unit }}
                 </p>
             </div>
             <button
                 v-if="canEdit"
                 type="button"
                 class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium text-muted-foreground transition hover:border-sky-500/50 hover:text-foreground"
-                :aria-label="`Editar ${name}`"
+                :aria-label="t('Evaluacion.guide.editWho', { name })"
                 @click="$emit('edit')"
             >
                 <Pencil class="size-3.5" />
-                Editar
+                {{ t('common.edit') }}
             </button>
         </header>
 
         <div>
             <p class="mb-2 text-sm">
-                Sano entre
-                <strong class="tabular-nums">{{
-                    threshold.green_min.toLocaleString('es')
-                }}</strong>
-                y
-                <strong class="tabular-nums">{{
-                    threshold.green_max.toLocaleString('es')
-                }}</strong>
-                {{ unit }}
+                <i18n-t
+                    keypath="Evaluacion.guide.healthyBetween"
+                    scope="global"
+                >
+                    <template #min>
+                        <strong class="tabular-nums">{{
+                            formatNumber(threshold.green_min)
+                        }}</strong>
+                    </template>
+                    <template #max>
+                        <strong class="tabular-nums">{{
+                            formatNumber(threshold.green_max)
+                        }}</strong>
+                    </template>
+                    <template #unit>{{ unit }}</template>
+                </i18n-t>
             </p>
             <RangeBar
                 :threshold="threshold"
@@ -85,7 +96,11 @@ const levels = computed(() => [
                         class="size-2 rounded-full"
                         :style="{ background: statusMeta(level).color }"
                     />
-                    Si sale en {{ statusMeta(level).label.toLowerCase() }}
+                    {{
+                        t('Evaluacion.guide.ifComesOut', {
+                            status: statusMeta(level).label.toLowerCase(),
+                        })
+                    }}
                 </p>
                 <template v-if="advice">
                     <p class="mt-1.5 text-sm font-medium">{{ advice.title }}</p>
@@ -98,7 +113,7 @@ const levels = computed(() => [
                     </ol>
                 </template>
                 <p v-else class="mt-1.5 text-xs text-muted-foreground italic">
-                    Sin pasos todavía.
+                    {{ t('Evaluacion.guide.noSteps') }}
                 </p>
             </div>
         </div>

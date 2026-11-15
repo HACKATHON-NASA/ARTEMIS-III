@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { CalendarDays, Users } from '@lucide/vue';
 import { computed } from 'vue';
 import type { MissionView } from '../Types/missions';
 import { environmentInfo } from '../Utils/environments';
-import { STATUS_LABELS, daysUntil, formatDate } from '../Utils/missionDates';
+import { statusLabel, daysUntil, formatDate } from '../Utils/missionDates';
+
+const { t } = useI18n();
 
 /**
  * Una franja con la misión que se está mirando: entorno, estado, en qué día
@@ -18,16 +21,19 @@ const when = computed(() => {
     const mission = props.mission;
 
     if (mission.status === 'active') {
-        return `Día ${mission.current_day} de ${mission.day_count}`;
+        return t('Entorno.dayOf', {
+            day: mission.current_day,
+            total: mission.day_count,
+        });
     }
 
     if (mission.status === 'planned') {
         const days = daysUntil(mission.start_date);
 
-        return `Empieza en ${days} ${days === 1 ? 'día' : 'días'}`;
+        return t('Entorno.startsIn', { n: days }, days);
     }
 
-    return `Terminó el ${formatDate(mission.end_date)}`;
+    return t('Entorno.endedOn', { date: formatDate(mission.end_date) });
 });
 </script>
 
@@ -41,12 +47,18 @@ const when = computed(() => {
             {{ mission.name }}
         </span>
         <span class="text-muted-foreground">
-            {{ env.name }} · {{ env.gravity }} · retraso {{ env.delay }}
+            {{
+                t('Entorno.envLine', {
+                    name: env.name,
+                    gravity: env.gravity,
+                    delay: env.delay,
+                })
+            }}
         </span>
         <span
             class="rounded-full border bg-background/60 px-2 py-0.5 text-xs font-medium"
         >
-            {{ STATUS_LABELS[mission.status] }}
+            {{ statusLabel(mission.status) }}
         </span>
         <span class="flex items-center gap-1.5 text-muted-foreground">
             <CalendarDays class="size-4" />
@@ -54,8 +66,13 @@ const when = computed(() => {
         </span>
         <span class="flex items-center gap-1.5 text-muted-foreground">
             <Users class="size-4" />
-            {{ mission.crew.length }}
-            {{ mission.crew.length === 1 ? 'tripulante' : 'tripulantes' }}
+            {{
+                t(
+                    'Entorno.crewMembers',
+                    { n: mission.crew.length },
+                    mission.crew.length,
+                )
+            }}
         </span>
     </div>
 </template>

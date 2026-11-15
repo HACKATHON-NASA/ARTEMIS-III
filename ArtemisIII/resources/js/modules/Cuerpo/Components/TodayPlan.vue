@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { ArrowRight, CircleCheck } from '@lucide/vue';
 import type { PlanItem } from '../Utils/todayPlan';
+
+const { t } = useI18n();
 
 /**
  * "Tu día": cuatro tarjetas con lo que falta hoy y un botón para hacerlo.
@@ -13,7 +16,7 @@ defineProps<{ items: PlanItem[] }>();
 <template>
     <section
         class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
-        aria-label="Tu día"
+        :aria-label="t('Cuerpo.plan.label')"
     >
         <article
             v-for="item in items"

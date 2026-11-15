@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { indicatorHow, indicatorName, indicatorWhy } from '@/lib/indicators';
 import { Orbit, Ruler } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,6 +12,8 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import type { Indicator } from '../Types/measurement';
+
+const { t } = useI18n();
 
 /**
  * "¿Cómo me mido?": cómo tomar el valor y por qué importa en el espacio
@@ -24,9 +28,11 @@ const open = defineModel<boolean>('open', { required: true });
     <Dialog v-model:open="open">
         <DialogContent v-if="indicator" class="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle>{{ indicator.name }}</DialogTitle>
+                <DialogTitle>{{
+                    indicatorName(indicator.code, indicator.name)
+                }}</DialogTitle>
                 <DialogDescription>
-                    Se anota en {{ indicator.unit }}.
+                    {{ t('Registro.howDialog.unit', { unit: indicator.unit }) }}
                 </DialogDescription>
             </DialogHeader>
 
@@ -38,9 +44,16 @@ const open = defineModel<boolean>('open', { required: true });
                         <Ruler class="size-4" />
                     </span>
                     <div>
-                        <p class="text-sm font-semibold">Cómo me mido</p>
+                        <p class="text-sm font-semibold">
+                            {{ t('Registro.howDialog.how') }}
+                        </p>
                         <p class="mt-1 text-sm text-muted-foreground">
-                            {{ indicator.help_text.how }}
+                            {{
+                                indicatorHow(
+                                    indicator.code,
+                                    indicator.help_text.how,
+                                )
+                            }}
                         </p>
                     </div>
                 </div>
@@ -52,10 +65,15 @@ const open = defineModel<boolean>('open', { required: true });
                     </span>
                     <div>
                         <p class="text-sm font-semibold">
-                            Por qué importa en el espacio
+                            {{ t('Registro.howDialog.why') }}
                         </p>
                         <p class="mt-1 text-sm text-muted-foreground">
-                            {{ indicator.help_text.why }}
+                            {{
+                                indicatorWhy(
+                                    indicator.code,
+                                    indicator.help_text.why,
+                                )
+                            }}
                         </p>
                     </div>
                 </div>
@@ -63,7 +81,7 @@ const open = defineModel<boolean>('open', { required: true });
 
             <DialogFooter>
                 <Button class="w-full sm:w-auto" @click="open = false">
-                    Entendido
+                    {{ t('Registro.howDialog.ok') }}
                 </Button>
             </DialogFooter>
         </DialogContent>

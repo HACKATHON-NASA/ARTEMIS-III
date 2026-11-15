@@ -11,9 +11,13 @@ import missions from './missions'
 import astronauts from './astronauts'
 import thresholds from './thresholds'
 import assessment from './assessment'
+import psychTests from './psych-tests'
+import psychResults from './psych-results'
+import gamification from './gamification'
 import auth from './auth'
 import users from './users'
 import devices from './devices'
+import reminders from './reminders'
 import indicators from './indicators'
 import measurements from './measurements'
 import ingest from './ingest'
@@ -32,9 +36,13 @@ const api = {
     astronauts: Object.assign(astronauts, astronauts),
     thresholds: Object.assign(thresholds, thresholds),
     assessment: Object.assign(assessment, assessment),
+    psychTests: Object.assign(psychTests, psychTests),
+    psychResults: Object.assign(psychResults, psychResults),
+    gamification: Object.assign(gamification, gamification),
     auth: Object.assign(auth, auth),
     users: Object.assign(users, users),
     devices: Object.assign(devices, devices),
+    reminders: Object.assign(reminders, reminders),
     indicators: Object.assign(indicators, indicators),
     measurements: Object.assign(measurements, measurements),
     ingest: Object.assign(ingest, ingest),

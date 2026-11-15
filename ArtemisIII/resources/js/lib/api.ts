@@ -7,6 +7,8 @@
  * - Cualquier error sale como ApiError con message, errorCode y errors.
  */
 
+import { currentLocale, t } from './i18n';
+
 const BASE_URL = '/api/v1';
 
 export class ApiError extends Error {
@@ -60,7 +62,11 @@ export async function api<T>(
 ): Promise<T> {
     const { method = 'GET', body, auth = true, retry = true } = options;
 
-    const headers: Record<string, string> = { Accept: 'application/json' };
+    // El idioma de la pantalla: el backend contesta sus mensajes en ese idioma.
+    const headers: Record<string, string> = {
+        Accept: 'application/json',
+        'Accept-Language': currentLocale(),
+    };
     const token = auth ? (session?.token() ?? null) : null;
 
     if (body !== undefined) {
@@ -100,7 +106,7 @@ export async function api<T>(
 
     throw new ApiError(
         response.status,
-        json.message ?? 'Ocurrió un error inesperado.',
+        json.message ?? t('common.unexpectedError'),
         json.error_code ?? null,
         json.errors ?? {},
     );

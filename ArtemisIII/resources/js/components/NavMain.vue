@@ -8,18 +8,21 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useI18n } from 'vue-i18n';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import type { NavItem } from '@/types';
 
 /**
  * Un grupo del menú lateral. Las opciones sin pantalla todavía se ven
  * deshabilitadas con "Pronto"; las que tienen contador muestran su número.
+ * El título de cada opción es una clave de i18n.
  */
 withDefaults(defineProps<{ items: NavItem[]; label?: string }>(), {
     label: '',
 });
 
 const { isCurrentUrl } = useCurrentUrl();
+const { t } = useI18n();
 </script>
 
 <template>
@@ -29,22 +32,22 @@ const { isCurrentUrl } = useCurrentUrl();
             <SidebarMenuItem v-for="item in items" :key="item.title">
                 <SidebarMenuButton
                     v-if="item.soon"
-                    :tooltip="`${item.title} (pronto)`"
+                    :tooltip="`${t(item.title)} (${t('common.soon')})`"
                     aria-disabled="true"
                     class="cursor-default opacity-55 hover:bg-transparent"
                 >
                     <component :is="item.icon" />
-                    <span>{{ item.title }}</span>
+                    <span>{{ t(item.title) }}</span>
                 </SidebarMenuButton>
                 <SidebarMenuButton
                     v-else
                     as-child
                     :is-active="isCurrentUrl(item.href)"
-                    :tooltip="item.title"
+                    :tooltip="t(item.title)"
                 >
                     <Link :href="item.href">
                         <component :is="item.icon" />
-                        <span>{{ item.title }}</span>
+                        <span>{{ t(item.title) }}</span>
                     </Link>
                 </SidebarMenuButton>
 
@@ -58,7 +61,7 @@ const { isCurrentUrl } = useCurrentUrl();
                     v-else-if="item.soon"
                     class="rounded-full border px-1.5 text-[10px] font-medium text-muted-foreground"
                 >
-                    Pronto
+                    {{ t('common.soonBadge') }}
                 </SidebarMenuBadge>
             </SidebarMenuItem>
         </SidebarMenu>

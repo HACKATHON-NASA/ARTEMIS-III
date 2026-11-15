@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Plus } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import type { ManagedDevice } from '../../Types/admin';
 import DeviceCard from './DeviceCard.vue';
+
+const { t } = useI18n();
 
 /**
  * Las máquinas de la nave (el simulador y los sensores) que envían lecturas.
@@ -17,14 +20,16 @@ defineEmits<{ create: []; toggle: [device: ManagedDevice] }>();
             class="flex flex-col gap-4 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6"
         >
             <div>
-                <h2 class="text-lg font-semibold">Dispositivos</h2>
+                <h2 class="text-lg font-semibold">
+                    {{ t('Identidad.admin.devices') }}
+                </h2>
                 <p class="text-sm text-muted-foreground">
-                    Sensores y simulador que envían las lecturas de la nave
+                    {{ t('Identidad.admin.devicesSubtitle') }}
                 </p>
             </div>
             <Button variant="outline" @click="$emit('create')">
                 <Plus />
-                Registrar dispositivo
+                {{ t('Identidad.admin.registerDevice') }}
             </Button>
         </div>
 

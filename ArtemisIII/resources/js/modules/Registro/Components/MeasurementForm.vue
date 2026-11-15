@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Clock, Save } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,8 @@ import type { Indicator, RecordPayload } from '../Types/measurement';
 import { FIELD_GROUPS } from '../Utils/fieldGroups';
 import MeasurementField from './MeasurementField.vue';
 import MoodPicker from './MoodPicker.vue';
+
+const { t } = useI18n();
 
 /**
  * El formulario del día: los campos agrupados por órgano, la hora de la
@@ -55,7 +58,7 @@ function measuredAt(): string | null {
     date.setHours(hours, minutes, 0, 0);
 
     if (date.getTime() > Date.now()) {
-        timeError.value = 'La hora no puede ser en el futuro.';
+        timeError.value = t('Registro.futureTime');
     }
 
     return date.toISOString();
@@ -86,7 +89,9 @@ defineExpose({ reset: form.reset });
                 :class="{ 'md:col-span-2': group.fields.length > 1 }"
                 @focusin="emit('focusZone', group.zone)"
             >
-                <legend class="sr-only">{{ group.title }}</legend>
+                <legend class="sr-only">
+                    {{ t(`Registro.groups.${group.zone}.title`) }}
+                </legend>
                 <div class="mb-4 flex items-center gap-3">
                     <span
                         class="flex size-9 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400"
@@ -95,10 +100,10 @@ defineExpose({ reset: form.reset });
                     </span>
                     <div>
                         <p class="leading-tight font-semibold">
-                            {{ group.title }}
+                            {{ t(`Registro.groups.${group.zone}.title`) }}
                         </p>
                         <p class="text-xs text-muted-foreground">
-                            {{ group.hint }}
+                            {{ t(`Registro.groups.${group.zone}.hint`) }}
                         </p>
                     </div>
                 </div>
@@ -132,12 +137,12 @@ defineExpose({ reset: form.reset });
                 <div
                     class="inline-flex rounded-lg border bg-muted/40 p-0.5"
                     role="group"
-                    aria-label="Hora de la medición"
+                    :aria-label="t('Registro.measuredAt')"
                 >
                     <button
                         v-for="option in [
-                            { value: false, label: 'Ahora' },
-                            { value: true, label: 'Más temprano' },
+                            { value: false, label: t('Registro.now') },
+                            { value: true, label: t('Registro.earlier') },
                         ]"
                         :key="option.label"
                         type="button"
@@ -157,7 +162,7 @@ defineExpose({ reset: form.reset });
                     v-if="earlier"
                     v-model="time"
                     type="time"
-                    aria-label="Hora de hoy en que mediste"
+                    :aria-label="t('Registro.whenToday')"
                     class="h-8 rounded-md border bg-background px-2 text-sm tabular-nums dark:bg-input/30"
                 />
                 <span v-if="timeError" class="text-xs text-destructive">
@@ -167,8 +172,12 @@ defineExpose({ reset: form.reset });
 
             <div class="flex items-center justify-between gap-3 sm:justify-end">
                 <span class="text-sm text-muted-foreground tabular-nums">
-                    {{ form.filled.value.length }} de
-                    {{ indicators.length }} listos
+                    {{
+                        t('Registro.ready', {
+                            done: form.filled.value.length,
+                            total: indicators.length,
+                        })
+                    }}
                 </span>
                 <Button
                     type="submit"
@@ -178,7 +187,7 @@ defineExpose({ reset: form.reset });
                 >
                     <Spinner v-if="saving" />
                     <Save v-else />
-                    Guardar
+                    {{ t('common.save') }}
                 </Button>
             </div>
         </div>

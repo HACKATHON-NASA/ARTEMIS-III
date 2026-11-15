@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { BellRing, RadioTower, Rocket, Users } from '@lucide/vue';
 import StatCard from './StatCard.vue';
+
+const { t } = useI18n();
 
 /**
  * El resumen de la misión en cuatro cifras.
@@ -20,36 +23,36 @@ defineProps<{
 <template>
     <section
         class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
-        aria-label="Resumen"
+        :aria-label="t('Identidad.admin.summary')"
         data-reveal
     >
         <StatCard
-            label="Usuarios activos"
+            :label="t('Identidad.admin.statActiveUsers')"
             :value="stats.activeUsers"
             :total="stats.totalUsers"
-            hint="Pueden iniciar sesión ahora"
+            :hint="t('Identidad.admin.statActiveUsersHint')"
             :icon="Users"
             tone="sky"
         />
         <StatCard
-            label="Tripulación a bordo"
+            :label="t('Identidad.admin.statCrew')"
             :value="stats.crew"
-            hint="Astronautas de la misión"
+            :hint="t('Identidad.admin.statCrewHint')"
             :icon="Rocket"
             tone="indigo"
         />
         <StatCard
-            label="Dispositivos en línea"
+            :label="t('Identidad.admin.statDevices')"
             :value="stats.onlineDevices"
             :total="stats.totalDevices"
-            hint="Enviaron datos en los últimos 5 min"
+            :hint="t('Identidad.admin.statDevicesHint')"
             :icon="RadioTower"
             tone="blue"
         />
         <StatCard
-            label="Alertas por confirmar"
+            :label="t('Identidad.admin.statAlerts')"
             :value="stats.pendingAlerts"
-            hint="Esperan respuesta desde Tierra"
+            :hint="t('Identidad.admin.statAlertsHint')"
             :icon="BellRing"
             tone="amber"
         />

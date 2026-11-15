@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { currentLocale } from '@/lib/i18n';
 import { CircleCheck, Flag } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import type { ClinicalNote } from '../../Types/notes';
 import { NOTE_KINDS } from '../../Utils/noteKinds';
+
+const { t } = useI18n();
 
 /**
  * Una nota clínica: tipo, texto, quién y cuándo. Si requiere seguimiento,
@@ -13,7 +17,7 @@ defineProps<{ note: ClinicalNote; busy: boolean; canResolve: boolean }>();
 defineEmits<{ resolve: [] }>();
 
 function when(iso: string): string {
-    return new Date(iso).toLocaleString('es', {
+    return new Date(iso).toLocaleString(currentLocale(), {
         day: 'numeric',
         month: 'short',
         hour: '2-digit',
@@ -44,7 +48,7 @@ function when(iso: string): string {
                 v-if="note.follow_up && !note.resolved_at"
                 class="ml-auto inline-flex items-center gap-1 font-medium text-amber-600 dark:text-amber-300"
             >
-                <Flag class="size-3.5" /> Seguimiento pendiente
+                <Flag class="size-3.5" /> {{ t('Cuerpo.notes.pending') }}
             </span>
         </div>
         <p class="mt-2 text-sm whitespace-pre-line">{{ note.text }}</p>
@@ -53,7 +57,12 @@ function when(iso: string): string {
             class="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground"
         >
             <CircleCheck class="size-3.5 text-[var(--status-green)]" />
-            Resuelta por {{ note.resolved_by }} · {{ when(note.resolved_at) }}
+            {{
+                t('Cuerpo.notes.resolvedBy', {
+                    name: note.resolved_by,
+                    when: when(note.resolved_at),
+                })
+            }}
         </p>
         <Button
             v-else-if="note.follow_up && canResolve"
@@ -63,7 +72,7 @@ function when(iso: string): string {
             :disabled="busy"
             @click="$emit('resolve')"
         >
-            <CircleCheck /> Marcar resuelta
+            <CircleCheck /> {{ t('Cuerpo.notes.resolve') }}
         </Button>
     </li>
 </template>

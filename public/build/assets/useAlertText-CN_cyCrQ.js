@@ -1,0 +1,1 @@
+import{r as e,t,u as n}from"./app-DSs9W63R.js";function r(){let r=e(),i=n();return e=>{let n=r.find(e.astronaut_id)?.name??(e.astronaut_id===i.actor?.astronaut_id?i.actor?.name??null:null);return t(e,n)}}export{r as t};

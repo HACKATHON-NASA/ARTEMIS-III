@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Search, UserPlus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,8 @@ import {
 import type { ManagedUser } from '../../Types/admin';
 import { ROLE_OPTIONS } from '../../Utils/roles';
 import UserRow from './UserRow.vue';
+
+const { t } = useI18n();
 
 /**
  * Las personas con acceso: buscar, filtrar por rol, crear, editar y
@@ -50,9 +53,16 @@ const visible = computed(() => {
             class="flex flex-col gap-4 border-b p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between"
         >
             <div>
-                <h2 class="text-lg font-semibold">Usuarios</h2>
+                <h2 class="text-lg font-semibold">
+                    {{ t('Identidad.admin.users') }}
+                </h2>
                 <p class="text-sm text-muted-foreground">
-                    {{ users.length }} personas con acceso a {{ BRAND.name }}
+                    {{
+                        t('Identidad.admin.usersCount', {
+                            n: users.length,
+                            brand: BRAND.name,
+                        })
+                    }}
                 </p>
             </div>
 
@@ -64,25 +74,32 @@ const visible = computed(() => {
                     <Input
                         v-model="search"
                         type="search"
-                        placeholder="Buscar por nombre o correo"
+                        :placeholder="t('Identidad.admin.searchPlaceholder')"
                         class="pl-9 sm:w-64"
-                        aria-label="Buscar usuarios"
+                        :aria-label="t('Identidad.admin.searchUsers')"
                     />
                 </div>
                 <Select v-model="roleFilter">
-                    <SelectTrigger class="sm:w-48" aria-label="Filtrar por rol">
+                    <SelectTrigger
+                        class="sm:w-48"
+                        :aria-label="t('Identidad.admin.filterRole')"
+                    >
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all">Todos los roles</SelectItem>
+                        <SelectItem value="all">{{
+                            t('Identidad.admin.allRoles')
+                        }}</SelectItem>
                         <SelectItem
                             v-for="option in ROLE_OPTIONS"
                             :key="option.value"
                             :value="option.value"
                         >
-                            {{ option.label }}
+                            {{ t(`roles.${option.value}`) }}
                         </SelectItem>
-                        <SelectItem value="none">Sin rol</SelectItem>
+                        <SelectItem value="none">{{
+                            t('Identidad.admin.noRole')
+                        }}</SelectItem>
                     </SelectContent>
                 </Select>
                 <Button
@@ -90,7 +107,7 @@ const visible = computed(() => {
                     @click="$emit('create')"
                 >
                     <UserPlus />
-                    Nuevo usuario
+                    {{ t('Identidad.admin.newUser') }}
                 </Button>
             </div>
         </div>
@@ -99,10 +116,10 @@ const visible = computed(() => {
             class="hidden grid-cols-[minmax(0,2.2fr)_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-x-4 border-b bg-muted/40 px-6 py-2.5 text-xs font-medium tracking-wide text-muted-foreground uppercase md:grid"
             aria-hidden="true"
         >
-            <span>Persona</span>
-            <span>Rol</span>
-            <span>Estado</span>
-            <span>Último acceso</span>
+            <span>{{ t('Identidad.admin.colPerson') }}</span>
+            <span>{{ t('Identidad.admin.colRole') }}</span>
+            <span>{{ t('Identidad.admin.colStatus') }}</span>
+            <span>{{ t('Identidad.admin.colLastAccess') }}</span>
             <span class="w-[4.5rem]" />
         </div>
 
@@ -129,7 +146,7 @@ const visible = computed(() => {
             v-if="visible.length === 0"
             class="px-6 py-10 text-center text-sm text-muted-foreground"
         >
-            Ningún usuario coincide con la búsqueda.
+            {{ t('Identidad.admin.noMatch') }}
         </p>
     </section>
 </template>

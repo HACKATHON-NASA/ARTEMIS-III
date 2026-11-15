@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'laravel/vue-starter-kit',
-        'pretty_version' => 'dev-0de029013398c35958f01ad5f5674f7e54eb5cb0',
-        'version' => 'dev-0de029013398c35958f01ad5f5674f7e54eb5cb0',
-        'reference' => '0de029013398c35958f01ad5f5674f7e54eb5cb0',
+        'pretty_version' => 'dev-fff94e75c58546f7af3d87f13c95d3f7d53071e7',
+        'version' => 'dev-fff94e75c58546f7af3d87f13c95d3f7d53071e7',
+        'reference' => 'fff94e75c58546f7af3d87f13c95d3f7d53071e7',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -413,9 +413,9 @@
             'dev_requirement' => false,
         ),
         'laravel/vue-starter-kit' => array(
-            'pretty_version' => 'dev-0de029013398c35958f01ad5f5674f7e54eb5cb0',
-            'version' => 'dev-0de029013398c35958f01ad5f5674f7e54eb5cb0',
-            'reference' => '0de029013398c35958f01ad5f5674f7e54eb5cb0',
+            'pretty_version' => 'dev-fff94e75c58546f7af3d87f13c95d3f7d53071e7',
+            'version' => 'dev-fff94e75c58546f7af3d87f13c95d3f7d53071e7',
+            'reference' => 'fff94e75c58546f7af3d87f13c95d3f7d53071e7',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

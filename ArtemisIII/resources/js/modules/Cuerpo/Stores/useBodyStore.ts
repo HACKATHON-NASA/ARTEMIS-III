@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { api } from '@/lib/api';
 import type { BodyZoneCode } from '@/types/health';
 import type { BodyPart, BodyStatus } from '../Types/body';
+import { localizePart } from '../Utils/zoneValues';
 
 /**
  * El cuerpo de un astronauta (M3): las zonas, su estado y la zona elegida.
@@ -61,7 +62,9 @@ export const useBodyStore = defineStore('body', () => {
 
     async function loadParts(): Promise<void> {
         if (parts.value.length === 0) {
-            parts.value = await api<BodyPart[]>('/body-parts');
+            parts.value = (await api<BodyPart[]>('/body-parts')).map(
+                localizePart,
+            );
         }
     }
 

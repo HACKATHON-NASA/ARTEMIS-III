@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Head, router } from '@inertiajs/vue3';
 import { Activity, ClipboardCheck, Siren, TriangleAlert } from '@lucide/vue';
 import { computed, nextTick, onMounted, ref } from 'vue';
@@ -19,6 +20,8 @@ import GuideTabs from './Components/GuideTabs.vue';
 import PsychMatrix from './Components/Psych/PsychMatrix.vue';
 import { usePsychStore } from './Stores/usePsychStore';
 
+const { t } = useI18n();
+
 /**
  * Resultados de la tripulación (/guia/resultados, M2): cómo va cada uno en lo
  * psicológico (ánimo, ansiedad, estrés) y en lo intelectual (atención y
@@ -29,7 +32,7 @@ defineOptions({
     layout: {
         breadcrumbs: [
             {
-                title: 'Resultados de la tripulación',
+                title: 'nav.psychResults',
                 href: psicologiaTripulacion(),
             },
         ],
@@ -118,9 +121,7 @@ const bands = computed<Bands | null>(() => {
 
 onMounted(async () => {
     if (!auth.can('health.read.any')) {
-        toast.error(
-            'Los resultados son para el equipo médico y administración.',
-        );
+        toast.error(t('Evaluacion.results.onlyMedical'));
         router.visit(dashboard());
 
         return;
@@ -137,7 +138,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Resultados de la tripulación" />
+    <Head :title="t('Evaluacion.results.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <header class="flex flex-col gap-4" data-reveal>
@@ -148,16 +149,17 @@ onMounted(async () => {
                     <p
                         class="text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
                     >
-                        {{ crew.mission?.name ?? 'Guía de salud' }}
+                        {{
+                            crew.mission?.name ?? t('Evaluacion.results.guide')
+                        }}
                     </p>
                     <h1
                         class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
                     >
-                        Resultados de la tripulación
+                        {{ t('Evaluacion.results.title') }}
                     </h1>
                     <p class="mt-2 max-w-2xl text-muted-foreground">
-                        Cómo va cada uno en lo psicológico y en lo intelectual.
-                        En todos estos tests, un puntaje más alto es peor.
+                        {{ t('Evaluacion.results.subtitle') }}
                     </p>
                 </div>
                 <MissionPicker
@@ -181,7 +183,7 @@ onMounted(async () => {
             v-else-if="!crew.mission"
             class="rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground"
         >
-            No hay misiones en curso.
+            {{ t('Evaluacion.results.noMissions') }}
         </p>
 
         <template v-else>
@@ -198,31 +200,31 @@ onMounted(async () => {
                     data-reveal
                 >
                     <SummaryStat
-                        label="Tests al día"
+                        :label="t('Evaluacion.results.upToDate')"
                         :value="stats.done"
                         :total="stats.expected"
-                        hint="Hechos dentro de su frecuencia"
+                        :hint="t('Evaluacion.results.upToDateHint')"
                         :icon="ClipboardCheck"
                         tone="sky"
                     />
                     <SummaryStat
-                        label="En precaución"
+                        :label="t('Evaluacion.results.caution')"
                         :value="stats.yellow"
-                        hint="Resultados a vigilar"
+                        :hint="t('Evaluacion.results.cautionHint')"
                         :icon="Activity"
                         :tone="stats.yellow ? 'red' : 'green'"
                     />
                     <SummaryStat
-                        label="Críticos"
+                        :label="t('Evaluacion.results.critical')"
                         :value="stats.red"
-                        hint="Resultados para atender ya"
+                        :hint="t('Evaluacion.results.criticalHint')"
                         :icon="Siren"
                         :tone="stats.red ? 'red' : 'green'"
                     />
                     <SummaryStat
-                        label="Respuestas de riesgo"
+                        :label="t('Evaluacion.results.risk')"
                         :value="stats.flagged"
-                        hint="Avisaron solas a Tierra"
+                        :hint="t('Evaluacion.results.riskHint')"
                         :icon="TriangleAlert"
                         :tone="stats.flagged ? 'red' : 'green'"
                     />
@@ -233,7 +235,7 @@ onMounted(async () => {
                     data-reveal
                 >
                     <h2 class="mb-3 font-semibold">
-                        Último resultado de cada uno
+                        {{ t('Evaluacion.results.lastOfEach') }}
                     </h2>
                     <PsychMatrix
                         :members="crew.members"
@@ -249,13 +251,23 @@ onMounted(async () => {
                     class="rounded-2xl border bg-card p-4 sm:p-6"
                     data-reveal
                 >
-                    <h2 class="font-semibold">{{ test.name }} en la misión</h2>
+                    <h2 class="font-semibold">
+                        {{
+                            t('Evaluacion.results.inMission', {
+                                name: test.name,
+                            })
+                        }}
+                    </h2>
                     <p class="mb-3 text-sm text-muted-foreground">
-                        {{ test.description }} La franja gris es el nivel sano.
+                        {{
+                            t('Evaluacion.results.grayBand', {
+                                description: test.description,
+                            })
+                        }}
                     </p>
                     <ul
                         class="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs"
-                        aria-label="Tripulantes"
+                        :aria-label="t('Evaluacion.results.crewMembers')"
                     >
                         <li
                             v-for="line in series"
