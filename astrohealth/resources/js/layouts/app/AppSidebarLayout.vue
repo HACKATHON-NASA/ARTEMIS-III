@@ -28,6 +28,6 @@ withDefaults(defineProps<Props>(), {
             <AppSidebarHeader />
             <slot />
         </AppContent>
-        <Toaster />
+        <Toaster position="top-center" />
     </AppShell>
 </template>
