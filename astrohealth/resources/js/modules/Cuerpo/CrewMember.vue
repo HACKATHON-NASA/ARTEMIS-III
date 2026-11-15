@@ -28,13 +28,15 @@ import MyTestsSummary from '../Evaluacion/Components/Psych/MyTestsSummary.vue';
 import { useAssessmentStore } from '../Evaluacion/Stores/useAssessmentStore';
 import { usePsychStore } from '../Evaluacion/Stores/usePsychStore';
 import BodyViewer from './Components/BodyViewer.vue';
+import ClinicalNotes from './Components/Notes/ClinicalNotes.vue';
 import ZoneDialog from './Components/ZoneDialog.vue';
 import { useBodyStore } from './Stores/useBodyStore';
 
 /**
  * Ficha del tripulante (/tripulacion/{id}): todo de una persona para el
  * médico. Su cuerpo, lo que viene empeorando, sus indicadores, sus tests y
- * las indicaciones que se le han dado (advice.send para escribir una).
+ * las indicaciones que se le han dado (advice.send para escribir una) y,
+ * para el equipo médico, sus notas clínicas privadas (clinical_notes.manage).
  * ⚠️ Por ahora con datos de prueba (ver los stores de cada módulo).
  */
 const props = defineProps<{ astronautId: number }>();
@@ -227,6 +229,13 @@ onBeforeUnmount(() => clearInterval(timer));
                     </h2>
                     <AdviceList :items="advice.items" :now="advice.now" />
                 </section>
+            </div>
+
+            <div v-if="auth.can('clinical_notes.manage')" data-reveal>
+                <ClinicalNotes
+                    :astronaut-id="astronautId"
+                    :author="auth.actor?.name ?? 'Equipo médico'"
+                />
             </div>
 
             <section class="flex flex-col gap-3" data-reveal>

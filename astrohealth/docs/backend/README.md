@@ -89,6 +89,7 @@ flowchart LR
 | `missions.manage` — crear misiones y tripulantes        |   ✅    |                  |                        |             |          |
 | `guide.manage` — rangos, qué hacer y tests psicológicos |   ✅    |        ✅        |                        |             |          |
 | `advice.send` — dar indicaciones a un tripulante        |         |        ✅        |           ✅           |             |          |
+| `clinical_notes.manage` — notas clínicas privadas       |         |        ✅        |           ✅           |             |          |
 | `reminders.manage.own` — sus recordatorios              |         |                  |           ✅           |     ✅      |          |
 | `gamification.read` — puntos y ranking                  |   ✅    |        ✅        |           ✅           |     ✅      |          |
 | `users.manage` · `devices.manage`                       |   ✅    |                  |                        |             |          |

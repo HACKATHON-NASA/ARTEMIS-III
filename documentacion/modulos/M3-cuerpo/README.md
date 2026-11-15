@@ -138,3 +138,10 @@ flowchart LR
 - [ ] Al hacer clic en un órgano se ve su información.
 - [ ] El color cambia según los datos reales.
 - [ ] El pulso, el *tooltip* y el panel funcionan también con el teclado.
+
+
+## Ficha del tripulante y notas clínicas (frontend con datos de prueba)
+
+La **ficha** (`/tripulacion/{id}`, `CrewMember.vue`, `health.read.any`) junta todo de una persona: cuerpo 3D, tendencias, indicadores, tests, indicaciones del médico (M5) y, solo para el equipo médico, las **notas clínicas** (`Components/Notes/ClinicalNotes.vue`, permiso `clinical_notes.manage`: médico de vuelo y médico de la tripulación). Las notas son el expediente privado: tipo (evolución, impresión, plan, seguimiento), texto, autor y fecha; **no se editan ni se borran**. Una nota puede requerir seguimiento y queda pendiente hasta que se marca resuelta (con quién y cuándo). El astronauta y administración no las ven.
+
+Rutas propuestas: `GET/POST /api/v1/astronauts/{id}/clinical-notes` y `PATCH /api/v1/clinical-notes/{id}/resolve`. ⚠️ Hoy en `Utils/notesMock.ts` (localStorage).

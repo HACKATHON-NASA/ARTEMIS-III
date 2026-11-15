@@ -27,6 +27,7 @@ return [
     'missions.manage' => ['admin'],
     'guide.manage' => ['admin', 'flight_surgeon'],
     'advice.send' => ['flight_surgeon', 'crew_medical_officer'],
+    'clinical_notes.manage' => ['flight_surgeon', 'crew_medical_officer'],
     'reminders.manage.own' => ['crew_medical_officer', 'astronaut'],
     'gamification.read' => ['admin', 'flight_surgeon', 'crew_medical_officer', 'astronaut'],
     'users.manage' => ['admin'],
