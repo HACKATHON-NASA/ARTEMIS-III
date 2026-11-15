@@ -2,9 +2,14 @@ import type { Alert, Recommendation } from '../Types/alerts';
 
 /**
  * ⚠️ DATOS DE PRUEBA de M5 · Alertas (el ejemplo de la ficha: presión 148/94
- * en Marte). Se borran cuando existan las rutas de alertas y recomendaciones.
+ * en Marte). Solo Elena (astronauta 1) tiene una alerta roja; coincide con
+ * @/mocks/crewHealth. Se borran cuando existan las rutas de M5.
  */
 export function mockAlerts(astronautId: number): Alert[] {
+    if (astronautId !== 1) {
+        return [];
+    }
+
     return [
         {
             id: 57,
@@ -55,4 +60,43 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
             'Completa la sesión de resistencia de hoy\nNo bajes de 90 minutos diarios\nRegistra el tiempo al terminar',
         risk_ref: 'https://www.nasa.gov/hrp/risks/',
     },
+    {
+        indicator: 'spo2',
+        status: 'yellow',
+        title: 'Oxígeno algo bajo',
+        action_text:
+            'Siéntate y respira despacio por la nariz 2 minutos\nRevisa el sensor del oxímetro y vuelve a medir\nSi baja de 90 %, avisa al médico de la tripulación',
+        risk_ref: 'https://www.nasa.gov/hrp/hazards/',
+    },
+    {
+        indicator: 'radiation',
+        status: 'yellow',
+        title: 'Dosis de radiación alta',
+        action_text:
+            'Reduce el tiempo en los módulos menos blindados\nRevisa el pronóstico de clima espacial\nLee el dosímetro al final del día',
+        risk_ref: 'https://www.nasa.gov/hrp/hazards/',
+    },
+    {
+        indicator: 'glucose',
+        status: 'yellow',
+        title: 'Glucosa en precaución',
+        action_text:
+            'Mide de nuevo en ayunas mañana\nRevisa la ración de carbohidratos del día\nMantén el ejercicio de resistencia',
+        risk_ref: 'https://www.nasa.gov/hrp/risks/',
+    },
+    {
+        indicator: 'mood',
+        status: 'yellow',
+        title: 'Ánimo bajo',
+        action_text:
+            'Habla con alguien de la tripulación o de Tierra\nToma un descanso fuera de tu estación de trabajo\nRegistra cómo te sientes al final del día',
+        risk_ref: 'https://www.nasa.gov/hrp/hazards/',
+    },
 ];
+
+/** Alertas sin confirmar de toda la tripulación (para el contador del menú). */
+export function mockPendingTotal(): number {
+    return [1, 2, 3, 4]
+        .flatMap((id) => mockAlerts(id))
+        .filter((alert) => alert.acknowledged_at === null).length;
+}

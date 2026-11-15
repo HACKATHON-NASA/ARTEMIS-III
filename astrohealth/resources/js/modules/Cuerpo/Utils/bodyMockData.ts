@@ -1,4 +1,5 @@
-import type { BodyPart, BodyStatus, ZoneValue } from '../Types/body';
+import { mockBodyStatusFor } from '@/mocks/crewHealth';
+import type { BodyPart, BodyStatus } from '../Types/body';
 
 /**
  * ⚠️ DATOS DE PRUEBA de M3 · Cuerpo. Se borran cuando existan
@@ -93,60 +94,7 @@ export const MOCK_PARTS: BodyPart[] = [
     },
 ];
 
-function value(
-    indicator: ZoneValue['indicator'],
-    amount: number,
-    unit: string,
-    status: ZoneValue['status'],
-    minutesAgo: number,
-): ZoneValue {
-    return {
-        indicator,
-        value: amount,
-        unit,
-        status,
-        measured_at: new Date(Date.now() - minutesAgo * 60_000).toISOString(),
-    };
-}
-
-export function mockBodyStatus(): BodyStatus {
-    return {
-        heart: {
-            status: 'red',
-            values: [
-                value('hr', 88, 'bpm', 'green', 6),
-                value('bp_sys', 148, 'mmHg', 'red', 6),
-                value('bp_dia', 94, 'mmHg', 'red', 6),
-            ],
-        },
-        brain: {
-            status: 'yellow',
-            values: [
-                value('sleep', 6.2, 'h', 'yellow', 420),
-                value('mood', 4, '1-5', 'green', 90),
-            ],
-        },
-        lungs: {
-            status: 'green',
-            values: [value('spo2', 97, '%', 'green', 6)],
-        },
-        immune: {
-            status: 'green',
-            values: [value('temp', 36.7, '°C', 'green', 6)],
-        },
-        metabolism: {
-            status: 'green',
-            values: [value('glucose', 92, 'mg/dL', 'green', 180)],
-        },
-        bones: {
-            status: 'yellow',
-            values: [value('exercise_min', 70, 'min', 'yellow', 1440)],
-        },
-        whole_body: {
-            status: 'green',
-            values: [value('radiation', 0.52, 'mSv', 'green', 60)],
-        },
-        eyes: { status: null, values: [] },
-        ear: { status: null, values: [] },
-    };
+/** El estado del cuerpo de cada astronauta (datos de prueba compartidos: @/mocks/crewHealth). */
+export function mockBodyStatus(astronautId: number): BodyStatus {
+    return mockBodyStatusFor(astronautId);
 }

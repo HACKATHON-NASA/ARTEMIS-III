@@ -11,4 +11,8 @@ export type NavItem = {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon;
     isActive?: boolean;
+    /** Todavía no tiene pantalla: se muestra deshabilitado con "Pronto". */
+    soon?: boolean;
+    /** Un contador (por ejemplo, alertas sin atender). */
+    badge?: number;
 };

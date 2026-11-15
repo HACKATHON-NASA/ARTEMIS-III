@@ -13,5 +13,8 @@ use Illuminate\Support\Facades\Route;
 // Acceso: entra contra POST /api/v1/auth/login.
 Route::inertia('acceso', 'Identidad/Login')->name('acceso');
 
-// Administración: usuarios y dispositivos (permiso users.manage).
-Route::inertia('admin', 'Identidad/Admin')->name('admin');
+// Administración → su entrada es el Panel de salud de la tripulación.
+Route::redirect('admin', '/salud')->name('admin');
+
+// Usuarios: personas, roles y dispositivos (permiso users.manage).
+Route::inertia('admin/usuarios', 'Identidad/Admin')->name('usuarios');

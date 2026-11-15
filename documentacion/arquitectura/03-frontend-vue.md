@@ -62,6 +62,9 @@ astrohealth/resources/images/      # Imágenes de la app (marca/, fondos/), opti
 |---|---|---|
 | Acceso (M0) | `modules/Identidad/Login.vue` | `/acceso` (al abrir la app, `/` lleva aquí) |
 | Inicio: cuerpo + puntaje + alertas + recordatorios | `modules/Cuerpo/Home.vue` | `/inicio` |
+| Panel de salud (médicos y administración): un tripulante, su cuerpo 3D y el detalle del órgano | `modules/Cuerpo/CrewHealth.vue` | `/salud` (`/admin` lleva aquí) |
+| Tripulación: cada astronauta con su estado | `modules/Entorno/Crew.vue` | `/tripulacion` |
+| Usuarios y dispositivos (M0) | `modules/Identidad/Admin.vue` | `/admin/usuarios` |
 | Registrar (M1) | `modules/Registro/Record.vue` | `/registrar` |
 | Dashboard (M4) | `modules/Dashboard/Dashboard.vue` | `/dashboard` |
 | Misión (M6) | `modules/Entorno/Mission.vue` | `/mision` |

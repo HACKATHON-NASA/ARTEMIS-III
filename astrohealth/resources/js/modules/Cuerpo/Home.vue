@@ -53,22 +53,12 @@ function openZone(code: BodyZoneCode): void {
     panelOpen.value = true;
 }
 
-/**
- * Las recomendaciones de la zona abierta: una por cada valor en amarillo o
- * rojo, sin repetir título (gana la primera: el indicador que más pesa).
- */
-const zoneRecommendations = computed(() => {
-    const zone =
-        body.selected && body.status ? body.status[body.selected] : null;
-    const found = (zone?.values ?? [])
-        .map((value) => alerts.recommendationFor(value.indicator, value.status))
-        .filter((item) => item !== null);
-
-    return found.filter(
-        (item, index) =>
-            found.findIndex((other) => other.title === item.title) === index,
-    );
-});
+/** Las recomendaciones de la zona abierta (M5). */
+const zoneRecommendations = computed(() =>
+    alerts.recommendationsFor(
+        body.selected && body.status ? body.status[body.selected].values : [],
+    ),
+);
 
 async function sendToGround(): Promise<void> {
     if (!alerts.active) {

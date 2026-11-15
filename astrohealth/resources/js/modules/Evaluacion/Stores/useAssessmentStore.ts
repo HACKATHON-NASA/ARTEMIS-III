@@ -1,41 +1,30 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { mockAssessmentFor } from '@/mocks/crewHealth';
 import type { Assessment } from '../Types/assessment';
 
 /**
- * El puntaje y el estado general de un astronauta (M2).
+ * El puntaje y el estado general (M2): de un astronauta (`current`) y de
+ * toda la tripulación (`crew`, para la vista de Tripulación).
  *
- * ⚠️ HOY con datos de prueba (el ejemplo de la ficha de M2). Cuando exista
- * GET /api/v1/astronauts/{id}/assessment, load() pasa a usar `api()`.
+ * ⚠️ HOY con datos de prueba compartidos (@/mocks/crewHealth). Cuando exista
+ * GET /api/v1/astronauts/{id}/assessment, las acciones pasan a usar `api()`.
  */
-function mockAssessment(astronautId: number): Assessment {
-    return {
-        astronaut_id: astronautId,
-        score: 74,
-        status: 'yellow',
-        body_status: {
-            heart: 'red',
-            brain: 'yellow',
-            lungs: 'green',
-            immune: 'green',
-            metabolism: 'green',
-            bones: 'yellow',
-            whole_body: 'green',
-            eyes: null,
-            ear: null,
-        },
-        summary: 'Corazón en estado crítico. Revisa la recomendación.',
-        evaluated_at: new Date(Date.now() - 6 * 60 * 1000).toISOString(),
-    };
-}
+const wait = (ms = 250) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const useAssessmentStore = defineStore('assessment', () => {
     const current = ref<Assessment | null>(null);
+    const crew = ref<Assessment[]>([]);
 
     async function load(astronautId: number): Promise<void> {
-        await new Promise((resolve) => setTimeout(resolve, 250));
-        current.value = mockAssessment(astronautId);
+        await wait();
+        current.value = mockAssessmentFor(astronautId);
     }
 
-    return { current, load };
+    async function loadCrew(astronautIds: number[]): Promise<void> {
+        await wait();
+        crew.value = astronautIds.map((id) => mockAssessmentFor(id));
+    }
+
+    return { current, crew, load, loadCrew };
 });

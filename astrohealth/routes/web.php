@@ -17,3 +17,8 @@ Route::inertia('dashboard', 'Dashboard/Dashboard')->name('dashboard');
 // Inicio del astronauta: cuerpo (M3) + puntaje (M2) + alertas (M5) + rutina (M8).
 // Pasa a app/Modules/Cuerpo/web.php cuando exista el backend de M3.
 Route::inertia('inicio', 'Cuerpo/Home')->name('inicio');
+
+// Médicos y administración: el cuerpo y el estado de cada tripulante.
+// Pasan a app/Modules/Cuerpo/web.php y Entorno/web.php con su backend.
+Route::inertia('salud', 'Cuerpo/CrewHealth')->name('salud');
+Route::inertia('tripulacion', 'Entorno/Crew')->name('tripulacion');

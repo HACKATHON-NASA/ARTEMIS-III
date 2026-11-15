@@ -3,7 +3,7 @@ import { Head, router } from '@inertiajs/vue3';
 import { nextTick, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { admin, dashboard } from '@/routes';
+import { dashboard, usuarios } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import AdminHeader from './Components/Admin/AdminHeader.vue';
 import AdminStats from './Components/Admin/AdminStats.vue';
@@ -21,7 +21,7 @@ import type { ManagedDevice, ManagedUser, UserFormData } from './Types/admin';
  * ⚠️ Por ahora con datos de prueba: ver Stores/useAdminStore.ts.
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Administración', href: admin() }] },
+    layout: { breadcrumbs: [{ title: 'Usuarios', href: usuarios() }] },
 });
 
 const auth = useAuthStore();
@@ -82,7 +82,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Administración" />
+    <Head title="Usuarios" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <template v-if="store.loading || store.mission === null">

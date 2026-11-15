@@ -25,13 +25,29 @@ final class PagesTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component('Identidad/Login'));
     }
 
-    public function test_the_admin_page_is_the_identidad_module_principal(): void
+    public function test_admin_opens_the_crew_health_panel(): void
+    {
+        $this->get('/admin')->assertRedirect('/salud');
+    }
+
+    public function test_the_users_page_is_the_identidad_module_principal(): void
     {
         // La página es una cáscara: el permiso users.manage lo comprueban la
         // pantalla (al cargar) y, cuando existan, /api/v1/users y /devices.
-        $this->get('/admin')
+        $this->get('/admin/usuarios')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page->component('Identidad/Admin'));
+    }
+
+    public function test_the_health_panel_and_crew_pages_exist(): void
+    {
+        $this->get('/salud')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Cuerpo/CrewHealth'));
+
+        $this->get('/tripulacion')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Entorno/Crew'));
     }
 
     public function test_the_astronaut_home_is_the_cuerpo_module_principal(): void

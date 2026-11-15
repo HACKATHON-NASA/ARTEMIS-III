@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
-import { admin, dashboard, inicio } from '@/routes';
+import { dashboard, inicio, salud } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import BrandHeader from './Components/Acceso/BrandHeader.vue';
 import HeartbeatLine from './Components/Acceso/HeartbeatLine.vue';
@@ -19,16 +19,19 @@ const auth = useAuthStore();
 const motion = useLoginMotion(root);
 
 /**
- * Cada quien entra a su pantalla: administración a /admin, la tripulación a
- * su Inicio (/inicio) y el resto al panel.
+ * Cada quien entra a su pantalla: administración al Panel de salud, la
+ * tripulación a su Inicio, el médico de vuelo al Panel de salud y el resto
+ * al panel general.
  */
 async function enter(): Promise<void> {
     await motion.exit();
 
     if (auth.can('users.manage')) {
-        router.visit(admin());
+        router.visit(salud());
     } else if (auth.actor?.astronaut_id) {
         router.visit(inicio());
+    } else if (auth.can('health.read.any')) {
+        router.visit(salud());
     } else {
         router.visit(dashboard());
     }
