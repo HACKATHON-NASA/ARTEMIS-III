@@ -16,6 +16,8 @@ export const useBodyStore = defineStore('body', () => {
     const parts = ref<BodyPart[]>([]);
     const status = ref<BodyStatus | null>(null);
     const selected = ref<BodyZoneCode | null>(null);
+    /** El cuerpo de cada tripulante de una misión (Tripulación). */
+    const crew = ref<Record<number, BodyStatus>>({});
 
     const selectedPart = computed(
         () => parts.value.find((part) => part.code === selected.value) ?? null,
@@ -58,6 +60,14 @@ export const useBodyStore = defineStore('body', () => {
         status.value = mockBodyStatus(astronautId);
     }
 
+    async function loadCrew(astronautIds: number[]): Promise<void> {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        parts.value = MOCK_PARTS;
+        crew.value = Object.fromEntries(
+            astronautIds.map((id) => [id, mockBodyStatus(id)]),
+        );
+    }
+
     function select(code: BodyZoneCode | null): void {
         selected.value = code;
     }
@@ -69,7 +79,9 @@ export const useBodyStore = defineStore('body', () => {
         selectedPart,
         mostUrgent,
         measuredToday,
+        crew,
         load,
+        loadCrew,
         select,
     };
 });

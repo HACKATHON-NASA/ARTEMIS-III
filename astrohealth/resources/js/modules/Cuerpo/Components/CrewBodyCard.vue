@@ -1,0 +1,71 @@
+<script setup lang="ts">
+import StatusBadge from '@/components/StatusBadge.vue';
+import { getInitials } from '@/composables/useInitials';
+import { statusMeta } from '@/lib/status';
+import type { BodyZoneCode, MaybeStatus } from '@/types/health';
+import type { BodyPart, BodyStatus } from '../Types/body';
+import BodyViewer from './BodyViewer.vue';
+
+/**
+ * Un tripulante con su cuerpo (el esqueleto y los órganos pintados por
+ * estado). Tocar un órgano avisa a la pantalla, que abre su ventana.
+ */
+defineProps<{
+    name: string;
+    crewRole: string;
+    score: number | null;
+    status: MaybeStatus;
+    parts: BodyPart[];
+    body: BodyStatus;
+    selected: BodyZoneCode | null;
+}>();
+
+defineEmits<{ select: [code: BodyZoneCode] }>();
+</script>
+
+<template>
+    <article
+        class="relative flex flex-col overflow-hidden rounded-2xl border bg-card transition hover:border-sky-500/40"
+    >
+        <div
+            class="pointer-events-none absolute inset-x-0 top-0 h-1"
+            :style="{ backgroundColor: statusMeta(status).color }"
+        />
+        <div class="flex flex-col gap-3 p-4 pb-0">
+            <div class="flex items-center gap-3">
+                <span
+                    class="flex size-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-sky-400 to-blue-600 text-sm font-semibold text-white"
+                    aria-hidden="true"
+                >
+                    {{ getInitials(name) }}
+                </span>
+                <div class="min-w-0">
+                    <h2 class="truncate font-semibold">{{ name }}</h2>
+                    <p class="truncate text-xs text-muted-foreground">
+                        {{ crewRole }}
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+                <p class="text-2xl leading-none font-semibold tabular-nums">
+                    {{ score ?? '—'
+                    }}<span class="text-xs font-normal text-muted-foreground">{{
+                        score === null ? ' sin datos' : '/100'
+                    }}</span>
+                </p>
+                <StatusBadge :status="status" />
+            </div>
+        </div>
+
+        <BodyViewer
+            compact
+            :parts="parts"
+            :status="body"
+            :selected="selected"
+            @select="$emit('select', $event)"
+        />
+        <p class="px-4 pb-4 text-center text-xs text-muted-foreground">
+            Toca un órgano para ver su estado
+        </p>
+    </article>
+</template>

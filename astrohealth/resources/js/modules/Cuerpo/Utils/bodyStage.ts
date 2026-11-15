@@ -59,3 +59,19 @@ export function disposeStage(stage: BodyStage): void {
     });
     stage.renderer.dispose();
 }
+
+/**
+ * Dibuja solo mientras el cuerpo se ve en pantalla (con varios cuerpos a la
+ * vez, como en Tripulación, así no se gasta la GPU en los que no se ven).
+ */
+export function watchVisibility(
+    element: Element,
+    onChange: (visible: boolean) => void,
+): () => void {
+    const observer = new IntersectionObserver(([entry]) =>
+        onChange(entry.isIntersecting),
+    );
+    observer.observe(element);
+
+    return () => observer.disconnect();
+}

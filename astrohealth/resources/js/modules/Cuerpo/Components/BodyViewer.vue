@@ -15,6 +15,8 @@ defineProps<{
     parts: BodyPart[];
     status: BodyStatus;
     selected: BodyZoneCode | null;
+    /** Versión pequeña: cuerpo más bajo y sin la fila de zonas. */
+    compact?: boolean;
 }>();
 
 defineEmits<{ select: [code: BodyZoneCode] }>();
@@ -30,6 +32,7 @@ const use3d = ref(true);
             :parts="parts"
             :status="status"
             :selected="selected"
+            :compact="compact"
             @select="$emit('select', $event)"
             @unavailable="use3d = false"
         />
@@ -42,7 +45,7 @@ const use3d = ref(true);
         />
 
         <ZoneChips
-            v-if="use3d"
+            v-if="use3d && !compact"
             :parts="parts"
             :status="status"
             :selected="selected"

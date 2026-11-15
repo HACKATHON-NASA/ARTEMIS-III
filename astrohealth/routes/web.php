@@ -18,9 +18,9 @@ Route::inertia('dashboard', 'Dashboard/Dashboard')->name('dashboard');
 // Pasa a app/Modules/Cuerpo/web.php cuando exista el backend de M3.
 Route::inertia('inicio', 'Cuerpo/Home')->name('inicio');
 
-// Médicos y administración: el cuerpo y el estado de cada tripulante.
+// Médicos y administración: el tablero de salud (M4) y la tripulación con sus cuerpos.
 // Pasan a app/Modules/Cuerpo/web.php y Entorno/web.php con su backend.
-Route::inertia('salud', 'Cuerpo/CrewHealth')->name('salud');
+Route::inertia('salud', 'Dashboard/HealthPanel')->name('salud');
 Route::inertia('tripulacion', 'Entorno/Crew')->name('tripulacion');
 
 // Administración: crear misiones y ver cada una (permiso missions.manage).

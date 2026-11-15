@@ -8,6 +8,7 @@ import type {
     CrewSeries,
     CrewSnapshotRow,
     DoseRow,
+    HealthChange,
     TrendRange,
 } from '../Types/crewTrends';
 import { CHART_INDICATORS, seriesColor } from '../Utils/indicatorMeta';
@@ -29,6 +30,7 @@ export const useCrewTrendsStore = defineStore('crewTrends', () => {
     const series = ref<CrewSeries[]>([]);
     const bands = ref<Bands | null>(null);
     const doses = ref<DoseRow[]>([]);
+    const changes = ref<HealthChange[]>([]);
 
     let crew: CrewMemberRef[] = [];
     let today = 0;
@@ -76,6 +78,38 @@ export const useCrewTrendsStore = defineStore('crewTrends', () => {
                 days: points.length,
             };
         });
+
+        changes.value = computeChanges();
+    }
+
+    /** Lo que cambió de color en los últimos `days` días: lo que empeoró, primero. */
+    function computeChanges(days = 3): HealthChange[] {
+        const rank = { green: 0, yellow: 1, red: 2 } as const;
+        const found: HealthChange[] = [];
+
+        for (const member of crew) {
+            for (const { code } of CHART_INDICATORS) {
+                const points = mockSeries(member.id, code, today, today - days);
+                const [first, last] = [points[0], points.at(-1)];
+
+                if (first && last && first.status !== last.status) {
+                    found.push({
+                        astronaut_id: member.id,
+                        name: member.name,
+                        indicator: code,
+                        from: { value: first.value, status: first.status },
+                        to: { value: last.value, status: last.status },
+                        worse: rank[last.status] > rank[first.status],
+                    });
+                }
+            }
+        }
+
+        return found.sort(
+            (a, b) =>
+                Number(b.worse) - Number(a.worse) ||
+                rank[b.to.status] - rank[a.to.status],
+        );
     }
 
     async function loadSeries(
@@ -94,5 +128,5 @@ export const useCrewTrendsStore = defineStore('crewTrends', () => {
         }));
     }
 
-    return { snapshot, series, bands, doses, load, loadSeries };
+    return { snapshot, series, bands, doses, changes, load, loadSeries };
 });

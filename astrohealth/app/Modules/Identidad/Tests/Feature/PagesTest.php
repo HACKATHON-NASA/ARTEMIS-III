@@ -51,7 +51,7 @@ final class PagesTest extends TestCase
     {
         $this->get('/salud')
             ->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('Cuerpo/CrewHealth'));
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Dashboard/HealthPanel'));
 
         $this->get('/tripulacion')
             ->assertOk()

@@ -36,6 +36,17 @@ export type CrewSnapshotRow = {
     attention: number;
 };
 
+/** Un indicador que cambió de color en los últimos días (para el Panel de salud). */
+export type HealthChange = {
+    astronaut_id: number;
+    name: string;
+    indicator: IndicatorCode;
+    from: { value: number; status: Status };
+    to: { value: number; status: Status };
+    /** true = empeoró (pasó a amarillo o rojo); false = se recuperó. */
+    worse: boolean;
+};
+
 /** La dosis de radiación acumulada en la misión. */
 export type DoseRow = {
     astronaut_id: number;
@@ -43,4 +54,13 @@ export type DoseRow = {
     color: string;
     total: number;
     days: number;
+};
+
+/** Una fila de "Quién necesita atención" (Panel de salud). */
+export type WatchRow = {
+    id: number;
+    name: string;
+    score: number | null;
+    status: Status | null;
+    summary: string;
 };

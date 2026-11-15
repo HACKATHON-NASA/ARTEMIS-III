@@ -13,15 +13,13 @@ import {
     skinMaterial,
     zoneMaterial,
 } from '../Utils/bodyModel';
-import { createStage, disposeStage } from '../Utils/bodyStage';
+import { createStage, disposeStage, watchVisibility } from '../Utils/bodyStage';
 import type { BodyStage } from '../Utils/bodyStage';
 
 /**
- * La escena 3D del cuerpo: carga el modelo, pinta cada zona con el color de
- * su estado, hace latir las que están en amarillo o rojo y avisa qué zona
- * está bajo el puntero y cuál se eligió con un clic.
- *
- * No gira ni flota sola: se mueve solo cuando la persona la arrastra.
+ * La escena 3D del cuerpo: carga el modelo, pinta cada zona con su estado,
+ * hace latir las amarillas y rojas y avisa qué zona está bajo el puntero y
+ * cuál se eligió. No gira sola; solo dibuja mientras se ve en pantalla.
  */
 type Options = {
     host: Ref<HTMLElement | null>;
@@ -56,6 +54,7 @@ export function useBodyScene(options: Options) {
     let camera: THREE.PerspectiveCamera | null = null;
     let controls: OrbitControls | null = null;
     let observer: ResizeObserver | null = null;
+    let stopWatching = (): void => {};
     let frame = 0;
     let downAt: { x: number; y: number } | null = null;
 
@@ -172,10 +171,6 @@ export function useBodyScene(options: Options) {
         return zone;
     }
 
-    function onPointerDown(event: PointerEvent): void {
-        downAt = { x: event.clientX, y: event.clientY };
-    }
-
     function onPointerUp(event: PointerEvent): void {
         const moved = downAt
             ? Math.hypot(event.clientX - downAt.x, event.clientY - downAt.y)
@@ -208,10 +203,7 @@ export function useBodyScene(options: Options) {
         });
 
         controls?.update();
-
-        if (renderer && scene && camera) {
-            renderer.render(scene, camera);
-        }
+        renderer?.render(scene!, camera!);
     }
 
     function resize(): void {
@@ -269,17 +261,23 @@ export function useBodyScene(options: Options) {
         ({ renderer, scene, camera, controls } = stage);
 
         canvas.addEventListener('pointermove', pick);
-        canvas.addEventListener('pointerdown', onPointerDown);
+        canvas.addEventListener(
+            'pointerdown',
+            (event) => (downAt = { x: event.clientX, y: event.clientY }),
+        );
         canvas.addEventListener('pointerup', onPointerUp);
         canvas.addEventListener('pointerleave', () => (state.hovered = null));
         observer = new ResizeObserver(resize);
 
         if (options.host.value) {
             observer.observe(options.host.value);
+            stopWatching = watchVisibility(options.host.value, (visible) => {
+                cancelAnimationFrame(frame);
+                if (visible) animate();
+            });
         }
 
         resize();
-        animate();
         void load();
     });
 
@@ -288,11 +286,12 @@ export function useBodyScene(options: Options) {
     onBeforeUnmount(() => {
         cancelAnimationFrame(frame);
         observer?.disconnect();
+        stopWatching();
 
         if (stage) {
             disposeStage(stage);
         }
     });
 
-    return { state, resetView, zoom: (factor: number) => zoom(factor) };
+    return { state, resetView, zoom };
 }

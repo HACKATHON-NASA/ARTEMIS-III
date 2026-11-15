@@ -4,11 +4,17 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReveal } from '@/composables/useReveal';
-import { dashboard, salud, tripulacion } from '@/routes';
+import { dashboard, tripulacion } from '@/routes';
+import type { BodyZoneCode } from '@/types/health';
+import RecommendationCard from '../Alertas/Components/RecommendationCard.vue';
+import { useAlertsStore } from '../Alertas/Stores/useAlertsStore';
+import CrewBodyCard from '../Cuerpo/Components/CrewBodyCard.vue';
+import ZoneDialog from '../Cuerpo/Components/ZoneDialog.vue';
+import { useBodyStore } from '../Cuerpo/Stores/useBodyStore';
+import { MODEL_CREDIT, MODEL_CREDIT_URL } from '../Cuerpo/Utils/bodyModel';
 import { useAuthStore } from '@/stores/useAuthStore';
 import CrewInsights from '../Dashboard/Components/Crew/CrewInsights.vue';
 import { useAssessmentStore } from '../Evaluacion/Stores/useAssessmentStore';
-import CrewCard from './Components/CrewCard.vue';
 import MissionPicker from './Components/MissionPicker.vue';
 import MissionStrip from './Components/MissionStrip.vue';
 import NoCrew from './Components/NoCrew.vue';
@@ -17,8 +23,8 @@ import { environmentInfo } from './Utils/environments';
 
 /**
  * Tripulación (/tripulacion): la tripulación de UNA misión, cada uno con su
- * puntaje y estado, el acceso a su cuerpo en el Panel de salud y, si la
- * misión está en curso, las gráficas que los comparan (M4). Médicos y
+ * cuerpo en 3D (M3) y su puntaje (M2). Tocar un órgano abre su ventana en
+ * el centro. Si la misión está en curso, debajo van las gráficas (M4). Médicos y
  * administración eligen la misión; quien va en la nave ve la suya.
  * ⚠️ Por ahora con datos de prueba (ver los stores de M6 y M2).
  */
@@ -29,10 +35,35 @@ defineOptions({
 const auth = useAuthStore();
 const crew = useCrewStore();
 const assessment = useAssessmentStore();
+const body = useBodyStore();
+const alerts = useAlertsStore();
 const root = ref<HTMLElement | null>(null);
 const { reveal } = useReveal(root);
 const ready = ref(false);
 const loadingCrew = ref(false);
+/** El órgano tocado y de quién (abre la ventana). */
+const picked = ref<{ astronautId: number; zone: BodyZoneCode } | null>(null);
+const dialogOpen = ref(false);
+
+const pickedName = computed(() =>
+    picked.value ? (crew.find(picked.value.astronautId)?.name ?? '') : '',
+);
+const pickedZone = computed(() =>
+    picked.value
+        ? (body.crew[picked.value.astronautId]?.[picked.value.zone] ?? null)
+        : null,
+);
+const pickedPart = computed(
+    () => body.parts.find((part) => part.code === picked.value?.zone) ?? null,
+);
+const recommendations = computed(() =>
+    alerts.recommendationsFor(pickedZone.value?.values ?? []),
+);
+
+function pick(astronautId: number, zone: BodyZoneCode): void {
+    picked.value = { astronautId, zone };
+    dialogOpen.value = true;
+}
 
 /** Cada tripulante con su evaluación (M2), o sin ella si aún no tiene datos. */
 const cards = computed(() =>
@@ -51,7 +82,7 @@ const missionId = computed({
 
 async function loadAssessments(): Promise<void> {
     loadingCrew.value = true;
-    await assessment.loadCrew(crew.ids);
+    await Promise.all([assessment.loadCrew(crew.ids), body.loadCrew(crew.ids)]);
     loadingCrew.value = false;
 }
 
@@ -117,7 +148,11 @@ onMounted(async () => {
         <template v-if="!ready">
             <Skeleton class="h-12 rounded-2xl" />
             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <Skeleton v-for="n in 4" :key="n" class="h-64 rounded-2xl" />
+                <Skeleton
+                    v-for="n in 4"
+                    :key="n"
+                    class="h-[480px] rounded-2xl"
+                />
             </div>
         </template>
 
@@ -132,32 +167,42 @@ onMounted(async () => {
                 :can-manage="auth.can('users.manage')"
             />
 
-            <div
-                v-else
-                class="grid gap-4 transition-opacity sm:grid-cols-2 xl:grid-cols-4"
-                :class="{ 'opacity-50': loadingCrew }"
-            >
+            <template v-else>
                 <div
-                    v-for="{ member, result } in cards"
-                    :key="member.id"
-                    data-reveal
+                    class="grid gap-4 transition-opacity sm:grid-cols-2 xl:grid-cols-4"
+                    :class="{ 'opacity-50': loadingCrew }"
                 >
-                    <CrewCard
-                        :name="member.name"
-                        :crew-role="member.crew_role"
-                        :score="result?.score ?? null"
-                        :status="result?.status ?? null"
-                        :summary="
-                            result?.summary ?? 'Todavía no registra mediciones.'
-                        "
-                        :href="
-                            crew.mission.status === 'active'
-                                ? salud({ query: { astronaut: member.id } })
-                                : null
-                        "
-                    />
+                    <div
+                        v-for="{ member, result } in cards"
+                        :key="member.id"
+                        data-reveal
+                    >
+                        <CrewBodyCard
+                            v-if="body.crew[member.id]"
+                            :name="member.name"
+                            :crew-role="member.crew_role"
+                            :score="result?.score ?? null"
+                            :status="result?.status ?? null"
+                            :parts="body.parts"
+                            :body="body.crew[member.id]"
+                            :selected="
+                                dialogOpen && picked?.astronautId === member.id
+                                    ? picked.zone
+                                    : null
+                            "
+                            @select="pick(member.id, $event)"
+                        />
+                    </div>
                 </div>
-            </div>
+                <a
+                    :href="MODEL_CREDIT_URL"
+                    target="_blank"
+                    rel="noopener"
+                    class="-mt-2 text-center text-[10px] text-muted-foreground/80 hover:underline"
+                >
+                    {{ MODEL_CREDIT }}
+                </a>
+            </template>
 
             <div
                 v-if="crew.mission.status === 'active' && crew.members.length"
@@ -175,5 +220,22 @@ onMounted(async () => {
                 />
             </div>
         </template>
+
+        <ZoneDialog
+            v-model:open="dialogOpen"
+            :astronaut-name="pickedName"
+            :part="pickedPart"
+            :zone="pickedZone"
+        >
+            <template v-if="recommendations.length" #recommendation>
+                <div class="flex flex-col gap-3">
+                    <RecommendationCard
+                        v-for="item in recommendations"
+                        :key="item.title"
+                        :recommendation="item"
+                    />
+                </div>
+            </template>
+        </ZoneDialog>
     </div>
 </template>

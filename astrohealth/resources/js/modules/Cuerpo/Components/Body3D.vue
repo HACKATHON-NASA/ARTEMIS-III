@@ -19,6 +19,8 @@ const props = defineProps<{
     parts: BodyPart[];
     status: BodyStatus;
     selected: BodyZoneCode | null;
+    /** Versión pequeña (Tripulación): sin botones de zoom ni crédito. */
+    compact?: boolean;
 }>();
 
 const emit = defineEmits<{ select: [code: BodyZoneCode]; unavailable: [] }>();
@@ -55,7 +57,8 @@ const tooltip = computed(() =>
 <template>
     <div
         ref="host"
-        class="relative h-[520px] w-full overflow-hidden rounded-2xl bg-[radial-gradient(ellipse_at_50%_45%,rgb(14_165_233/0.18),transparent_65%)] sm:h-[600px]"
+        class="relative w-full overflow-hidden rounded-2xl bg-[radial-gradient(ellipse_at_50%_45%,rgb(14_165_233/0.18),transparent_65%)]"
+        :class="compact ? 'h-[380px]' : 'h-[520px] sm:h-[600px]'"
     >
         <canvas
             ref="canvas"
@@ -75,7 +78,7 @@ const tooltip = computed(() =>
         <BodyTooltip v-if="tooltip" v-bind="tooltip" />
 
         <div
-            v-if="!state.loading"
+            v-if="!state.loading && !compact"
             class="absolute bottom-10 left-1/2 flex -translate-x-1/2 gap-1 rounded-full border bg-background/70 p-1 backdrop-blur"
         >
             <button
@@ -100,6 +103,7 @@ const tooltip = computed(() =>
         </div>
 
         <a
+            v-if="!compact"
             :href="MODEL_CREDIT_URL"
             target="_blank"
             rel="noopener"
