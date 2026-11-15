@@ -8,16 +8,26 @@
 
 ## 1. Para qué sirve
 
-Cuando un valor sale mal, dice **qué hacer, paso a paso**. Si es rojo, crea una **alerta** que se puede **enviar a Tierra**, con una cuenta regresiva del retraso real de la comunicación: segundos en la ISS, 1.3 s en la Luna, 20 minutos en Marte.
+Es el **canal de salud entre la nave y Tierra**, en vivo. Aquí llega **sola** cualquier novedad de un astronauta:
+
+| Tipo (`kind`) | Quién la crea | Nivel |
+|---|---|---|
+| `vital` | El sistema, cuando un valor sale en amarillo o rojo (sensores o registro manual) | `yellow` · `red` |
+| `sos` | El astronauta: emergencia | `red` |
+| `help` | El astronauta: pide ayuda médica, con un motivo | `yellow` |
+| `report` | El astronauta: cuenta una novedad no urgente | `info` |
+
+**Toda alerta sale hacia Tierra sola al crearse** (ya no hay botón "Enviar a Tierra") y llega con el retraso real de la comunicación: 1 s en la ISS, 1.3 s en la Luna, 20 minutos en Marte. Tierra la **atiende y responde**, y la respuesta tarda lo mismo en volver a la nave. Para los valores fuera de rango, además, dice **qué hacer, paso a paso**.
 
 ## 2. En la demo
 
-> *"Valor rojo → recomendación inmediata → 'Enviar a Tierra' con el contador de 20 min."* (20 s)
+> *"Elena pulsa SOS → la señal viaja 20 min a Tierra → al médico le salta el aviso → responde y la respuesta vuelve a la nave."* (30 s)
 
-1. Se registra una presión de 148/94 → aparece el **`AlertBanner` rojo** arriba de la pantalla.
-2. `RecommendationCard`: *"Presión alta → reposa 10 min · hidrátate · vuelve a medir"*.
-3. **Enviar a Tierra** → el `GroundLinkModal` muestra la señal viajando nave → Tierra, con la cuenta regresiva `19:59…`.
-4. Centro de alertas: el historial, con el estado de cada alerta (pendiente, enviada, confirmada).
+1. El astronauta tiene **SOS · Pedir ayuda · Novedad** en su Inicio y en el centro de alertas.
+2. El `GroundLinkModal` muestra la señal viajando nave → Tierra, con la cuenta regresiva.
+3. En Tierra (cualquier pantalla) salta un **aviso en vivo**; el SOS no se cierra solo. El centro pone arriba lo urgente sin atender.
+4. **Atender** → respuesta rápida o escrita → el recorrido marca *Enviada → En Tierra → Atendida → Respuesta en la nave*.
+5. Interruptor **"Demo ×60"**: el retraso de Marte dura 20 s, para mostrarlo en vivo.
 
 ## 3. Datos
 
@@ -48,29 +58,37 @@ Es dueño de **`recommendations`** y **`alerts`** ([columnas](../../arquitectura
 | Método | Ruta | Qué hace |
 |---|---|---|
 | GET | `/api/v1/recommendations?indicator=bp_sys&status=red` | La recomendación |
-| GET | `/api/v1/alerts?astronaut_id=&state=pending\|sent\|acknowledged` | El historial, paginado y con la más reciente primero |
-| POST | `/api/v1/alerts/{id}/send-to-ground` | La marca como enviada y calcula `ground_eta_at` |
-| PATCH | `/api/v1/alerts/{id}/acknowledge` | Tierra la confirma (`acknowledged_at`) |
+| GET | `/api/v1/alerts?astronaut_id=&mission_id=&state=open\|acknowledged&since=` | El historial (la más reciente primero). Con `since`, solo lo nuevo: el frontend pregunta cada 5 s (o se cambia por un canal en tiempo real) |
+| POST | `/api/v1/alerts` | El astronauta manda `{ "kind": "sos\|help\|report", "category": "…", "note": "…" }`. Sale hacia Tierra ya: el backend pone `sent_at` y `ground_eta_at` |
+| PATCH | `/api/v1/alerts/{id}/acknowledge` | Tierra la atiende con `{ "reply": "…" }` (`acknowledged_at` + `reply`) |
 
-**`POST /api/v1/alerts/57/send-to-ground`**
+Las de tipo `vital` las crea el backend al escuchar `MeasurementsRecorded` (M1), también con `sent_at` y `ground_eta_at` desde el primer momento.
+
+**Una alerta**
 
 ```json
 {
   "data": {
-    "id": 57,
-    "astronaut_id": 2,
-    "indicator": "bp_sys",
+    "id": 58,
+    "astronaut_id": 1,
+    "kind": "sos",
+    "indicator": null,
     "level": "red",
-    "message": "Presión sistólica 148 mmHg (crítico)",
-    "sent_to_ground": true,
+    "message": "SOS de Elena",
+    "note": "Me desmayé un momento en el módulo de ejercicio",
+    "source": "astronaut",
     "sent_at": "2026-11-14T08:01:00Z",
     "ground_eta_at": "2026-11-14T08:21:00Z",
     "delay_seconds": 1200,
-    "acknowledged_at": null
+    "acknowledged_at": null,
+    "reply": null,
+    "created_at": "2026-11-14T08:01:00Z"
   },
   "message": "ok"
 }
 ```
+
+> ⚠️ El frontend ya funciona así con datos de prueba (`resources/js/modules/Alertas/Utils/alertsMockData.ts`, compartidos entre ventanas con localStorage para la demo).
 
 ## 5. Backend por capas
 
@@ -99,7 +117,9 @@ Es dueño de **`recommendations`** y **`alerts`** ([columnas](../../arquitectura
 | `Components/GroundLinkModal.vue` | SVG con la nave, la Tierra y un pulso de luz que viaja entre ellas (GSAP). Cuenta regresiva `mm:ss` hasta `ground_eta_at`, calculada desde la hora del servidor. Al llegar a 0: "Recibido en Tierra ✓" |
 | `Components/AlertList.vue` · `AlertItem.vue` | El centro de alertas: filtros por estado, `StatusBadge` y la hora |
 | `Composables/useCountdown.ts` | `remaining` en segundos, a partir de `ground_eta_at`. Un solo `setInterval` que se limpia al desmontar |
-| `Stores/useAlertsStore.ts` | `pending`, `history`, `load()`, `sendToGround(id)`, `acknowledge(id)` |
+| `Stores/useAlertsStore.ts` | `alerts`, `history`, `pendingTotal`, `refresh()` (en vivo), `send(astronautId, message)`, `acknowledge(id, reply)` |
+| `Composables/useLiveAlerts.ts` | Cada 5 s pide lo nuevo y avisa con un toast (lo monta el menú lateral) |
+| `Components/AstronautComms.vue` · `MessageDialog.vue` · `AttendDialog.vue` | Los tres botones del astronauta, su formulario y la respuesta de Tierra |
 | Principal `modules/Alertas/Alerts.vue` | El centro de alertas |
 
 > **El contador de Marte es real:** 20 minutos. Para la demo, `GroundLinkModal` tiene un botón discreto **"⏩ ×60"** que acelera la animación (no cambia el dato guardado).

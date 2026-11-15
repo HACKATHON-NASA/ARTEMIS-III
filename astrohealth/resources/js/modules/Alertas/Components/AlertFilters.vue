@@ -21,10 +21,10 @@ const filter = defineModel<AlertFilter>('filter', { required: true });
 const astronaut = defineModel<number | null>('astronaut', { default: null });
 
 const TABS: { value: AlertFilter; label: string }[] = [
+    { value: 'open', label: 'Sin atender' },
+    { value: 'urgent', label: 'Urgentes' },
+    { value: 'acknowledged', label: 'Atendidas' },
     { value: 'all', label: 'Todas' },
-    { value: 'pending', label: 'Sin enviar' },
-    { value: 'sent', label: 'En Tierra' },
-    { value: 'acknowledged', label: 'Confirmadas' },
 ];
 </script>
 

@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { Send, Siren } from '@lucide/vue';
+import { Siren } from '@lucide/vue';
 import { toRef } from 'vue';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { useCountdown } from '../Composables/useCountdown';
 import type { Alert } from '../Types/alerts';
 
 /**
- * El aviso rojo de arriba: qué valor está crítico y dos acciones, ver qué
- * hacer o enviar la alerta a Tierra. Si ya se envió, muestra cuánto falta
- * para que llegue.
+ * El aviso rojo de arriba: qué está crítico (o el SOS) y en qué va su viaje
+ * a Tierra (sale sola al crearse). La acción es ver qué hacer mientras tanto.
  */
-const props = defineProps<{ alert: Alert; sending: boolean }>();
-defineEmits<{ details: []; send: [] }>();
+const props = defineProps<{ alert: Alert }>();
+defineEmits<{ details: [] }>();
 
 const { remainingMs, label } = useCountdown(
     toRef(() => props.alert.ground_eta_at),
@@ -39,15 +37,12 @@ const { remainingMs, label } = useCountdown(
                     {{ alert.message }}
                 </p>
                 <p class="text-sm text-muted-foreground">
-                    <template v-if="!alert.sent_to_ground">
-                        Sigue los pasos y, si no mejora, avisa al médico en
-                        Tierra.
-                    </template>
-                    <template v-else-if="remainingMs > 0">
-                        Enviada. Llega a Tierra en
+                    <template v-if="remainingMs > 0">
+                        Ya va en camino a Tierra, sola. Llega en
                         <strong class="text-foreground tabular-nums">{{
                             label
                         }}</strong>
+                        · mientras tanto, sigue los pasos.
                     </template>
                     <template v-else
                         >Recibida en Tierra. Esperando respuesta del
@@ -60,16 +55,6 @@ const { remainingMs, label } = useCountdown(
                 <Button variant="outline" @click="$emit('details')"
                     >Qué hacer</Button
                 >
-                <Button
-                    v-if="!alert.sent_to_ground"
-                    :disabled="sending"
-                    class="bg-[var(--status-red)] text-white hover:bg-[var(--status-red)]/90"
-                    @click="$emit('send')"
-                >
-                    <Spinner v-if="sending" />
-                    <Send v-else />
-                    Enviar a Tierra
-                </Button>
             </div>
         </div>
     </div>

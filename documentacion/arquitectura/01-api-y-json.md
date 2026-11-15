@@ -10,7 +10,7 @@ Este es el contrato que comparten Laravel, Vue y Python. **Hay un solo formato**
 |---|---|
 | Prefijo | `/api/v1` |
 | Autenticación | `Authorization: Bearer <JWT>` en toda ruta protegida ([sección 8](#8-autenticación-jwt)) |
-| Rutas | En inglés, en plural, sin verbos. Las únicas acciones son las del plan: `send-to-ground`, `acknowledge`, `done` |
+| Rutas | En inglés, en plural, sin verbos. Las únicas acciones son las del plan: `acknowledge`, `done` |
 | Fechas | ISO 8601 en UTC con `Z`: `2026-11-14T08:00:00Z` |
 | Números | Número JSON con punto decimal: `36.8` |
 | Enumerados | Exactamente como en la base de datos: `green`, `yellow`, `red`, `mars`, `heart` |
@@ -143,7 +143,7 @@ Todas las llamadas a Python viven en `app/Modules/Evaluacion/Infrastructure/Clie
 | GET | `/api/v1/astronauts/{id}/body-status` | M3 | `health.read` |
 | GET | `/api/v1/recommendations?indicator=&status=` | M5 | `crew.read` |
 | GET | `/api/v1/alerts` | M5 | `alerts.read` |
-| POST | `/api/v1/alerts/{id}/send-to-ground` | M5 | `alerts.send` (suya) |
+| POST | `/api/v1/alerts` (SOS, ayuda o novedad) | M5 | `alerts.send` (suya) |
 | PATCH | `/api/v1/alerts/{id}/acknowledge` | M5 | `alerts.acknowledge` |
 | GET | `/api/v1/environments` | M6 | `crew.read` |
 | GET | `/api/v1/missions/current` | M6 | `crew.read` |

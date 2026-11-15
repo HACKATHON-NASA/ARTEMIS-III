@@ -1,24 +1,30 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import type { IndicatorCode, Status } from '@/types/health';
-import type { Alert, Recommendation } from '../Types/alerts';
+import type { Alert, NewMessage, Recommendation } from '../Types/alerts';
+import { readSpeed, writeSpeed } from '../Utils/alertsMockDb';
 import {
-    MOCK_RECOMMENDATIONS,
+    mockAcknowledge,
     mockAlerts,
     mockAlertsFromMeasurements,
-    mockFindAlert,
     mockPendingTotal,
+    mockSendMessage,
+    mockSimulatorTick,
 } from '../Utils/alertsMockData';
+import { MOCK_RECOMMENDATIONS } from '../Utils/recommendationsMockData';
 
 /**
  * Las alertas (M5): las de un astronauta (`alerts`, para su Inicio y el Panel
- * de salud), el historial del centro de alertas (`history`) y las
- * recomendaciones.
+ * de salud), el historial del centro (`history`), el contador del menú y las
+ * recomendaciones. Todas salen hacia Tierra solas; el astronauta además
+ * manda SOS, pide ayuda o cuenta una novedad, y Tierra responde.
  *
- * ⚠️ HOY con datos de prueba en memoria. sendToGround() y acknowledge()
- * imitan lo que hará el backend; cuando existan las rutas de M5
- * (GET /alerts, POST /alerts/{id}/send-to-ground, PATCH /alerts/{id}/acknowledge)
- * las acciones pasan a usar `api()`.
+ * `refresh()` vuelve a pedir todo (lo llama useLiveAlerts cada pocos
+ * segundos) y devuelve las alertas NUEVAS para avisar.
+ *
+ * ⚠️ HOY con datos de prueba (Utils/alertsMockData.ts). Con el backend:
+ * GET /api/v1/alerts?since=, POST /api/v1/alerts y
+ * PATCH /api/v1/alerts/{id}/acknowledge (o un canal en tiempo real).
  */
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -26,11 +32,17 @@ export const useAlertsStore = defineStore('alerts', () => {
     const alerts = ref<Alert[]>([]);
     const history = ref<Alert[]>([]);
     const recommendations = ref<Recommendation[]>(MOCK_RECOMMENDATIONS);
-    /** Alertas sin confirmar (contador del menú). */
     const pendingTotal = ref(0);
-    let pendingScope: number | null = null;
+    /** Velocidad de la demo (1 = real, 60 = el retraso de Marte en 20 s). */
+    const speed = ref(readSpeed());
 
-    /** La alerta roja más reciente de `alerts` que Tierra aún no confirmó. */
+    let alertsScope: number | null = null;
+    let historyScope: number | null | undefined;
+    let pendingScope: number | null = null;
+    const seen = new Set<number>();
+    let primed = false;
+
+    /** La alerta roja más reciente de `alerts` que Tierra aún no atendió (SOS incluido). */
     const active = computed(
         () =>
             alerts.value.find(
@@ -40,12 +52,14 @@ export const useAlertsStore = defineStore('alerts', () => {
     );
 
     async function load(astronautId: number): Promise<void> {
+        alertsScope = astronautId;
         await wait(250);
         alerts.value = mockAlerts(astronautId);
     }
 
     /** El historial: de un astronauta o, con `null`, de toda la tripulación. */
     async function loadHistory(astronautId: number | null): Promise<void> {
+        historyScope = astronautId;
         await wait(250);
         history.value = mockAlerts(astronautId);
     }
@@ -56,9 +70,30 @@ export const useAlertsStore = defineStore('alerts', () => {
         pendingTotal.value = mockPendingTotal(astronautId);
     }
 
+    /** Vuelve a pedir lo cargado. Devuelve las alertas que no se habían visto. */
+    function refresh(): Alert[] {
+        mockSimulatorTick();
+        const all = mockAlerts(pendingScope);
+        const fresh = primed ? all.filter((alert) => !seen.has(alert.id)) : [];
+        all.forEach((alert) => seen.add(alert.id));
+        primed = true;
+
+        pendingTotal.value = mockPendingTotal(pendingScope);
+
+        if (alertsScope !== null) {
+            alerts.value = mockAlerts(alertsScope);
+        }
+
+        if (historyScope !== undefined) {
+            history.value = mockAlerts(historyScope);
+        }
+
+        return fresh;
+    }
+
     function recommendationFor(
-        indicator: IndicatorCode,
-        status: Status | null,
+        indicator: IndicatorCode | null,
+        status: Status | 'info' | null,
     ): Recommendation | null {
         return (
             recommendations.value.find(
@@ -68,10 +103,7 @@ export const useAlertsStore = defineStore('alerts', () => {
         );
     }
 
-    /**
-     * Las recomendaciones para una lista de valores (los de una zona): una por
-     * cada valor en amarillo o rojo, sin repetir título (gana la primera).
-     */
+    /** Una recomendación por cada valor en amarillo o rojo, sin repetir título. */
     function recommendationsFor(
         values: { indicator: IndicatorCode; status: Status | null }[],
     ): Recommendation[] {
@@ -86,60 +118,47 @@ export const useAlertsStore = defineStore('alerts', () => {
         );
     }
 
-    /** Cambia una alerta donde esté cargada (así se actualiza en todas las vistas). */
-    function update(id: number, change: (alert: Alert) => void): Alert | null {
-        const alert =
-            alerts.value.find((item) => item.id === id) ??
-            history.value.find((item) => item.id === id) ??
-            mockFindAlert(id);
-
-        if (!alert) {
-            return null;
-        }
-
-        change(alert);
-        pendingTotal.value = mockPendingTotal(pendingScope);
+    /** El astronauta manda un SOS, pide ayuda o cuenta una novedad. */
+    async function send(
+        astronautId: number,
+        message: NewMessage,
+    ): Promise<Alert> {
+        await wait(400);
+        const alert = mockSendMessage(astronautId, message);
+        seen.add(alert.id);
+        refresh();
 
         return alert;
     }
 
-    async function sendToGround(id: number): Promise<Alert | null> {
-        await wait(400);
-
-        return update(id, (alert) => {
-            const now = Date.now();
-            alert.sent_to_ground = true;
-            alert.sent_at = new Date(now).toISOString();
-            alert.ground_eta_at = new Date(
-                now + alert.delay_seconds * 1000,
-            ).toISOString();
-        });
-    }
-
-    async function acknowledge(id: number): Promise<Alert | null> {
+    /** Tierra atiende la alerta y responde (la respuesta tarda en volver). */
+    async function acknowledge(
+        id: number,
+        reply: string,
+    ): Promise<Alert | null> {
         await wait(300);
+        const alert = mockAcknowledge(id, reply);
+        refresh();
 
-        return update(id, (alert) => {
-            alert.acknowledged_at = new Date().toISOString();
-        });
+        return alert;
     }
 
-    /**
-     * Tras registrar mediciones (M1): las amarillas y rojas generan su alerta.
-     * ⚠️ El mock las crea aquí; con el backend las crea M5 al escuchar
-     * MeasurementsRecorded y esto solo vuelve a cargar.
-     */
+    /** Tras registrar mediciones (M1): las amarillas y rojas generan su alerta. */
     async function afterMeasurements(
         astronautId: number,
         measurements: Parameters<typeof mockAlertsFromMeasurements>[1],
     ): Promise<Alert[]> {
         const created = mockAlertsFromMeasurements(astronautId, measurements);
-        await Promise.all([
-            load(astronautId),
-            loadPendingTotal(pendingScope ?? astronautId),
-        ]);
+        created.forEach((alert) => seen.add(alert.id));
+        await load(astronautId);
+        refresh();
 
         return created;
+    }
+
+    function setSpeed(value: number): void {
+        speed.value = value;
+        writeSpeed(value);
     }
 
     return {
@@ -148,13 +167,16 @@ export const useAlertsStore = defineStore('alerts', () => {
         recommendations,
         pendingTotal,
         active,
+        speed,
         load,
         loadHistory,
         loadPendingTotal,
+        refresh,
         recommendationFor,
         recommendationsFor,
-        sendToGround,
+        send,
         acknowledge,
         afterMeasurements,
+        setSpeed,
     };
 });

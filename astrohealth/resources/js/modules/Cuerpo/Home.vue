@@ -8,9 +8,12 @@ import { dashboard, inicio, registrar } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { BodyZoneCode } from '@/types/health';
 import AlertBanner from '../Alertas/Components/AlertBanner.vue';
+import AstronautComms from '../Alertas/Components/AstronautComms.vue';
 import GroundLinkModal from '../Alertas/Components/GroundLinkModal.vue';
+import MessageDialog from '../Alertas/Components/MessageDialog.vue';
 import RecommendationCard from '../Alertas/Components/RecommendationCard.vue';
 import { useAlertsStore } from '../Alertas/Stores/useAlertsStore';
+import type { Alert, NewMessage } from '../Alertas/Types/alerts';
 import { useMissionStore } from '../Entorno/Stores/useMissionStore';
 import HealthScore from '../Evaluacion/Components/HealthScore.vue';
 import { useAssessmentStore } from '../Evaluacion/Stores/useAssessmentStore';
@@ -45,7 +48,11 @@ const { reveal } = useReveal(root);
 const ready = ref(false);
 const panelOpen = ref(false);
 const groundOpen = ref(false);
-const sending = ref(false);
+const sentAlert = ref<Alert | null>(null);
+const compose = ref<{ open: boolean; kind: NewMessage['kind'] | null }>({
+    open: false,
+    kind: null,
+});
 const busyReminder = ref<number | null>(null);
 
 function openZone(code: BodyZoneCode): void {
@@ -60,14 +67,15 @@ const zoneRecommendations = computed(() =>
     ),
 );
 
-async function sendToGround(): Promise<void> {
-    if (!alerts.active) {
+/** SOS, ayuda o novedad: sale ya hacia Tierra y se ve el viaje. */
+async function sendMessage(message: NewMessage): Promise<void> {
+    const astronautId = auth.actor?.astronaut_id;
+
+    if (!astronautId) {
         return;
     }
 
-    sending.value = true;
-    await alerts.sendToGround(alerts.active.id);
-    sending.value = false;
+    sentAlert.value = await alerts.send(astronautId, message);
     groundOpen.value = true;
 }
 
@@ -142,11 +150,21 @@ onMounted(async () => {
             <div v-if="alerts.active" data-reveal>
                 <AlertBanner
                     :alert="alerts.active"
-                    :sending="sending"
-                    @details="openZone('heart')"
-                    @send="sendToGround"
+                    @details="
+                        openZone(alerts.active.indicator ? 'heart' : 'brain')
+                    "
                 />
             </div>
+
+            <section class="flex flex-col gap-3" data-reveal>
+                <h2 class="text-sm font-semibold text-muted-foreground">
+                    ¿Necesitas a Tierra?
+                </h2>
+                <AstronautComms
+                    compact
+                    @choose="compose = { open: true, kind: $event }"
+                />
+            </section>
 
             <div
                 class="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]"
@@ -235,6 +253,11 @@ onMounted(async () => {
             </template>
         </BodyPartPanel>
 
-        <GroundLinkModal v-model:open="groundOpen" :alert="alerts.active" />
+        <MessageDialog
+            v-model:open="compose.open"
+            :kind="compose.kind"
+            :submit="sendMessage"
+        />
+        <GroundLinkModal v-model:open="groundOpen" :alert="sentAlert" />
     </div>
 </template>

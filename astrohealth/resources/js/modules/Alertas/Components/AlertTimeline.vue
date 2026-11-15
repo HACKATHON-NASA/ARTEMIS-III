@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Alert } from '../Types/alerts';
-import { alertState } from '../Utils/alertState';
+import { alertState, replyRemainingMs } from '../Utils/alertState';
 
 /**
- * El recorrido de una alerta en 4 pasos: creada → enviada → recibida en
- * Tierra → confirmada. Los pasos cumplidos se marcan en azul.
+ * El recorrido de una alerta en 4 pasos: enviada (sale sola al crearse) →
+ * recibida en Tierra → atendida → la respuesta llega a la nave. Los pasos
+ * cumplidos se marcan en azul.
  */
 const props = defineProps<{ alert: Alert; now: number }>();
 
@@ -19,24 +20,34 @@ const time = (iso: string | null): string =>
 
 const steps = computed(() => {
     const state = alertState(props.alert, props.now);
-    const received = state === 'received' || state === 'acknowledged';
+    const received = state !== 'traveling';
+    const acknowledged = state === 'acknowledged';
+    const replied =
+        acknowledged && replyRemainingMs(props.alert, props.now) === 0;
+    const replyAt =
+        props.alert.acknowledged_at === null
+            ? null
+            : new Date(
+                  new Date(props.alert.acknowledged_at).getTime() +
+                      props.alert.delay_seconds * 1000,
+              ).toISOString();
 
     return [
-        { label: 'Creada', done: true, at: time(props.alert.created_at) },
-        {
-            label: 'Enviada',
-            done: props.alert.sent_to_ground,
-            at: time(props.alert.sent_at),
-        },
+        { label: 'Enviada', done: true, at: time(props.alert.sent_at) },
         {
             label: 'En Tierra',
             done: received,
             at: received ? time(props.alert.ground_eta_at) : '',
         },
         {
-            label: 'Confirmada',
-            done: state === 'acknowledged',
+            label: 'Atendida',
+            done: acknowledged,
             at: time(props.alert.acknowledged_at),
+        },
+        {
+            label: 'Respuesta en la nave',
+            done: replied,
+            at: replied ? time(replyAt) : '',
         },
     ];
 });

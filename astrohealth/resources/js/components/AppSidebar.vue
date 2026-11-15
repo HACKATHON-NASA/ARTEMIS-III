@@ -25,6 +25,7 @@ import {
     SidebarMenuItem,
     SidebarTrigger,
 } from '@/components/ui/sidebar';
+import { useLiveAlerts } from '@/modules/Alertas/Composables/useLiveAlerts';
 import { useAlertsStore } from '@/modules/Alertas/Stores/useAlertsStore';
 import {
     alertas,
@@ -92,6 +93,10 @@ const homeLink = computed(() =>
           ? salud()
           : dashboard(),
 );
+
+// Alertas en vivo en cualquier pantalla: avisa a quien atiende (Tierra y el
+// médico de la tripulación) cuando llega algo nuevo.
+useLiveAlerts(() => canSeeCrew.value);
 
 // Contador de alertas sin confirmar: de toda la tripulación o, para el
 // astronauta, solo las suyas.
