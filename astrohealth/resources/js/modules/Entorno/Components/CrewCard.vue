@@ -5,16 +5,17 @@ import type { InertiaLinkProps } from '@inertiajs/vue3';
 import StatusBadge from '@/components/StatusBadge.vue';
 import { getInitials } from '@/composables/useInitials';
 import { statusMeta } from '@/lib/status';
-import type { Status } from '@/types/health';
+import type { MaybeStatus } from '@/types/health';
 
 /**
  * Un tripulante: quién es, su puntaje y estado (de M2) y un acceso a su cuerpo.
+ * Sin mediciones todavía, el puntaje sale vacío y en gris ("Sin datos").
  */
 defineProps<{
     name: string;
     crewRole: string;
-    score: number;
-    status: Status;
+    score: number | null;
+    status: MaybeStatus;
     summary: string;
     href: NonNullable<InertiaLinkProps['href']>;
 }>();
@@ -46,11 +47,17 @@ defineProps<{
         <div class="flex items-end justify-between gap-3">
             <div>
                 <p class="text-xs text-muted-foreground">Puntaje de salud</p>
-                <p class="text-3xl font-semibold tabular-nums">
+                <p
+                    v-if="score !== null"
+                    class="text-3xl font-semibold tabular-nums"
+                >
                     {{ score
                     }}<span class="text-base font-normal text-muted-foreground"
                         >/100</span
                     >
+                </p>
+                <p v-else class="text-3xl font-semibold text-muted-foreground">
+                    —
                 </p>
             </div>
             <StatusBadge :status="status" size="md" />

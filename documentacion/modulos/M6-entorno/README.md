@@ -108,6 +108,8 @@ Los datos de cada entorno van en **`config/environments.php`**. No tienen tabla,
 | `Stores/useMissionsStore.ts` | `missions`, `astronauts`, `views`, `createMission()`, `addAstronaut()`, `updateAstronaut()` |
 | `Utils/missionDates.ts` | Estado y día de misión a partir de `start_date` y `day_count` (la misma regla que `MissionDay.php`) |
 
+**Todo se mira por misión:** Tripulación, Panel de salud y Alertas muestran la tripulación de **una** misión (`Stores/useCrewStore.ts`), con `Components/MissionPicker.vue` y la franja `MissionStrip.vue`. La misión elegida se comparte entre las tres pantallas. Quien va en la nave queda fijo en la suya; administración y los médicos de vuelo pueden cambiarla. Un tripulante sin mediciones sale "Sin datos todavía" (nunca con datos de otro). Si la misión no tiene tripulantes, `NoCrew.vue` lleva a crearlos en Usuarios.
+
 **Usuarios y misiones:** en Usuarios (M0), el astronauta y el médico de la tripulación se crean **asociados a una misión y con su cargo** (así se crea su tripulante); el médico de vuelo, asociado a la misión que sigue; administración no lleva misión.
 
 **Al cambiar de entorno**, M1 vuelve a evaluar las últimas mediciones (por el evento) y la página vuelve a cargar los *stores* del puntaje (M2) y del cuerpo (M3): los colores ya llegan recalculados.

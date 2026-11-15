@@ -7,6 +7,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useReveal } from '@/composables/useReveal';
 import { alertas, dashboard } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
+import MissionPicker from '../Entorno/Components/MissionPicker.vue';
+import MissionStrip from '../Entorno/Components/MissionStrip.vue';
 import { useCrewStore } from '../Entorno/Stores/useCrewStore';
 import AlertFilters from './Components/AlertFilters.vue';
 import AlertItem from './Components/AlertItem.vue';
@@ -19,7 +21,8 @@ import type { AlertFilter } from './Utils/alertState';
 /**
  * Centro de alertas (/alertas, M5): el historial con su recorrido
  * nave → Tierra. El astronauta ve las suyas y las envía; médicos y
- * administración ven las de toda la tripulación, y Tierra las confirma.
+ * administración eligen la misión y ven las de su tripulación, y Tierra las
+ * confirma.
  * ⚠️ Por ahora con datos de prueba (ver Stores/useAlertsStore.ts).
  */
 defineOptions({
@@ -44,19 +47,32 @@ const ground = ref<{ open: boolean; alert: Alert | null }>({
 const seesCrew = computed(() => auth.can('health.read.any'));
 const ownAstronaut = computed(() => auth.actor?.astronaut_id ?? null);
 
+const missionId = computed({
+    get: () => crew.missionId,
+    set: (id) => id !== null && crew.selectMission(id),
+});
+
+/** Las alertas de la tripulación de la misión elegida. */
+const missionHistory = computed(() =>
+    seesCrew.value
+        ? store.history.filter((alert) => crew.ids.includes(alert.astronaut_id))
+        : store.history,
+);
+
 const counts = computed(() => {
     const keys: AlertFilter[] = ['all', 'pending', 'sent', 'acknowledged'];
 
     return Object.fromEntries(
         keys.map((key) => [
             key,
-            store.history.filter((alert) => matchesFilter(alert, key)).length,
+            missionHistory.value.filter((alert) => matchesFilter(alert, key))
+                .length,
         ]),
     ) as Record<AlertFilter, number>;
 });
 
 const visible = computed(() =>
-    store.history.filter((alert) => matchesFilter(alert, filter.value)),
+    missionHistory.value.filter((alert) => matchesFilter(alert, filter.value)),
 );
 
 function nameOf(id: number): string | null {
@@ -88,6 +104,13 @@ async function acknowledge(alert: Alert): Promise<void> {
 }
 
 watch(astronaut, (id) => void store.loadHistory(id));
+// Otra misión: se vuelve a "toda la tripulación" de esa misión.
+watch(
+    () => crew.missionId,
+    () => {
+        astronaut.value = null;
+    },
+);
 
 onMounted(async () => {
     if (!auth.can('alerts.read')) {
@@ -96,9 +119,7 @@ onMounted(async () => {
         return;
     }
 
-    if (seesCrew.value) {
-        await crew.load();
-    }
+    await crew.load(ownAstronaut.value);
 
     await store.loadHistory(seesCrew.value ? null : ownAstronaut.value);
     ready.value = true;
@@ -126,6 +147,20 @@ onMounted(async () => {
                 mensaje tarda unos 20 minutos.
             </p>
         </header>
+
+        <div
+            v-if="crew.mission"
+            class="flex flex-col gap-3 lg:flex-row lg:items-end"
+            data-reveal
+        >
+            <MissionStrip :mission="crew.mission" class="flex-1" />
+            <MissionPicker
+                v-if="seesCrew && !crew.locked"
+                v-model="missionId"
+                :missions="crew.choices"
+                :locked="crew.locked"
+            />
+        </div>
 
         <div data-reveal>
             <AlertFilters

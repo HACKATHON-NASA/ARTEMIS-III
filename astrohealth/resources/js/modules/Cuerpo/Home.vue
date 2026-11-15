@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReveal } from '@/composables/useReveal';
-import { dashboard, inicio } from '@/routes';
+import { dashboard, inicio, registrar } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { BodyZoneCode } from '@/types/health';
 import AlertBanner from '../Alertas/Components/AlertBanner.vue';
@@ -110,14 +110,7 @@ onMounted(async () => {
     <Head title="Inicio" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
-        <template
-            v-if="
-                !ready ||
-                !body.status ||
-                !assessment.current ||
-                !mission.current
-            "
-        >
+        <template v-if="!ready || !body.status || !mission.current">
             <Skeleton class="h-44 rounded-2xl" />
             <div
                 class="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]"
@@ -185,7 +178,23 @@ onMounted(async () => {
                         class="rounded-2xl border bg-card p-4 sm:p-6"
                         data-reveal
                     >
-                        <HealthScore :assessment="assessment.current" />
+                        <HealthScore
+                            v-if="assessment.current"
+                            :assessment="assessment.current"
+                        />
+                        <div v-else class="py-6 text-center">
+                            <p class="font-semibold">Aún no tienes puntaje</p>
+                            <p class="mt-1 text-sm text-muted-foreground">
+                                Registra tus primeras mediciones y aquí verás tu
+                                estado general.
+                            </p>
+                            <Link
+                                :href="registrar()"
+                                class="mt-4 inline-flex rounded-lg bg-linear-to-r from-sky-500 to-blue-600 px-4 py-2 text-sm font-medium text-white hover:brightness-110"
+                            >
+                                Registrar datos
+                            </Link>
+                        </div>
                     </section>
                     <section
                         class="rounded-2xl border bg-card p-4 sm:p-6"

@@ -119,9 +119,23 @@ const ZONES: BodyZoneCode[] = [
 ];
 const WORST: Record<Status, number> = { red: 2, yellow: 1, green: 0 };
 
-function profileOf(astronautId: number): Profile {
-    return PROFILES[astronautId] ?? PROFILES[1];
+/** Solo la tripulación de Ares-1 trae datos; los demás empiezan sin datos. */
+function profileOf(astronautId: number): Profile | null {
+    return PROFILES[astronautId] ?? null;
 }
+
+const UNITS: Record<IndicatorCode, string> = {
+    hr: 'bpm',
+    bp_sys: 'mmHg',
+    bp_dia: 'mmHg',
+    sleep: 'h',
+    mood: '1-5',
+    spo2: '%',
+    temp: '°C',
+    glucose: 'mg/dL',
+    exercise_min: 'min',
+    radiation: 'mSv',
+};
 
 /** Lo que se registró en esta carga de la página (M1), por astronauta. */
 const RECORDED: Record<
@@ -134,8 +148,8 @@ const RECORDED: Record<
 /** Las lecturas del perfil con lo registrado encima (lo último manda). */
 function readingsOf(astronautId: number): Reading[] {
     const recorded = RECORDED[astronautId] ?? {};
-
-    return profileOf(astronautId).readings.map((reading) => {
+    const base = profileOf(astronautId)?.readings ?? [];
+    const merged = base.map((reading): Reading => {
         const latest = recorded[reading[0]];
 
         return latest
@@ -148,6 +162,24 @@ function readingsOf(astronautId: number): Reading[] {
               ]
             : reading;
     });
+
+    // Lo registrado de indicadores que el perfil no tenía (o sin perfil).
+    for (const [code, latest] of Object.entries(recorded) as [
+        IndicatorCode,
+        { value: number; status: Status; at: number },
+    ][]) {
+        if (!base.some((reading) => reading[0] === code)) {
+            merged.push([
+                code,
+                latest.value,
+                UNITS[code],
+                latest.status,
+                (Date.now() - latest.at) / 60_000,
+            ]);
+        }
+    }
+
+    return merged;
 }
 
 /** Guarda mediciones nuevas (lo que hará POST /api/v1/measurements). */
@@ -219,9 +251,32 @@ export function mockBodyStatusFor(
     return result;
 }
 
+const SCORE: Record<Status, number> = { green: 100, yellow: 70, red: 30 };
+
+/** El puntaje: el del perfil o, si solo hay lo registrado, un promedio simple. Sin datos, null. */
 export function mockAssessmentFor(astronautId: number) {
-    const profile = profileOf(astronautId);
+    const readings = readingsOf(astronautId);
+
+    if (readings.length === 0) {
+        return null;
+    }
+
     const zones = mockBodyStatusFor(astronautId);
+    const worst = readings.reduce<Status>(
+        (acc, reading) => (WORST[reading[3]] > WORST[acc] ? reading[3] : acc),
+        'green',
+    );
+    const profile = profileOf(astronautId) ?? {
+        score: Math.round(
+            readings.reduce((sum, reading) => sum + SCORE[reading[3]], 0) /
+                readings.length,
+        ),
+        status: worst,
+        summary:
+            worst === 'green'
+                ? 'Primeros registros en orden.'
+                : 'Hay valores que vigilar en sus primeros registros.',
+    };
 
     return {
         astronaut_id: astronautId,

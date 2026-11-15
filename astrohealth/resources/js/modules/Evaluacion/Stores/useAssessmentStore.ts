@@ -18,12 +18,15 @@ export const useAssessmentStore = defineStore('assessment', () => {
 
     async function load(astronautId: number): Promise<void> {
         await wait();
+        // null = todavía no tiene mediciones (el backend responderá 404).
         current.value = mockAssessmentFor(astronautId);
     }
 
     async function loadCrew(astronautIds: number[]): Promise<void> {
         await wait();
-        crew.value = astronautIds.map((id) => mockAssessmentFor(id));
+        crew.value = astronautIds
+            .map((id) => mockAssessmentFor(id))
+            .filter((item) => item !== null);
     }
 
     return { current, crew, load, loadCrew };

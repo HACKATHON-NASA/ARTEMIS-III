@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { BellRing, ClipboardCheck } from '@lucide/vue';
+import { BellRing, ClipboardCheck, ClipboardList } from '@lucide/vue';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,6 +9,9 @@ import { dashboard, salud } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import RecommendationCard from '../Alertas/Components/RecommendationCard.vue';
 import { useAlertsStore } from '../Alertas/Stores/useAlertsStore';
+import MissionPicker from '../Entorno/Components/MissionPicker.vue';
+import MissionStrip from '../Entorno/Components/MissionStrip.vue';
+import NoCrew from '../Entorno/Components/NoCrew.vue';
 import { useCrewStore } from '../Entorno/Stores/useCrewStore';
 import HealthScore from '../Evaluacion/Components/HealthScore.vue';
 import { useAssessmentStore } from '../Evaluacion/Stores/useAssessmentStore';
@@ -19,9 +22,10 @@ import ZoneDetailCard from './Components/ZoneDetailCard.vue';
 import { useBodyStore } from './Stores/useBodyStore';
 
 /**
- * Panel de salud (/salud): médicos y administración eligen un tripulante y
- * ven su estado, sus alertas y su cuerpo en 3D con el detalle del órgano al
- * lado. Se puede abrir con ?astronaut=ID (desde Tripulación).
+ * Panel de salud (/salud): médicos y administración eligen la misión y un
+ * tripulante, y ven su estado, sus alertas y su cuerpo en 3D con el detalle
+ * del órgano al lado. Se puede abrir con ?astronaut=ID (desde Tripulación):
+ * entonces se elige sola la misión de ese tripulante.
  * ⚠️ Por ahora con datos de prueba (ver los stores de cada módulo).
  */
 defineOptions({
@@ -39,6 +43,11 @@ const { reveal } = useReveal(root);
 const astronautId = ref<number | null>(null);
 const loading = ref(true);
 
+const missionId = computed({
+    get: () => crew.missionId,
+    set: (id) => id !== null && crew.selectMission(id),
+});
+
 const member = computed(() =>
     astronautId.value ? crew.find(astronautId.value) : null,
 );
@@ -53,7 +62,13 @@ const recommendations = computed(() =>
     alerts.recommendationsFor(zone.value?.values ?? []),
 );
 
-async function loadAstronaut(id: number): Promise<void> {
+async function loadAstronaut(id: number | null): Promise<void> {
+    if (id === null) {
+        loading.value = false;
+
+        return;
+    }
+
     loading.value = true;
     await Promise.all([body.load(id), assessment.load(id), alerts.load(id)]);
     body.select(body.mostUrgent);
@@ -66,11 +81,22 @@ async function loadAstronaut(id: number): Promise<void> {
 }
 
 // Al cambiar de tripulante (la primera carga la hace onMounted).
-watch(astronautId, (id, previous) => {
-    if (id !== null && previous !== null) {
+let ready = false;
+watch(astronautId, (id) => {
+    if (ready) {
         void loadAstronaut(id);
     }
 });
+
+// Al cambiar de misión: su primer tripulante (o ninguno si no tiene).
+watch(
+    () => crew.missionId,
+    (id, previous) => {
+        if (previous !== null) {
+            astronautId.value = crew.ids[0] ?? null;
+        }
+    },
+);
 
 onMounted(async () => {
     if (!auth.can('health.read.any')) {
@@ -80,18 +106,20 @@ onMounted(async () => {
         return;
     }
 
-    await crew.load();
+    await crew.load(auth.actor?.astronaut_id ?? null);
     const fromUrl = Number(
         new URLSearchParams(window.location.search).get('astronaut'),
     );
-    const first = crew.find(fromUrl) ? fromUrl : (crew.ids[0] ?? null);
+    const urlMission = crew.missionOf(fromUrl);
 
-    if (first === null) {
-        return;
+    if (urlMission !== null) {
+        crew.selectMission(urlMission);
     }
 
+    const first = crew.find(fromUrl) ? fromUrl : (crew.ids[0] ?? null);
     astronautId.value = first;
     await loadAstronaut(first);
+    ready = true;
     await nextTick();
     reveal();
 });
@@ -109,7 +137,7 @@ onMounted(async () => {
                 <p
                     class="text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
                 >
-                    Tripulación
+                    {{ crew.mission?.name ?? 'Tripulación' }}
                 </p>
                 <h1
                     class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
@@ -120,10 +148,32 @@ onMounted(async () => {
                     El estado de cada tripulante, órgano por órgano.
                 </p>
             </div>
-            <AstronautPicker v-model="astronautId" :members="crew.members" />
+            <div class="flex flex-col gap-3 sm:flex-row">
+                <MissionPicker
+                    v-if="crew.mission"
+                    v-model="missionId"
+                    :missions="crew.choices"
+                    :locked="crew.locked"
+                />
+                <AstronautPicker
+                    v-if="crew.members.length"
+                    v-model="astronautId"
+                    :members="crew.members"
+                />
+            </div>
         </header>
 
-        <template v-if="loading || !body.status || !assessment.current">
+        <div v-if="crew.mission" data-reveal>
+            <MissionStrip :mission="crew.mission" />
+        </div>
+
+        <NoCrew
+            v-if="crew.mission && crew.members.length === 0"
+            :mission-name="crew.mission.name"
+            :can-manage="auth.can('users.manage')"
+        />
+
+        <template v-else-if="loading || !body.status">
             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <Skeleton class="h-44 rounded-2xl xl:col-span-2" />
                 <Skeleton class="h-44 rounded-2xl" />
@@ -141,7 +191,24 @@ onMounted(async () => {
                     <p class="mb-3 text-sm text-muted-foreground">
                         {{ member?.name }} · {{ member?.crew_role }}
                     </p>
-                    <HealthScore :assessment="assessment.current" />
+                    <HealthScore
+                        v-if="assessment.current"
+                        :assessment="assessment.current"
+                    />
+                    <div v-else class="flex items-center gap-4">
+                        <span
+                            class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-muted text-muted-foreground"
+                        >
+                            <ClipboardList class="size-6" />
+                        </span>
+                        <div>
+                            <p class="font-semibold">Sin datos todavía</p>
+                            <p class="text-sm text-muted-foreground">
+                                Su puntaje aparece cuando registre sus primeras
+                                mediciones.
+                            </p>
+                        </div>
+                    </div>
                 </div>
                 <SummaryStat
                     label="Alertas sin atender"
