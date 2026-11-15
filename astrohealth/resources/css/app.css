@@ -206,10 +206,10 @@
 [data-sidebar='sidebar'] {
     background-image: linear-gradient(
         170deg,
-        color-mix(in srgb, #0ea5e9 13%, transparent) 0%,
-        transparent 42%,
-        transparent 58%,
-        color-mix(in srgb, #2563eb 16%, transparent) 100%
+        color-mix(in srgb, #0ea5e9 24%, transparent) 0%,
+        color-mix(in srgb, #0ea5e9 6%, transparent) 45%,
+        color-mix(in srgb, #2563eb 8%, transparent) 60%,
+        color-mix(in srgb, #2563eb 28%, transparent) 100%
     );
 }
 
@@ -226,9 +226,9 @@
 .dark [data-sidebar='sidebar'] {
     background-image: linear-gradient(
         170deg,
-        color-mix(in srgb, #0ea5e9 20%, transparent) 0%,
-        transparent 45%,
-        transparent 55%,
-        color-mix(in srgb, #2563eb 24%, transparent) 100%
+        color-mix(in srgb, #0ea5e9 32%, transparent) 0%,
+        color-mix(in srgb, #0ea5e9 9%, transparent) 45%,
+        color-mix(in srgb, #2563eb 12%, transparent) 60%,
+        color-mix(in srgb, #2563eb 38%, transparent) 100%
     );
 }
