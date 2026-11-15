@@ -25,6 +25,7 @@ return [
     'alerts.acknowledge' => ['admin', 'flight_surgeon'],
     'mission.update' => ['admin', 'flight_surgeon'],
     'missions.manage' => ['admin'],
+    'guide.manage' => ['admin', 'flight_surgeon'],
     'reminders.manage.own' => ['crew_medical_officer', 'astronaut'],
     'gamification.read' => ['admin', 'flight_surgeon', 'crew_medical_officer', 'astronaut'],
     'users.manage' => ['admin'],

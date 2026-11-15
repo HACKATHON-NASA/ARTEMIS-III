@@ -70,3 +70,45 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
         risk_ref: 'https://www.nasa.gov/hrp/hazards/',
     },
 ];
+
+const KEY = 'astrohealth.demo.recommendations.v1';
+
+/** Las recomendaciones con lo editado en la Guía de salud (guardado en este navegador). */
+export function mockRecommendations(): Recommendation[] {
+    let edited: Recommendation[] = [];
+
+    try {
+        edited = JSON.parse(
+            localStorage.getItem(KEY) ?? '[]',
+        ) as Recommendation[];
+    } catch {
+        edited = [];
+    }
+
+    const same = (a: Recommendation, b: Recommendation) =>
+        a.indicator === b.indicator && a.status === b.status;
+
+    return [
+        ...MOCK_RECOMMENDATIONS.filter(
+            (item) => !edited.some((other) => same(item, other)),
+        ),
+        ...edited,
+    ];
+}
+
+export function mockSaveRecommendation(recommendation: Recommendation): void {
+    const others = mockRecommendations().filter(
+        (item) =>
+            item.indicator !== recommendation.indicator ||
+            item.status !== recommendation.status,
+    );
+    const edited = [...others, recommendation].filter(
+        (item) => !MOCK_RECOMMENDATIONS.includes(item),
+    );
+
+    try {
+        localStorage.setItem(KEY, JSON.stringify(edited));
+    } catch {
+        // Sin localStorage: el cambio no se guarda.
+    }
+}

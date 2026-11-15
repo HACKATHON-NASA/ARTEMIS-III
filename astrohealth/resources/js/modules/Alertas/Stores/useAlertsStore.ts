@@ -11,7 +11,10 @@ import {
     mockSendMessage,
     mockSimulatorTick,
 } from '../Utils/alertsMockData';
-import { MOCK_RECOMMENDATIONS } from '../Utils/recommendationsMockData';
+import {
+    mockRecommendations,
+    mockSaveRecommendation,
+} from '../Utils/recommendationsMockData';
 
 /**
  * Las alertas (M5): las de un astronauta (`alerts`, para su Inicio y el Panel
@@ -31,7 +34,7 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export const useAlertsStore = defineStore('alerts', () => {
     const alerts = ref<Alert[]>([]);
     const history = ref<Alert[]>([]);
-    const recommendations = ref<Recommendation[]>(MOCK_RECOMMENDATIONS);
+    const recommendations = ref<Recommendation[]>(mockRecommendations());
     const pendingTotal = ref(0);
     /** Velocidad de la demo (1 = real, 60 = el retraso de Marte en 20 s). */
     const speed = ref(readSpeed());
@@ -156,6 +159,15 @@ export const useAlertsStore = defineStore('alerts', () => {
         return created;
     }
 
+    /** La Guía de salud cambia "qué hacer" (permiso guide.manage). */
+    async function saveRecommendation(
+        recommendation: Recommendation,
+    ): Promise<void> {
+        await wait(300);
+        mockSaveRecommendation(recommendation);
+        recommendations.value = mockRecommendations();
+    }
+
     function setSpeed(value: number): void {
         speed.value = value;
         writeSpeed(value);
@@ -177,6 +189,7 @@ export const useAlertsStore = defineStore('alerts', () => {
         send,
         acknowledge,
         afterMeasurements,
+        saveRecommendation,
         setSpeed,
     };
 });

@@ -31,5 +31,8 @@ Route::inertia('admin/misiones', 'Entorno/Missions')->name('misiones');
 // Pasa a app/Modules/Registro/web.php cuando exista el backend de M1.
 Route::inertia('registrar', 'Registro/Record')->name('registrar');
 
+// Guía de salud (M2 + M5): rangos y qué hacer; editan quienes tienen guide.manage.
+Route::inertia('guia', 'Evaluacion/Guide')->name('guia');
+
 // Centro de alertas (M5): todos los roles con alerts.read.
 Route::inertia('alertas', 'Alertas/Alerts')->name('alertas');

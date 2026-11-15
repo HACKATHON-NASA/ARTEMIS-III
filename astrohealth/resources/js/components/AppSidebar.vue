@@ -30,6 +30,7 @@ import { useAlertsStore } from '@/modules/Alertas/Stores/useAlertsStore';
 import {
     alertas,
     dashboard,
+    guia,
     inicio,
     misiones,
     registrar,
@@ -74,7 +75,7 @@ const missionItems = computed<NavItem[]>(() => [
               },
           ]
         : []),
-    { title: 'Guía de salud', href: '#', icon: BookOpen, soon: true },
+    { title: 'Guía de salud', href: guia(), icon: BookOpen },
 ]);
 
 /** El astronauta cuida su salud; Tierra y los médicos monitorean a la tripulación. */

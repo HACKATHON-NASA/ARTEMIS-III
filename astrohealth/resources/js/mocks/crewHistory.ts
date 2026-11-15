@@ -1,6 +1,6 @@
 import type { IndicatorCode, Status } from '@/types/health';
 import { mockBodyStatusFor } from './crewHealth';
-import { MOCK_THRESHOLDS, mockEvaluate } from './thresholds';
+import { mockEvaluate, mockThresholds } from './thresholds';
 
 /**
  * ⚠️ DATOS DE PRUEBA: el historial diario de cada tripulante (un valor por
@@ -85,7 +85,7 @@ export function mockSeries(
 
     const [amplitude, decimals] = NOISE[indicator];
     const [start, span] = STORIES[astronautId]?.[indicator] ?? [end, 1];
-    const [, , low, high] = MOCK_THRESHOLDS[indicator];
+    const [, , low, high] = mockThresholds()[indicator];
     const factor = 10 ** decimals;
     const code = Object.keys(NOISE).indexOf(indicator);
     const points: MockPoint[] = [];

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { mockSeries } from '@/mocks/crewHistory';
-import { MOCK_THRESHOLDS } from '@/mocks/thresholds';
+import { mockThresholds } from '@/mocks/thresholds';
 import type { IndicatorCode } from '@/types/health';
 import type {
     Bands,
@@ -118,7 +118,7 @@ export const useCrewTrendsStore = defineStore('crewTrends', () => {
     ): Promise<void> {
         await wait(150);
         const [green_min, green_max, yellow_min, yellow_max] =
-            MOCK_THRESHOLDS[indicator];
+            mockThresholds()[indicator];
         bands.value = { green_min, green_max, yellow_min, yellow_max };
         series.value = crew.map((member, index) => ({
             astronaut_id: member.id,
