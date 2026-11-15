@@ -106,9 +106,10 @@ async function save(change: GuideEdit): Promise<void> {
         ['red', change.red],
     ] as const;
 
-    await Promise.all([
-        thresholds.save(change.threshold),
-        ...levels.flatMap(([status, advice]) =>
+    // Primero los rangos (el backend los valida); si fallan, no se toca lo demás.
+    await thresholds.save(change.threshold);
+    await Promise.all(
+        levels.flatMap(([status, advice]) =>
             advice
                 ? [
                       alerts.saveRecommendation({
@@ -123,7 +124,7 @@ async function save(change: GuideEdit): Promise<void> {
                   ]
                 : [],
         ),
-    ]);
+    );
     toast.success('Guía actualizada', {
         description: `${current.value?.item.name}: los nuevos rangos se usan desde ya en ${envName.value}.`,
     });

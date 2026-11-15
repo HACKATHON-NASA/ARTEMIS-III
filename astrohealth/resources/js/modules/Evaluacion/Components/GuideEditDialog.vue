@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
+import { ApiError } from '@/lib/api';
 import type { GuideAdvice, GuideEdit, Threshold } from '../Types/threshold';
 import AdviceFields from './AdviceFields.vue';
 import RangeBar from './RangeBar.vue';
@@ -129,6 +130,13 @@ async function save(): Promise<void> {
             red: advice(form.rTitle, form.rSteps),
         });
         open.value = false;
+    } catch (failure) {
+        if (!(failure instanceof ApiError)) {
+            throw failure;
+        }
+
+        // El backend tiene la última palabra sobre los rangos.
+        error.value = Object.values(failure.errors)[0]?.[0] ?? failure.message;
     } finally {
         saving.value = false;
     }

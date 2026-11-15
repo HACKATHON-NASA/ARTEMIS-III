@@ -116,12 +116,27 @@ flowchart LR
 
 ---
 
-## F2 · M2 Evaluación (núcleo): umbrales y semáforo
+## F2 · M2 Evaluación (núcleo): umbrales y semáforo · ✅ hecho (16 nov 2026)
 
-**Tablas:** `thresholds` (por `indicator_code` + `environment`), `assessments` (con `body_status` en JSON).
+**Cambio frente a lo planeado:** la versión 2 del simulador **quitó `/evaluate`, `/assess` y `/trends`** de Python (`simulador/docs/SIMULADOR.md`). Por eso no hay cliente de Python ni respaldo: el motor vive completo en Laravel (`Infrastructure/Motor/RuleEvaluator`), con una sola regla para el color. La norma (D7, P5) quedó actualizada.
+
+**Tablas:** `thresholds` (por `indicator_code` + `environment`, único) y `assessments` (con `body_status` en JSON; una fila por evaluación).
 
 | Endpoint | Permiso | Caso de uso |
 |---|---|---|
+| `GET /api/v1/thresholds?environment=` | autenticado | `ListThresholds` |
+| `PUT /api/v1/thresholds/{indicator}?environment=` | `guide.manage` | `UpdateThreshold` (verde dentro del amarillo; publica `ThresholdUpdated`) |
+| `GET /api/v1/astronauts/{id}/assessment` | Gate `health.read` | `GetLatestAssessment` (404 `EVALUATION_NO_DATA` hasta que M1 registre datos) |
+
+**Domain:** `StatusRule`, `ScoreRule` (verde 100, amarillo 60, rojo 20; corazón, SpO₂ y radiación ×1,5), `OverallStatus` (desde 80 verde, desde 50 amarillo), `BodyStatusRule` (el peor de cada zona), `TrendRule` (pendiente + aviso si se aleja del centro del verde 3 veces seguidas), `RadiationThreshold` (verde hasta la dosis del entorno, amarillo hasta el doble). Los números están en `config/evaluation.php`.
+**Contratos:** `Evaluator` (`evaluate`, `thresholdFor`, `assess` → calcula y guarda) y `TrendAnalyzer` (`trend`). Hablan en texto (`"green"`…), así M1 y M4 no dependen del `Domain` de M2.
+**Seeder:** `ThresholdSeeder`, 10 indicadores × 4 entornos; solo crea lo que falta (no pisa lo que cambian los médicos).
+**Frontend:** la Guía de salud lee y guarda en la API. `mocks/thresholds.ts` ya no guarda en el navegador: usa los umbrales que llegan del backend para colorear los datos de prueba que quedan (hasta F3).
+**Arreglado:** el sueño de Kenji (5,8 h) ahora es Crítico en todas partes. Los puntajes de prueba se alinearon con `ScoreRule`: Kenji 90, Amara 87 (normal, con 3 zonas en precaución) y Lucas 100.
+**Pruebas:** 43 nuevas (205 en verde).
+**Listo cuando:** ✅ la Guía de salud lee y edita umbrales en la base de datos, y `Evaluator` da el color de cada valor con una sola regla.
+
+---|---|---|
 | `GET /api/v1/thresholds?environment=` | autenticado | `ListThresholds` |
 | `PUT /api/v1/thresholds/{indicator}?environment=` | `guide.manage` | `UpdateThreshold` (valida verde ⊂ amarillo) |
 | `GET /api/v1/astronauts/{id}/assessment` | `health.read` | `GetLatestAssessment` |

@@ -41,8 +41,8 @@ Alternativa compatible: <propuesta>
 
 1. **8 módulos, cada uno dueño de lo suyo.** Cada módulo es dueño de sus tablas, sus reglas, sus rutas y sus pantallas.
 2. **Capas con una sola responsabilidad:** Domain, Application, Infrastructure y Http. Las dependencias van en un solo sentido.
-3. **El backend manda.** Umbrales, colores, puntos y reglas se calculan en Laravel o en Python. Vue solo presenta.
-4. **Práctico antes que elegante en papel.** Una interfaz solo existe si separa módulos, si se puede cambiar (por ejemplo, Python o el respaldo local) o si se necesita para probar.
+3. **El backend manda.** Umbrales, colores, puntos y reglas se calculan en Laravel (M2 para el semáforo). Vue solo presenta.
+4. **Práctico antes que elegante en papel.** Una interfaz solo existe si separa módulos, si se puede cambiar (por ejemplo, el simulador o los sensores reales) o si se necesita para probar.
 5. **La demo primero.** Todo lo que se construye sirve al [guion de 2 minutos](../PLAN_ASTROHEALTH.md#7-guion-de-la-demo-2-minutos). Lo que no aparece en el guion espera.
 6. **Honestidad con los datos.** Todo dato lleva su origen (`source`) y la app muestra el aviso: *"Herramienta de apoyo, no reemplaza el criterio médico"*.
 
@@ -56,7 +56,7 @@ Alternativa compatible: <propuesta>
 | D4 | Pantallas | Inertia sirve las **páginas**. Los **datos** llegan por la API `/api/v1` y se guardan en *stores* de Pinia. El login es una página propia contra `/api/v1/auth/login`; Fortify no se usa | El plan pide una API REST y Pinia; Inertia ya viene en el proyecto |
 | D5 | Autenticación | **JWT** (`firebase/php-jwt`, HS256) para **toda** la API: *access token* de 15 min en `Authorization: Bearer` + *refresh token* rotativo en una *cookie* `HttpOnly`. Las máquinas (el simulador) usan *client credentials*. **Roles:** `admin`, `flight_surgeon` (médico en Tierra), `crew_medical_officer` (médico de la tripulación), `astronaut`, `device`, con los permisos de `config/permissions.php` | Personas y máquinas entran por la misma puerta, con roles. Detalle: [M0 · backend](../../astrohealth/docs/backend/M0-identidad/README.md) |
 | D6 | Formato JSON | `{ "data": …, "message": "ok" }`. En los errores: `{ "data": null, "message": "…", "error_code": "…", "errors": {…} }` | Es el formato del plan y del simulador: uno solo para todo |
-| D7 | Python | Laravel es el **único** que llama a Python. Si Python no responde, Laravel evalúa con la tabla `thresholds` (respaldo local) | Regla del plan: Laravel es el único que habla con el frontend |
+| D7 | Python | **Python no evalúa** (desde la versión 2 del simulador, ver `simulador/docs/SIMULADOR.md`): solo genera y envía lecturas. El semáforo, el puntaje y las tendencias los calcula **M2 en Laravel** con la tabla `thresholds` y las reglas de `Domain`. Laravel sigue siendo el único que habla con el frontend | Una sola regla y un solo lugar para el color: sin diferencias entre Python y Laravel |
 | D8 | Cómo llegan los datos simulados | **El simulador los envía**, como las máquinas de la nave: lotes a `POST /api/v1/ingest/readings` con un JWT de dispositivo, idempotentes por `batch_id`. Plan B sin red: `registro:import-file` con el JSON del simulador | Es como funcionan los sensores reales: la máquina empuja, el sistema valida y evalúa. Detalle: [M1 · backend](../../astrohealth/docs/backend/M1-registro/README.md) |
 | D9 | Zonas del cuerpo | Las 7 del plan (`heart`, `brain`, `eyes`, `lungs`, `bones`, `ear`, `immune`) **más** `metabolism` (glucosa) y `whole_body` (radiación) | La tabla de umbrales del plan asigna la glucosa y la radiación a esas zonas |
 | D10 | Ejercicio | Se agrega el indicador `exercise_min` | Sin él, la zona `bones` no tiene datos. El simulador ya lo genera |
@@ -73,7 +73,7 @@ flowchart LR
     V -. "páginas Inertia" .- L
     S["Simulador Python<br/>(sensores de la nave)"] -- "POST /ingest/readings · JWT de dispositivo" --> L
     L --> DB[("MySQL")]
-    L -- "HTTP · respaldo local si cae" --> P["Python FastAPI :8001<br/>/evaluate · /assess · /trends"]
+    L -. "solo clima espacial (opcional)" .-> P["Python FastAPI :8001<br/>/space-weather"]
     S --> N["NASA DONKI · OSDR"]
 ```
 
@@ -145,7 +145,7 @@ astrohealth/app/Modules/Registro/
 | Del orden de los pasos de una acción | `Application/` |
 | De una ruta, una validación o una respuesta | `Http/` y `routes.php` |
 | Visual | `resources/js/modules/<Modulo>/` |
-| De la conexión con Python | `app/Modules/Evaluacion/Infrastructure/Clients/` |
+| Del semáforo, el puntaje o las tendencias | `app/Modules/Evaluacion/` (reglas en `Domain/Reglas/`, motor en `Infrastructure/Motor/`) |
 | De login, tokens, roles o permisos | `app/Modules/Identidad/` y `config/permissions.php` |
 | De lo que envía el simulador | `app/Modules/Registro/` (ingesta) |
 
@@ -265,7 +265,7 @@ flowchart LR
 |---|---|---|
 | Unitarias | Reglas de `Domain` (semáforo, puntaje, racha, puntos) | `Tests/Unit` del módulo |
 | *Feature* | La ruta completa: autenticación, validación, caso de uso, base de datos y JSON | `Tests/Feature` del módulo |
-| Python simulado | El cliente de Python con `Http::fake()`, incluido el respaldo local cuando Python se cae | `Evaluacion/Tests/Feature` |
+| Motor de evaluación | Los bordes de cada indicador, el puntaje y la tendencia por los contratos `Evaluator` y `TrendAnalyzer` | `Evaluacion/Tests` |
 | Frontend | La lógica de los *stores* y *composables* | Vitest |
 
 Cada criterio *Dado / Cuando / Entonces* de una ficha es una prueba. Comando: `php artisan test`. Antes de la primera prueba de módulo, se agrega `app/Modules/*/Tests` a `phpunit.xml`.
@@ -280,7 +280,7 @@ Cada criterio *Dado / Cuando / Entonces* de una ficha es una prueba. Comando: `p
 | P2 | Consultas en `Application` o en `Domain` | Repositorio |
 | P3 | Leer o escribir tablas de otro módulo | Contrato o evento |
 | P4 | Calcular colores, umbrales o puntos en Vue | Backend; Vue recibe el resultado |
-| P5 | Llamar a Python desde Vue o desde otro módulo que no sea M2 | Contrato `Evaluator` de M2 |
+| P5 | Calcular el color, el puntaje o la tendencia fuera de M2 (en Vue, en otro módulo o en Python) | Contratos `Evaluator` y `TrendAnalyzer` de M2 |
 | P6 | JSON armado a mano o con otro formato | `ApiResponse` y el manejador común |
 | P7 | Umbrales, dosis o puntos escritos en el código | Tabla `thresholds` o `config/` |
 | P8 | Colores del semáforo distintos de los del plan | `#22C55E` · `#EAB308` · `#EF4444` · `#64748B` |
@@ -299,15 +299,13 @@ sequenceDiagram
     participant C as MeasurementController (M1)
     participant S as RecordMeasurements (M1)
     participant E as Evaluator (contrato M2)
-    participant P as Python /evaluate
     participant W as InsertMeasurementRepository (M1)
     participant A as OnMeasurementsRecorded (M5)
     participant G as OnMeasurementsRecorded (M7)
     V->>C: POST /api/v1/measurements
     C->>S: execute(MeasurementData[])
     S->>E: evaluate(bp_sys, 148, mars)
-    E->>P: POST /evaluate
-    P-->>E: { status: "red" } (si cae: respaldo con thresholds)
+    Note over E: StatusRule con la tabla thresholds → red
     S->>W: insertMany(...) dentro de Transaction
     S-->>C: RecordResult
     C-->>V: 201 { data: [...], message: "ok" }
@@ -322,7 +320,7 @@ sequenceDiagram
 | 2 | Http | `Registro/Http/Requests/StoreMeasurementsRequest.php` (rangos físicamente posibles) |
 | 3 | Http | `Registro/Http/Controllers/Api/MeasurementController.php` |
 | 4 | Application | `Registro/Application/RecordMeasurements.php` |
-| 5 | Contrato | `Evaluacion/Contratos/Evaluator.php` → `Evaluacion/Infrastructure/Clients/PythonEvaluator.php` |
+| 5 | Contrato | `Evaluacion/Contratos/Evaluator.php` → `Evaluacion/Infrastructure/Motor/RuleEvaluator.php` |
 | 6 | Infrastructure | `Registro/Infrastructure/Repositorios/Measurement/InsertMeasurementRepository.php` |
 | 7 | Evento | `Registro/Domain/Eventos/MeasurementsRecorded.php` |
 | 8 | *Listeners* | `Alertas/Infrastructure/Listeners/OnMeasurementsRecorded.php` y `Gamificacion/Infrastructure/Listeners/OnMeasurementsRecorded.php` |

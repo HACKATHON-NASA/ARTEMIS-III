@@ -1,12 +1,14 @@
 # 🚦 M2 · Motor de evaluación · Backend
 
-> [← Backend](../README.md) · Código: `astrohealth/app/Modules/Evaluacion/` · Qué construir: [ficha de M2](../../../../documentacion/modulos/M2-evaluacion/README.md)
+> [← Backend](../README.md) · Código: `astrohealth/app/Modules/Evaluacion/` · Qué construir: [ficha de M2](../../../../documentacion/modulos/M2-evaluacion/README.md) · Plan: F2 de `documentacion/PLAN_BACKEND.md`
 
-| Estado         |         Fase         | Responsable         |
-| -------------- | :------------------: | ------------------- |
-| ⬜ Sin empezar | 2 (umbrales en la 1) | Backend + simulador |
+| Estado               |             Fase             | Responsable |
+| -------------------- | :--------------------------: | ----------- |
+| ✅ Núcleo hecho (F2) | F2 · F9 (tests psicológicos) | Backend     |
 
-**Qué hace:** decide el **color** de cada lectura, calcula el **puntaje** 0–100 y el **estado por órgano**, y detecta las **tendencias**. Es el **único** módulo que habla con el motor de Python. Si Python no responde, calcula **lo mismo** con sus reglas locales y nadie se entera.
+**Qué hace:** decide el **color** de cada lectura, calcula el **puntaje** 0–100, el **estado de cada zona** del cuerpo y la **tendencia** de cada indicador. Es el **único** lugar donde se decide el semáforo (P4, P5).
+
+> **Python ya no evalúa.** La versión 2 del simulador quitó `/evaluate`, `/assess` y `/trends` (`simulador/docs/SIMULADOR.md`): el simulador solo genera y envía lecturas. El motor vive completo en Laravel, con una sola regla. No hay cliente de Python ni respaldo.
 
 ---
 
@@ -14,139 +16,105 @@
 
 ```mermaid
 flowchart LR
-    IN["evaluate(hr, 130, mars)"] --> T{"¿Python responde<br/>en menos de 3 s?"}
-    T -- sí --> PY["POST /evaluate"]
-    T -- "no (timeout · 5xx · red)" --> LO["LocalEvaluator<br/>thresholds + StatusRule"]
-    LO --> LOG["log warning<br/>evaluation.fallback"]
-    PY --> OUT["EvaluationResult<br/>{status: red}"]
-    LO --> OUT
+    IN["evaluate(sleep, 5.8, mars)"] --> T["FindThresholdRepository<br/>(sleep, mars) → 7–9 / 6–24"]
+    T --> R["StatusRule"]
+    R --> OUT["red"]
 ```
-
-| Operación                      | Python                           | Respaldo local                 | La usa                  |
-| ------------------------------ | -------------------------------- | ------------------------------ | ----------------------- |
-| `evaluate()` — una lectura     | `POST /evaluate`                 | `StatusRule`                   | M1 (registro manual)    |
-| `evaluateMany()` — un lote     | — (siempre local, por velocidad) | `StatusRule`                   | M1 (ingesta)            |
-| `assess()` — puntaje + órganos | `POST /assess`                   | `ScoreRule` + `BodyStatusRule` | M1 (después de guardar) |
-| `trend()` — tendencia          | `POST /trends`                   | `TrendRule`                    | M4                      |
-| `thresholdFor()` — bandas      | —                                | Tabla `thresholds`             | M4                      |
-| `SpaceWeather::now()`          | `GET /space-weather/now`         | `null`                         | M6                      |
-
-> **Garantía:** `LocalEvaluatorParityTest` envía los mismos valores a Python (respuestas grabadas) y al respaldo, en todos los bordes (59, 60, 100, 101, 120, 121…). Si difieren, la prueba falla.
 
 ## 2. Las reglas (`Domain/Reglas/`)
 
-| Regla                | Entrada → salida                                                                                                                                            |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `StatusRule`         | `(valor, Threshold)` → `green` si está en el rango verde · `yellow` si está en la banda amarilla · `red` si no                                              |
-| `ScoreRule`          | Último estado de cada indicador → verde 100 · amarillo 60 · rojo 20, promedio ponderado (`hr`, `bp_sys`, `bp_dia`, `spo2`, `radiation` ×1.5) → entero 0–100 |
-| `OverallStatus`      | Puntaje → ≥ 80 verde · 50–79 amarillo · < 50 rojo                                                                                                           |
-| `BodyStatusRule`     | Estados por zona → el **peor**; sin datos → `null`                                                                                                          |
-| `TrendRule`          | Últimos 7 valores → pendiente de la regresión lineal → `up` · `down` · `stable`; `trend_alert` si la distancia al centro del verde crece 3 veces seguidas   |
-| `RadiationThreshold` | Dosis base del entorno → verde `0–base`, amarilla `0–2×base`                                                                                                |
+| Regla                | Entrada → salida                                                                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `StatusRule`         | `(valor, Threshold)` → `green` dentro del verde · `yellow` dentro del amarillo · `red` fuera. Bordes inclusivos (119 verde, 120 amarillo)        |
+| `ScoreRule`          | Último estado por indicador → verde 100 · amarillo 60 · rojo 20, promedio ponderado (`hr`, `bp_sys`, `bp_dia`, `spo2`, `radiation` ×1,5) → 0–100 |
+| `OverallStatus`      | Puntaje → desde 80 verde · desde 50 amarillo · si no rojo                                                                                        |
+| `BodyStatusRule`     | Estados por zona → el **peor** de cada zona                                                                                                      |
+| `TrendRule`          | Últimos 7 valores → pendiente de la regresión lineal → `up` · `down` · `stable`; **aviso** si se aleja del centro del verde 3 veces seguidas     |
+| `RadiationThreshold` | Dosis del entorno → verde `0–dosis`, amarillo `0–2×dosis`                                                                                        |
+| `Threshold` (VO)     | Valida que el verde quede dentro del amarillo (`EVALUATION_INVALID_THRESHOLD`, con el campo)                                                     |
 
-Los pesos y parámetros viven en `config/evaluation.php`; los umbrales, en la tabla `thresholds`.
+Los pesos, los cortes, la ventana de la tendencia y los nombres de las zonas viven en **`config/evaluation.php`**; los rangos, en la tabla **`thresholds`**.
 
 ## 3. Estructura de archivos
 
 ```
 app/Modules/Evaluacion/
-├── EvaluacionServiceProvider.php           # bind Evaluator/TrendAnalyzer/SpaceWeather → PythonEvaluator
-├── routes.php                              # astronauts/{id}/assessment
-├── Contratos/
-│   ├── Evaluator.php                       # evaluate · evaluateMany · assess · thresholdFor
-│   ├── TrendAnalyzer.php                   # trend
-│   └── SpaceWeather.php                    # now
+├── EvaluacionServiceProvider.php           # Evaluator → RuleEvaluator (scoped) · TrendAnalyzer → RuleTrendAnalyzer
+├── routes.php                              # thresholds · astronauts/{id}/assessment
+├── Contratos/                              # Evaluator · TrendAnalyzer · LatestReading · AssessmentSummary · ThresholdBand · TrendSummary
 ├── Domain/
+│   ├── Entidades/Assessment.php
 │   ├── Enums/Status.php · TrendDirection.php · ErrorCode.php
-│   ├── Reglas/StatusRule.php · ScoreRule.php · OverallStatus.php · BodyStatusRule.php · TrendRule.php · RadiationThreshold.php
-│   └── ValueObjects/Threshold.php
+│   ├── Reglas/StatusRule · ScoreRule · OverallStatus · BodyStatusRule · TrendRule · RadiationThreshold
+│   ├── ValueObjects/Threshold.php · Trend.php
+│   ├── Eventos/ThresholdUpdated.php        # ShouldDispatchAfterCommit
+│   └── Excepciones/InvalidThreshold · ThresholdMissing · NoAssessment
 ├── Application/
-│   ├── EvaluationService.php               # (nombre del plan) orquesta: Python o local, y guarda el assessment
-│   ├── GetLatestAssessment.php
-│   └── DTOs/EvaluationResult.php · AssessmentResult.php · TrendResult.php
+│   ├── ListThresholds · UpdateThreshold · GetLatestAssessment
+│   └── DTOs/ThresholdData · AssessmentResult
 ├── Infrastructure/
-│   ├── Clients/SimuladorClient.php         # Http::baseUrl(SIMULADOR_URL)->timeout(3) · lanza PythonUnavailable
-│   ├── Clients/PythonEvaluator.php         # implementa los contratos: Python primero, LocalEvaluator si falla
-│   ├── Clients/LocalEvaluator.php          # thresholds + reglas de Domain
+│   ├── Motor/RuleEvaluator.php             # implementa Evaluator (recuerda los umbrales ya leídos en la petición)
+│   ├── Motor/RuleTrendAnalyzer.php         # implementa TrendAnalyzer
+│   ├── Configuracion/EvaluationSettings.php    # lee y valida config/evaluation.php
 │   ├── Models/Threshold.php · Assessment.php
-│   └── Repositorios/Threshold/FindThresholdRepository.php (con caché) · UpsertThresholdRepository.php — Assessment/FindAssessmentRepository.php · InsertAssessmentRepository.php
+│   └── Repositorios/Threshold/{Find,Upsert}ThresholdRepository · ThresholdMapper
+│                    Assessment/{Find,Insert}AssessmentRepository · AssessmentMapper
 ├── Http/
-│   ├── Controllers/Api/ShowAssessmentController.php
-│   └── Resources/AssessmentResource.php
+│   ├── Controllers/Api/ListThresholds · UpdateThreshold · ShowAssessment
+│   ├── Requests/ListThresholdsRequest · UpdateThresholdRequest · EnvironmentField (valida contra config/environments.php)
+│   └── Resources/ThresholdResource · AssessmentResource
 ├── Database/
-│   ├── Migrations/                         # thresholds (indicator_code + environment) · assessments
+│   ├── Migrations/                         # thresholds · assessments
 │   └── Seeders/ThresholdSeeder.php         # plan §2 × 4 entornos; radiación desde config/environments.php
 └── Tests/
-    ├── Unit/StatusRuleTest.php · ScoreRuleTest.php · TrendRuleTest.php · BodyStatusRuleTest.php
-    └── Feature/AssessmentEndpointTest.php · PythonFallbackTest.php · LocalEvaluatorParityTest.php
+    ├── Unit/RulesTest.php
+    └── Feature/ThresholdsApiTest.php · EvaluatorTest.php
 ```
 
 ## 4. Endpoints
 
-| Método | Ruta                                 | Permiso              | Respuesta                                                                                                                                           |
-| ------ | ------------------------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/api/v1/astronauts/{id}/assessment` | `can:health.read,id` | 200 puntaje, estado, `body_status`, resumen ([ejemplo](../../../../documentacion/modulos/M2-evaluacion/README.md#4-api)) · 404 `EVALUATION_NO_DATA` |
+| Método | Ruta                                          | Permiso              | Respuesta                                                                                                                 |
+| ------ | --------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/v1/thresholds?environment=`             | autenticado          | 200 los 10 umbrales del entorno                                                                                           |
+| PUT    | `/api/v1/thresholds/{indicator}?environment=` | `guide.manage`       | 200 el umbral · 422 si el verde no queda dentro del amarillo · 404 si el indicador no existe · publica `ThresholdUpdated` |
+| GET    | `/api/v1/astronauts/{id}/assessment`          | `can:health.read,id` | 200 puntaje, estado, `body_status`, resumen, `evaluated_at` · 404 `EVALUATION_NO_DATA`                                    |
 
-## 5. Conexión con Python
+## 5. Contratos y eventos
 
-```env
-SIMULADOR_URL=http://localhost:8001/api/v1
-SIMULADOR_TIMEOUT=3
-```
+| Tipo    | Nombre             | Lo usa                                                                        |
+| ------- | ------------------ | ----------------------------------------------------------------------------- |
+| Ofrece  | `Evaluator`        | M1 (color al guardar y `assess` después), M4 (`thresholdFor` para las bandas) |
+| Ofrece  | `TrendAnalyzer`    | M4                                                                            |
+| Publica | `ThresholdUpdated` | M1 (volver a colorear las últimas mediciones; _listener_ en F3)               |
+| Usa     | —                  | No depende de ningún módulo (lee `config/environments.php`)                   |
 
-| Regla                            | Valor                                                                                       |
-| -------------------------------- | ------------------------------------------------------------------------------------------- |
-| _Timeout_                        | 3 s (`SIMULADOR_TIMEOUT`)                                                                   |
-| Reintentos                       | **Ninguno** dentro de una petición de usuario (duplicarían la espera)                       |
-| Formato esperado                 | `{ "data": …, "message": "ok" }`                                                            |
-| Si Python falla 5 veces en 1 min | Circuito abierto 60 s: va directo al respaldo sin esperar (`Cache` con la cuenta de fallos) |
+Los contratos hablan en texto (`"green"`, `"down"`…), así M1 y M4 no dependen del `Domain` de M2.
 
-## 6. Contratos y eventos
+## 6. Códigos de error
 
-| Tipo   | Nombre          | Lo usa                      |
-| ------ | --------------- | --------------------------- |
-| Ofrece | `Evaluator`     | M1, M4                      |
-| Ofrece | `TrendAnalyzer` | M4                          |
-| Ofrece | `SpaceWeather`  | M6                          |
-| Usa    | —               | No depende de ningún módulo |
+| Código                         |   HTTP    | Cuándo                                                                              |
+| ------------------------------ | :-------: | ----------------------------------------------------------------------------------- |
+| `VALIDATION_FAILED`            |    422    | Falta el entorno o no existe; un límite no es número                                |
+| `EVALUATION_INVALID_THRESHOLD` |    422    | El verde no queda dentro del amarillo (con el campo)                                |
+| `EVALUATION_THRESHOLD_MISSING` | 404 · 500 | Editar un indicador que no existe (404) · evaluar sin umbral, falta el seeder (500) |
+| `EVALUATION_NO_DATA`           |    404    | El astronauta aún no tiene evaluación                                               |
 
-## 7. Códigos de error
+## 7. Pruebas
 
-| Código                         | HTTP | Cuándo                                                           |
-| ------------------------------ | :--: | ---------------------------------------------------------------- |
-| `EVALUATION_NO_DATA`           | 404  | El astronauta aún no tiene evaluación                            |
-| `EVALUATION_THRESHOLD_MISSING` | 500  | Falta un umbral para un indicador y entorno (error de _seeders_) |
+| Prueba              | Verifica                                                                                                                                                                                                                                             |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RulesTest`         | Bordes del pulso, la presión, el sueño (5,8 h de Kenji → rojo), SpO₂ y temperatura · forma del umbral · radiación por entorno · puntaje (Kenji 90) · cortes · peor por zona · tendencia del sueño que cae · valores estables o que mejoran no avisan |
+| `ThresholdsApiTest` | 10 umbrales por entorno · radiación cambia con el entorno · validación · el médico edita y se publica el evento · verde fuera del amarillo → 422 · indicador inexistente → 404 · la tripulación no edita · el seeder no pisa los cambios             |
+| `EvaluatorTest`     | Color con los umbrales del entorno · umbral faltante · `assess` guarda puntaje, zonas y resumen · tendencia · la última evaluación la ven el propio astronauta y su médico; otro astronauta → 403; sin datos → 404                                   |
 
-## 8. Pruebas
+## 8. Avance
 
-| Prueba                     | Verifica                                                                           |
-| -------------------------- | ---------------------------------------------------------------------------------- |
-| `StatusRuleTest`           | Bordes de los 10 indicadores                                                       |
-| `ScoreRuleTest`            | Fórmula ponderada con casos conocidos                                              |
-| `TrendRuleTest`            | Sueño 7.5 → 7.1 → 6.8 → 6.5 → `down` + `trend_alert`                               |
-| `PythonFallbackTest`       | `Http::fake()` con _timeout_ y 500 → mismo resultado + _log_ `evaluation.fallback` |
-| `LocalEvaluatorParityTest` | Local = Python en todos los bordes                                                 |
-| `AssessmentEndpointTest`   | Astronauta 2 ve lo suyo · ve al 3 → 403 · médico ve a todos · sin datos → 404      |
-
-## 9. Avance
-
-- [ ] Migraciones `thresholds` y `assessments` + `ThresholdSeeder` (fase 1)
-- [ ] Reglas de `Domain` con sus pruebas unitarias
-- [ ] `SimuladorClient` + `PythonEvaluator` + `LocalEvaluator`
-- [ ] Circuito abierto tras fallos seguidos
-- [ ] `evaluateMany()` para la ingesta
-- [ ] `GET /astronauts/{id}/assessment`
-- [ ] Prueba de paridad local = Python
-- [ ] Endpoints `/evaluate`, `/assess` y `/trends` del simulador respondiendo con el mismo formato
-
-## 10. Cómo quedó hecho
-
-### Decisiones técnicas
-
-_Pendiente._
-
-### Diferencias con este documento
-
-_Pendiente._
+- [x] Migraciones `thresholds` y `assessments` + `ThresholdSeeder`
+- [x] Reglas de `Domain` con sus pruebas unitarias
+- [x] `Evaluator` y `TrendAnalyzer` (motor local, sin Python)
+- [x] `GET/PUT /thresholds` y `GET /astronauts/{id}/assessment`
+- [x] La Guía de salud usa la API
+- [ ] _Listener_ de `ThresholdUpdated` y uso de `assess` desde M1 (F3)
+- [ ] Tests psicológicos (F9)
 
 > 📝 **Documentar siempre:** este documento se actualiza en el mismo _pull request_ que cambia el código.

@@ -1,18 +1,20 @@
 import type { IndicatorCode, Status } from '@/types/health';
 
 /**
- * ⚠️ DATOS DE PRUEBA: los umbrales de M2 por entorno (ficha M2), para que los
- * mocks pongan el color como lo hará el BACKEND (M2 Evaluator). Los cambios
- * de la Guía de salud se guardan en localStorage (sobreviven a recargar).
- * El frontend real nunca evalúa: esto se borra con el backend de M2.
+ * ⚠️ DATOS DE PRUEBA que quedan de M2: los umbrales para que los OTROS
+ * datos de prueba (series, perfiles, registro) pongan su color como lo hace
+ * el backend. Se borra en F3, cuando las mediciones vengan con su color.
+ *
+ * Los umbrales reales ya vienen de GET /api/v1/thresholds: al cargarlos, la
+ * Guía de salud llama a primeThresholds() y estos datos usan esos mismos
+ * valores (así lo que se cambia en la Guía se ve en el resto).
  */
 export type MockEnvironment = 'iss' | 'transit' | 'moon' | 'mars';
 
 /** [verde mín, verde máx, amarillo mín, amarillo máx] */
 export type MockBand = [number, number, number, number];
 
-const KEY = 'astrohealth.demo.thresholds.v1';
-
+/** Valores de arranque: los mismos del ThresholdSeeder (plan §2). */
 const BASE: Record<IndicatorCode, MockBand> = {
     hr: [60, 100, 50, 120],
     bp_sys: [90, 119, 90, 139],
@@ -26,7 +28,6 @@ const BASE: Record<IndicatorCode, MockBand> = {
     radiation: [0, 0.6, 0, 1.2],
 };
 
-/** La radiación depende del entorno: verde hasta la dosis base, amarillo hasta el doble. */
 const RADIATION_BASE: Record<MockEnvironment, number> = {
     iss: 0.5,
     transit: 1.8,
@@ -34,19 +35,31 @@ const RADIATION_BASE: Record<MockEnvironment, number> = {
     mars: 0.6,
 };
 
-type Overrides = Partial<
-    Record<MockEnvironment, Partial<Record<IndicatorCode, MockBand>>>
->;
+/** Lo que llegó del backend, por entorno. */
+const primed: Partial<
+    Record<MockEnvironment, Record<IndicatorCode, MockBand>>
+> = {};
 
-function readOverrides(): Overrides {
-    try {
-        return JSON.parse(localStorage.getItem(KEY) ?? '{}') as Overrides;
-    } catch {
-        return {};
-    }
+/** Guarda los umbrales que devolvió la API para que los usen los datos de prueba. */
+export function primeThresholds(
+    env: MockEnvironment,
+    list: {
+        indicator: IndicatorCode;
+        green_min: number;
+        green_max: number;
+        yellow_min: number;
+        yellow_max: number;
+    }[],
+): void {
+    primed[env] = Object.fromEntries(
+        list.map((item) => [
+            item.indicator,
+            [item.green_min, item.green_max, item.yellow_min, item.yellow_max],
+        ]),
+    ) as Record<IndicatorCode, MockBand>;
 }
 
-/** Los umbrales vigentes de un entorno (los de la ficha + lo cambiado en la Guía). */
+/** Los umbrales de un entorno: los del backend si ya llegaron; si no, los de arranque. */
 export function mockThresholds(
     env: MockEnvironment = 'mars',
 ): Record<IndicatorCode, MockBand> {
@@ -55,23 +68,8 @@ export function mockThresholds(
     return {
         ...BASE,
         radiation: [0, base, 0, base * 2],
-        ...readOverrides()[env],
+        ...primed[env],
     };
-}
-
-export function mockSaveThreshold(
-    env: MockEnvironment,
-    indicator: IndicatorCode,
-    band: MockBand,
-): void {
-    const overrides = readOverrides();
-    overrides[env] = { ...overrides[env], [indicator]: band };
-
-    try {
-        localStorage.setItem(KEY, JSON.stringify(overrides));
-    } catch {
-        // Sin localStorage: el cambio no se guarda.
-    }
 }
 
 /** Verde dentro del rango verde, amarillo dentro de la banda amarilla, si no rojo. */

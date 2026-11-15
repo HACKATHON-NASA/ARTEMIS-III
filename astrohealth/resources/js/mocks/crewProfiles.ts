@@ -34,14 +34,15 @@ export const PROFILES: Record<number, Profile> = {
         ],
     },
     2: {
-        score: 89,
+        // Mismo cálculo que ScoreRule (M2): sueño 5,8 h es rojo (< 6 h) → 90.
+        score: 90,
         status: 'green',
-        summary: 'Buen estado general. Vigila las horas de sueño.',
+        summary: 'Buen estado general, pero el sueño está en crítico.',
         readings: [
             ['hr', 64, 'bpm', 'green', 30],
             ['bp_sys', 112, 'mmHg', 'green', 30],
             ['bp_dia', 72, 'mmHg', 'green', 30],
-            ['sleep', 5.8, 'h', 'yellow', 400],
+            ['sleep', 5.8, 'h', 'red', 400],
             ['mood', 3, '1-5', 'yellow', 120],
             ['spo2', 98, '%', 'green', 30],
             ['temp', 36.5, '°C', 'green', 30],
@@ -51,9 +52,10 @@ export const PROFILES: Record<number, Profile> = {
         ],
     },
     3: {
-        score: 78,
-        status: 'yellow',
-        summary: 'Oxígeno en sangre y radiación en precaución.',
+        // ScoreRule: oxígeno, glucosa y radiación en amarillo → 87 (normal).
+        score: 87,
+        status: 'green',
+        summary: 'Oxígeno en sangre, glucosa y radiación en precaución.',
         readings: [
             ['hr', 76, 'bpm', 'green', 15],
             ['bp_sys', 118, 'mmHg', 'green', 15],
@@ -68,7 +70,7 @@ export const PROFILES: Record<number, Profile> = {
         ],
     },
     4: {
-        score: 97,
+        score: 100,
         status: 'green',
         summary: 'Todo en orden. Sigue con tu rutina.',
         readings: [

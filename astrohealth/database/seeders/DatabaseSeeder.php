@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Modules\Entorno\Database\Seeders\MissionSeeder;
+use App\Modules\Evaluacion\Database\Seeders\ThresholdSeeder;
 use App\Modules\Identidad\Database\Seeders\DeviceSeeder;
 use App\Modules\Identidad\Database\Seeders\UserSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -21,6 +22,7 @@ class DatabaseSeeder extends Seeder
             MissionSeeder::class,   // M6: misión Ares-1 y 4 astronautas
             UserSeeder::class,      // M0: un usuario por rol, enlazados a sus astronautas
             DeviceSeeder::class,    // M0: el dispositivo del simulador
+            ThresholdSeeder::class, // M2: umbrales del semáforo en los 4 entornos
         ]);
     }
 }
