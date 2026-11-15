@@ -16,7 +16,7 @@ import type { NavItem } from '@/types';
  * deshabilitadas con "Pronto"; las que tienen contador muestran su número.
  */
 withDefaults(defineProps<{ items: NavItem[]; label?: string }>(), {
-    label: 'Misión',
+    label: '',
 });
 
 const { isCurrentUrl } = useCurrentUrl();
@@ -24,7 +24,7 @@ const { isCurrentUrl } = useCurrentUrl();
 
 <template>
     <SidebarGroup class="px-2 py-0">
-        <SidebarGroupLabel>{{ label }}</SidebarGroupLabel>
+        <SidebarGroupLabel v-if="label">{{ label }}</SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
                 <SidebarMenuButton

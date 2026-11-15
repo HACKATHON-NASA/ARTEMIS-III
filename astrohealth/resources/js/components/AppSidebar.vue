@@ -77,6 +77,11 @@ const missionItems = computed<NavItem[]>(() => [
     { title: 'Guía de salud', href: '#', icon: BookOpen, soon: true },
 ]);
 
+/** El astronauta cuida su salud; Tierra y los médicos monitorean a la tripulación. */
+const mainLabel = computed(() =>
+    auth.actor?.astronaut_id && !canSeeCrew.value ? 'Mi salud' : 'Monitoreo',
+);
+
 const adminItems = computed<NavItem[]>(() => [
     ...(auth.can('missions.manage')
         ? [{ title: 'Misiones', href: misiones(), icon: Rocket }]
@@ -134,11 +139,11 @@ onMounted(() => {
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="missionItems" />
+            <NavMain :items="missionItems" :label="mainLabel" />
             <NavMain
                 v-if="adminItems.length"
                 :items="adminItems"
-                label="Administración"
+                label="Gestión"
             />
         </SidebarContent>
 
