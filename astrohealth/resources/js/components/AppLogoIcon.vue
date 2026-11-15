@@ -1,25 +1,14 @@
 <script setup lang="ts">
-import logoColor from '../../images/marca/logo-color.png';
-import logoNegro from '../../images/marca/logo-negro.png';
-import { BRAND } from '@/lib/brand';
+import nasaLogo from '../../images/marca/nasa-logo.webp';
 
 /**
- * El logo de la marca. En tema claro va el negro; en oscuro, el de color
- * (tiene partes blancas que solo se ven sobre fondo oscuro).
+ * El logo de la NASA (menú lateral y encabezado). Lleva su propio fondo
+ * azul, así que sirve igual en tema claro y oscuro.
  */
 </script>
 
 <template>
     <span class="relative inline-block">
-        <img
-            :src="logoNegro"
-            :alt="BRAND.name"
-            class="size-full object-contain dark:hidden"
-        />
-        <img
-            :src="logoColor"
-            :alt="BRAND.name"
-            class="hidden size-full object-contain dark:block"
-        />
+        <img :src="nasaLogo" alt="NASA" class="size-full object-contain" />
     </span>
 </template>

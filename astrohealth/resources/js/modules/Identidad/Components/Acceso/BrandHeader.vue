@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import logoColor from '../../../../../images/marca/logo-color.png';
+import nasaLogo from '../../../../../images/marca/nasa-logo.webp';
 import { BRAND } from '@/lib/brand';
 
 /**
- * La marca: logo de color + el nombre + el lema.
+ * La marca: logo de la NASA + el nombre + el lema.
  * Cada hijo directo entra por separado en la animación (data-intro="brand").
  */
 </script>
@@ -12,8 +12,8 @@ import { BRAND } from '@/lib/brand';
     <header class="flex items-center gap-5 sm:gap-7" data-intro="brand">
         <div class="shrink-0">
             <img
-                :src="logoColor"
-                :alt="`Logo de ${BRAND.name}`"
+                :src="nasaLogo"
+                alt="NASA"
                 class="brand-logo size-20 object-contain sm:size-28"
             />
         </div>
