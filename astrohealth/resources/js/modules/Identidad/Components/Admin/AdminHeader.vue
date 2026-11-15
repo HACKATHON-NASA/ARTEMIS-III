@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import type { MissionSummary } from '../../Types/admin';
 import HeartbeatLine from '../Acceso/HeartbeatLine.vue';
+
+const { t } = useI18n();
 
 /**
  * Cabecera: qué es esta vista y en qué va la misión (día y avance).
@@ -28,13 +31,13 @@ const progress = computed(() =>
         <p
             class="text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
         >
-            Centro de control
+            {{ t('Identidad.admin.eyebrow') }}
         </p>
         <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Administración
+            {{ t('Identidad.admin.title') }}
         </h1>
         <p class="mt-2 max-w-xl text-muted-foreground">
-            Usuarios, permisos y dispositivos que envían datos de la misión.
+            {{ t('Identidad.admin.subtitle') }}
         </p>
 
         <div
@@ -47,7 +50,7 @@ const progress = computed(() =>
                 <span class="size-2 rounded-full bg-sky-500" />
                 <strong class="font-semibold">{{ mission.name }}</strong>
                 <span class="text-muted-foreground">
-                    · {{ mission.environment_label }}
+                    · {{ t(`environments.${mission.environment}`) }}
                 </span>
             </span>
             <div class="flex flex-1 items-center gap-3">
@@ -56,7 +59,7 @@ const progress = computed(() =>
                     role="progressbar"
                     :aria-valuenow="mission.day"
                     :aria-valuemax="mission.day_count"
-                    aria-label="Avance de la misión"
+                    :aria-label="t('Identidad.admin.missionProgress')"
                 >
                     <div
                         class="mission-bar h-full rounded-full bg-linear-to-r from-sky-400 to-blue-600"
@@ -66,7 +69,12 @@ const progress = computed(() =>
                 <span
                     class="text-xs whitespace-nowrap text-muted-foreground tabular-nums"
                 >
-                    Día {{ mission.day }} de {{ mission.day_count }}
+                    {{
+                        t('Identidad.admin.dayOf', {
+                            day: mission.day,
+                            total: mission.day_count,
+                        })
+                    }}
                 </span>
             </div>
         </div>

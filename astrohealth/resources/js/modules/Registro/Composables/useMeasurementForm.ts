@@ -2,6 +2,7 @@ import { computed, reactive } from 'vue';
 import type { Ref } from 'vue';
 import type { IndicatorCode } from '@/types/health';
 import type { Indicator, RecordPayload } from '../Types/measurement';
+import { t } from '@/lib/i18n';
 
 /**
  * El estado del formulario de registro: un valor por indicador (texto, como
@@ -33,11 +34,15 @@ export function useMeasurementForm(indicators: Ref<Indicator[]>) {
         const value = parse(raw);
 
         if (Number.isNaN(value)) {
-            return 'Escribe solo números.';
+            return t('Registro.onlyNumbers');
         }
 
         if (value < indicator.min || value > indicator.max) {
-            return `Revisa el número: debe estar entre ${indicator.min} y ${indicator.max} ${indicator.unit}.`;
+            return t('Registro.outOfRange', {
+                min: indicator.min,
+                max: indicator.max,
+                unit: indicator.unit,
+            });
         }
 
         return null;

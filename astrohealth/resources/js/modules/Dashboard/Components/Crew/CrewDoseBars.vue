@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { formatNumber } from '@/lib/i18n';
 import gsap from 'gsap';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import type { DoseRow } from '../../Types/crewTrends';
+
+const { t } = useI18n();
 
 /**
  * La radiación acumulada en la misión: una barra por tripulante (con su
@@ -26,7 +30,7 @@ const max = computed(
 );
 const pct = (value: number) => `${(value / max.value) * 100}%`;
 const mSv = (value: number) =>
-    value.toLocaleString('es', {
+    formatNumber(value, {
         minimumFractionDigits: 1,
         maximumFractionDigits: 1,
     });
@@ -92,9 +96,14 @@ watch(() => props.rows, grow);
             <span
                 class="inline-block h-3 w-0 border-l-2 border-dashed border-foreground/60"
             />
-            Esperado en {{ environmentName }}: {{ mSv(expected) }} mSv en
-            {{ days }} días ({{ baseDose.toLocaleString('es') }}
-            mSv/día)
+            {{
+                t('Dashboard.crew.expected', {
+                    env: environmentName,
+                    total: mSv(expected),
+                    days,
+                    base: formatNumber(baseDose),
+                })
+            }}
         </p>
     </div>
 </template>

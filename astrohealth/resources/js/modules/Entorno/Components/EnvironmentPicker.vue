@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { ref } from 'vue';
 import type { EnvironmentCode } from '../Types/mission';
 import { ENVIRONMENTS } from '../Utils/environments';
+
+const { t } = useI18n();
 
 /**
  * Elegir el entorno de la misión: 4 tarjetas con su gravedad, radiación y
@@ -49,7 +52,8 @@ function move(index: number, step: number): void {
             <component :is="env.icon" class="size-5 text-foreground/80" />
             <p class="mt-2 text-sm font-semibold">{{ env.name }}</p>
             <p class="text-[11px] leading-snug text-muted-foreground">
-                {{ env.gravity }} · retraso {{ env.delay }}
+                {{ env.gravity }} ·
+                {{ t('Entorno.delay', { delay: env.delay }) }}
             </p>
         </button>
     </div>

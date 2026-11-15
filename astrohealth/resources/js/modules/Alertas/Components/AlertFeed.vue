@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { agoFromMinutes } from '@/lib/i18n';
+import { alertMessage } from '../Utils/alertText';
 import { Link } from '@inertiajs/vue3';
 import { ArrowRight, BellOff, Radio } from '@lucide/vue';
 import { alertas } from '@/routes';
 import type { Alert } from '../Types/alerts';
 import { KIND_META } from '../Utils/alertKinds';
 import { alertState } from '../Utils/alertState';
+
+const { t } = useI18n();
 
 /**
  * Las novedades en vivo del Panel de salud: lo último que llegó de la
@@ -26,25 +31,17 @@ const TONE = {
 } as const;
 
 function ago(iso: string): string {
-    const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
-
-    return minutes < 1
-        ? 'ahora'
-        : minutes < 60
-          ? `hace ${minutes} min`
-          : minutes < 1440
-            ? `hace ${Math.round(minutes / 60)} h`
-            : `hace ${Math.round(minutes / 1440)} d`;
+    return agoFromMinutes((Date.now() - new Date(iso).getTime()) / 60_000);
 }
 
 function stateText(alert: Alert): string {
     if (alert.acknowledged_at) {
-        return 'Atendida';
+        return t('Alertas.feed.handled');
     }
 
     return alertState(alert) === 'traveling'
-        ? 'En camino a Tierra'
-        : 'Sin atender';
+        ? t('Alertas.feed.onTheWay')
+        : t('Alertas.feed.unattended');
 }
 </script>
 
@@ -55,21 +52,21 @@ function stateText(alert: Alert): string {
         >
             <h2 class="flex items-center gap-2 font-semibold">
                 <Radio class="size-4 text-sky-500" />
-                Novedades
+                {{ t('Alertas.feed.title') }}
                 <span
                     class="flex items-center gap-1.5 text-xs font-normal text-muted-foreground"
                 >
                     <span
                         class="size-1.5 animate-pulse rounded-full bg-[var(--status-green)] motion-reduce:animate-none"
                     />
-                    en vivo
+                    {{ t('Alertas.feed.live') }}
                 </span>
             </h2>
             <Link
                 :href="alertas()"
                 class="inline-flex items-center gap-1 text-sm font-medium text-sky-600 hover:underline dark:text-sky-400"
             >
-                Ver todas <ArrowRight class="size-4" />
+                {{ t('Alertas.feed.seeAll') }} <ArrowRight class="size-4" />
             </Link>
         </header>
 
@@ -101,7 +98,7 @@ function stateText(alert: Alert): string {
                             'text-muted-foreground': alert.acknowledged_at,
                         }"
                     >
-                        {{ alert.message }}
+                        {{ alertMessage(alert, nameOf(alert.astronaut_id)) }}
                     </p>
                     <p class="truncate text-xs text-muted-foreground">
                         {{ nameOf(alert.astronaut_id) }} ·
@@ -124,7 +121,7 @@ function stateText(alert: Alert): string {
                     class="shrink-0 rounded-lg bg-linear-to-r from-sky-500 to-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:brightness-110"
                     @click="$emit('attend', alert)"
                 >
-                    Atender
+                    {{ t('Alertas.feed.attend') }}
                 </button>
             </li>
         </TransitionGroup>
@@ -134,7 +131,7 @@ function stateText(alert: Alert): string {
             class="flex flex-col items-center gap-2 p-10 text-center text-sm text-muted-foreground"
         >
             <BellOff class="size-6" />
-            Nada nuevo de la tripulación.
+            {{ t('Alertas.feed.nothing') }}
         </div>
     </section>
 </template>

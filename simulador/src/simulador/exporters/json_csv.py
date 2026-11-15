@@ -22,10 +22,10 @@ def export_json(result: MissionResult, folder: Path = OUTPUT_DIR) -> Path:
 
 
 def export_csv(result: MissionResult, folder: Path = OUTPUT_DIR) -> list[Path]:
-    """`{mission}_{seed}_measurements.csv` y `{mission}_{seed}_alerts.csv`."""
+    """`{mission}_{seed}_measurements.csv` (valores crudos)."""
     folder.mkdir(parents=True, exist_ok=True)
     paths: list[Path] = []
-    for suffix, rows in (("measurements", result.measurements), ("alerts", result.alerts)):
+    for suffix, rows in (("measurements", result.measurements),):
         path = folder / f"{_base_name(result)}_{suffix}.csv"
         dumped = [r.model_dump(mode="json") for r in rows]
         fields = list(dumped[0]) if dumped else []

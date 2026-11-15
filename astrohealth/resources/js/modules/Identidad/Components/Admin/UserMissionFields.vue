@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { crewRoleLabel } from '../../../Entorno/Utils/environments';
 import { Rocket } from '@lucide/vue';
 import InputError from '@/components/InputError.vue';
 import { Label } from '@/components/ui/label';
@@ -10,6 +12,8 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import type { MissionOption } from '../../Types/admin';
+
+const { t } = useI18n();
 
 /**
  * La misión de la persona y, si va en la nave, su cargo en la tripulación.
@@ -25,12 +29,6 @@ defineProps<{
 
 const mission = defineModel<string>('mission', { required: true });
 const crewRole = defineModel<string>('crewRole', { required: true });
-
-const STATUS = {
-    active: 'En curso',
-    planned: 'Planificada',
-    finished: 'Terminada',
-};
 </script>
 
 <template>
@@ -41,16 +39,18 @@ const STATUS = {
             <Rocket class="size-4 text-sky-500" />
             {{
                 withCrewRole
-                    ? 'Va en la nave: asócialo a su misión'
-                    : 'Sigue una misión desde Tierra'
+                    ? t('Identidad.admin.missionInSpace')
+                    : t('Identidad.admin.missionFromEarth')
             }}
         </p>
 
         <div class="grid gap-2">
-            <Label for="user-mission">Misión</Label>
+            <Label for="user-mission">{{ t('Identidad.admin.mission') }}</Label>
             <Select v-model="mission">
                 <SelectTrigger id="user-mission" class="w-full bg-background">
-                    <SelectValue placeholder="¿En qué misión?" />
+                    <SelectValue
+                        :placeholder="t('Identidad.admin.whichMission')"
+                    />
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem
@@ -64,7 +64,12 @@ const STATUS = {
                     >
                         {{ option.name }}
                         <span class="text-muted-foreground">
-                            · {{ option.place }} · {{ STATUS[option.status] }}
+                            · {{ option.place }} ·
+                            {{
+                                t(
+                                    `Identidad.admin.missionStatus.${option.status}`,
+                                )
+                            }}
                         </span>
                     </SelectItem>
                 </SelectContent>
@@ -73,10 +78,14 @@ const STATUS = {
         </div>
 
         <div v-if="withCrewRole" class="grid gap-2">
-            <Label for="user-crew-role">Cargo en la tripulación</Label>
+            <Label for="user-crew-role">{{
+                t('Identidad.admin.crewRole')
+            }}</Label>
             <Select v-model="crewRole">
                 <SelectTrigger id="user-crew-role" class="w-full bg-background">
-                    <SelectValue placeholder="Elige el cargo" />
+                    <SelectValue
+                        :placeholder="t('Identidad.admin.chooseCrewRole')"
+                    />
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem
@@ -84,7 +93,7 @@ const STATUS = {
                         :key="option"
                         :value="option"
                     >
-                        {{ option }}
+                        {{ crewRoleLabel(option) }}
                     </SelectItem>
                 </SelectContent>
             </Select>

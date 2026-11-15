@@ -1,37 +1,46 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
+import { api, ApiError } from '@/lib/api';
+import { t } from '@/lib/i18n';
 import type { PsychResult, PsychSubmission, PsychTest } from '../Types/psych';
-import {
-    mockAddResult,
-    mockPsychResults,
-    mockPsychTests,
-    mockSaveTest,
-} from '../Utils/psychMockData';
-import { bandFor, score } from '../Utils/psychScoring';
+import { localizeTest } from '../Utils/psychText';
 
 /**
  * La guía psicológica (M2): el catálogo de tests, las respuestas de la
- * tripulación y sus resultados. Las respuestas de cada uno son datos de
- * salud: solo las ven quienes tienen health.read.any.
+ * tripulación y sus resultados.
  *
- * ⚠️ HOY con datos de prueba (Utils/psychMockData.ts). Con el backend:
- * GET/POST/PUT /api/v1/psych-tests y GET/POST /api/v1/psych-results (el
- * puntaje lo calcula el backend y avisa a Tierra si hay una respuesta de riesgo).
+ * GET/POST/PUT /api/v1/psych-tests y GET/POST /api/v1/psych-results. El
+ * puntaje, la banda y el color los calcula el backend; también suma los
+ * puntos (M7) y, si hay una respuesta de riesgo, avisa a Tierra (M5). Cada
+ * quien recibe solo los resultados que puede ver (health.read).
+ *
+ * `tests` sale con los textos en el idioma de ahora (para mostrar);
+ * `original()` da el test tal como está guardado (para editarlo).
  */
-const wait = (ms = 250) => new Promise((resolve) => setTimeout(resolve, ms));
+function fail(error: unknown, fallback: string): void {
+    toast.error(error instanceof ApiError ? error.message : fallback);
+}
 
 export const usePsychStore = defineStore('psych', () => {
-    const tests = ref<PsychTest[]>([]);
+    const stored = ref<PsychTest[]>([]);
+    const tests = computed(() => stored.value.map(localizeTest));
     const results = ref<PsychResult[]>([]);
 
     async function load(): Promise<void> {
-        await wait();
-        tests.value = mockPsychTests();
-        results.value = mockPsychResults();
+        [stored.value, results.value] = await Promise.all([
+            api<PsychTest[]>('/psych-tests'),
+            api<PsychResult[]>('/psych-results'),
+        ]);
     }
 
     function find(id: number): PsychTest | null {
         return tests.value.find((test) => test.id === id) ?? null;
+    }
+
+    /** El test tal como está guardado (sin traducir), para el editor. */
+    function original(id: number): PsychTest | null {
+        return stored.value.find((test) => test.id === id) ?? null;
     }
 
     /** Resultados de un tripulante en un test, del más viejo al más nuevo. */
@@ -62,43 +71,55 @@ export const usePsychStore = defineStore('psych', () => {
         return last === null || today - last.day >= test.frequency_days;
     }
 
-    async function saveTest(test: PsychTest): Promise<PsychTest> {
-        await wait(400);
-        const saved = mockSaveTest(test);
-        tests.value = mockPsychTests();
+    /** Crea (id 0) o cambia un test del catálogo. */
+    async function saveTest(test: PsychTest): Promise<PsychTest | null> {
+        const { id, ...body } = test;
 
-        return saved;
-    }
+        try {
+            const saved = await api<PsychTest>(
+                id ? `/psych-tests/${id}` : '/psych-tests',
+                { method: id ? 'PUT' : 'POST', body },
+            );
+            stored.value = [
+                ...stored.value.filter((item) => item.id !== saved.id),
+                saved,
+            ].sort((a, b) => a.id - b.id);
 
-    async function submit(
-        astronautId: number,
-        testId: number,
-        submission: PsychSubmission,
-        today: number,
-    ): Promise<PsychResult | null> {
-        const test = find(testId);
+            return saved;
+        } catch (error) {
+            fail(error, t('Evaluacion.psych.saveFailed'));
 
-        if (!test) {
             return null;
         }
+    }
 
-        await wait(500);
-        const scored = score(test, submission);
-        const band = bandFor(test, scored.score);
-        const saved = mockAddResult({
-            test_id: testId,
-            astronaut_id: astronautId,
-            day: today,
-            taken_at: new Date().toISOString(),
-            score: scored.score,
-            status: band.status,
-            band: band.label,
-            detail: scored.detail,
-            flagged: scored.flagged,
-        });
-        results.value = mockPsychResults();
+    /** Manda lo respondido; el backend devuelve el resultado ya puntuado. */
+    async function submit(
+        testId: number,
+        submission: PsychSubmission,
+    ): Promise<PsychResult | null> {
+        const body =
+            submission.kind === 'psychological'
+                ? { test_id: testId, answers: submission.answers }
+                : {
+                      test_id: testId,
+                      reactions: submission.reactions,
+                      false_starts: submission.falseStarts,
+                  };
 
-        return saved;
+        try {
+            const saved = await api<PsychResult>('/psych-results', {
+                method: 'POST',
+                body,
+            });
+            results.value = [...results.value, saved];
+
+            return saved;
+        } catch (error) {
+            fail(error, t('Evaluacion.psych.sendFailed'));
+
+            return null;
+        }
     }
 
     return {
@@ -106,6 +127,7 @@ export const usePsychStore = defineStore('psych', () => {
         results,
         load,
         find,
+        original,
         history,
         latest,
         isDue,

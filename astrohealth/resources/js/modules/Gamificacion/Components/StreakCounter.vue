@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import gsap from 'gsap';
 import { ref, watch } from 'vue';
+
+const { t } = useI18n();
 
 /**
  * 🔥 La racha: días seguidos con el registro completo. Late una vez cuando
@@ -41,11 +44,11 @@ watch(
             <p class="text-2xl leading-none font-semibold tabular-nums">
                 {{ days }}
                 <span class="text-base font-normal text-muted-foreground">{{
-                    days === 1 ? 'día' : 'días'
+                    t('Gamificacion.streakDays', days)
                 }}</span>
             </p>
             <p class="mt-1 text-xs text-muted-foreground">
-                de racha con el registro completo
+                {{ t('Gamificacion.streakHint') }}
             </p>
         </div>
     </div>

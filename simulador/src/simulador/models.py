@@ -25,14 +25,6 @@ class Source(StrEnum):
     SIMULATED_EVENT = "simulated_event"
 
 
-class Status(StrEnum):
-    """Semáforo de una medición."""
-
-    GREEN = "green"
-    YELLOW = "yellow"
-    RED = "red"
-
-
 class RiskLevel(StrEnum):
     """Nivel de riesgo de radiación de un día."""
 
@@ -51,7 +43,7 @@ class Environment(StrEnum):
 
 
 class Indicator(StrEnum):
-    """Indicadores que genera y evalúa el simulador."""
+    """Indicadores que miden los aparatos simulados (el ánimo lo registra el astronauta en la app)."""
 
     HR = "hr"
     BP_SYS = "bp_sys"
@@ -60,29 +52,8 @@ class Indicator(StrEnum):
     TEMP = "temp"
     SPO2 = "spo2"
     SLEEP = "sleep"
-    MOOD = "mood"
     RADIATION = "radiation"
     EXERCISE_MIN = "exercise_min"
-
-
-class TrendDirection(StrEnum):
-    """Dirección de la tendencia de un indicador."""
-
-    UP = "up"
-    DOWN = "down"
-    STABLE = "stable"
-
-
-class BodyPart(StrEnum):
-    """Órganos o sistemas a los que se asignan los indicadores."""
-
-    HEART = "heart"
-    LUNGS = "lungs"
-    BRAIN = "brain"
-    IMMUNE = "immune"
-    METABOLISM = "metabolism"
-    BONES = "bones"
-    WHOLE_BODY = "whole_body"
 
 
 # ---------------------------------------------------------------------------
@@ -156,28 +127,13 @@ class CrewMember(BaseModel):
 
 
 class Measurement(BaseModel):
-    """Una medición de un indicador de un astronauta."""
+    """Valor crudo de un aparato: sin semáforo (lo evalúa el sistema principal)."""
 
     astronaut_id: int
     indicator: Indicator
     value: float
     unit: str
     measured_at: datetime
-    status: Status | None = None
-    source: Source
-
-
-class Alert(BaseModel):
-    """Alerta generada por una medición en rojo o una tendencia negativa."""
-
-    astronaut_id: int
-    indicator: Indicator
-    status: Status
-    message: str
-    measured_at: datetime
-    notify_ground: bool = False
-    ground_delay_seconds: float = 0
-    trend_alert: bool = False
     source: Source
 
 
@@ -205,70 +161,7 @@ class MissionResult(BaseModel):
     crew: list[CrewMember]
     space_weather: list[SpaceWeatherDay]
     measurements: list[Measurement]
-    alerts: list[Alert] = Field(default_factory=list)
     meta: MissionMeta
-
-
-# ---------------------------------------------------------------------------
-# Motor de evaluación
-# ---------------------------------------------------------------------------
-
-
-class EvaluateRequest(BaseModel):
-    """Entrada de `POST /evaluate`."""
-
-    indicator: Indicator
-    value: float
-    environment: Environment = Environment.MARS
-    sep_active: bool = False
-    """Solo para radiación: un evento SEP activo pone el semáforo en rojo."""
-
-
-class EvaluateResult(BaseModel):
-    """Resultado del semáforo de una medición."""
-
-    status: Status
-    message: str
-
-
-class AssessRequest(BaseModel):
-    """Entrada de `POST /assess`."""
-
-    measurements: list[Measurement] = Field(min_length=1)
-    environment: Environment = Environment.MARS
-
-
-class AssessResult(BaseModel):
-    """Puntaje global y estado por órgano."""
-
-    score: int = Field(ge=0, le=100)
-    body_status: dict[BodyPart, Status]
-    summary: str
-
-
-class TrendRequest(BaseModel):
-    """Entrada de `POST /trends`: serie de un indicador, de la más antigua a la más reciente."""
-
-    indicator: Indicator
-    values: list[float] = Field(min_length=2)
-    environment: Environment = Environment.MARS
-
-
-class TrendResult(BaseModel):
-    """Resultado del análisis de tendencia."""
-
-    direction: TrendDirection
-    trend_alert: bool
-
-
-class Recommendation(BaseModel):
-    """Recomendación para un indicador y un estado."""
-
-    indicator: Indicator
-    status: Status
-    recommendation: str
-    notify_ground: bool = False
-    ground_delay_seconds: float = 0
 
 
 # ---------------------------------------------------------------------------

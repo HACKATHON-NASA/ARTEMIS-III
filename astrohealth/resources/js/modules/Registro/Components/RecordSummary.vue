@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { currentLocale, formatNumber } from '@/lib/i18n';
+import { indicatorName } from '@/lib/indicators';
 import { Link } from '@inertiajs/vue3';
 import { BellRing, CircleCheck, HeartPulse, RotateCcw } from '@lucide/vue';
 import { computed } from 'vue';
@@ -7,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { statusMeta } from '@/lib/status';
 import { alertas, inicio } from '@/routes';
 import type { Indicator, Measurement } from '../Types/measurement';
+
+const { t } = useI18n();
 
 /**
  * Lo que se acaba de guardar, cada valor con el color que le puso el
@@ -21,7 +26,10 @@ const props = defineProps<{
 defineEmits<{ again: [] }>();
 
 const nameOf = (code: Measurement['indicator']) =>
-    props.indicators.find((item) => item.code === code)?.name ?? code;
+    indicatorName(
+        code,
+        props.indicators.find((item) => item.code === code)?.name ?? code,
+    );
 
 const allGreen = computed(() =>
     props.measurements.every((item) => item.status === 'green'),
@@ -32,10 +40,13 @@ const hasRed = computed(() =>
 
 const time = computed(() =>
     props.measurements[0]
-        ? new Date(props.measurements[0].measured_at).toLocaleTimeString('es', {
-              hour: '2-digit',
-              minute: '2-digit',
-          })
+        ? new Date(props.measurements[0].measured_at).toLocaleTimeString(
+              currentLocale(),
+              {
+                  hour: '2-digit',
+                  minute: '2-digit',
+              },
+          )
         : '',
 );
 </script>
@@ -50,19 +61,20 @@ const time = computed(() =>
             </span>
             <div>
                 <h2 class="text-lg font-semibold">
-                    {{ measurements.length }}
                     {{
-                        measurements.length === 1
-                            ? 'valor guardado'
-                            : 'valores guardados'
+                        t(
+                            'Registro.savedValues',
+                            { n: measurements.length },
+                            measurements.length,
+                        )
                     }}
                 </h2>
                 <p class="text-sm text-muted-foreground">
-                    Medidos a las {{ time }}.
+                    {{ t('Registro.measuredAtTime', { time }) }}
                     {{
                         allGreen
-                            ? 'Todo en verde: buen trabajo.'
-                            : 'Mira los que salieron en color en tu cuerpo.'
+                            ? t('Registro.allGreen')
+                            : t('Registro.seeColors')
                     }}
                 </p>
             </div>
@@ -85,9 +97,13 @@ const time = computed(() =>
                         {{ nameOf(item.indicator) }}
                     </p>
                     <p class="font-semibold tabular-nums">
-                        {{ item.value.toLocaleString('es') }}
+                        {{ formatNumber(item.value) }}
                         <span class="text-sm font-normal text-muted-foreground">
-                            {{ item.unit === '1-5' ? 'de 5' : item.unit }}
+                            {{
+                                item.unit === '1-5'
+                                    ? t('Registro.outOf5')
+                                    : item.unit
+                            }}
                         </span>
                     </p>
                 </div>
@@ -106,16 +122,17 @@ const time = computed(() =>
         >
             <BellRing class="mt-0.5 size-4 shrink-0" />
             <p>
-                Se
                 {{
-                    alertsCreated === 1
-                        ? 'creó 1 alerta'
-                        : `crearon ${alertsCreated} alertas`
-                }}.
+                    t(
+                        'Registro.alertsCreated',
+                        { n: alertsCreated },
+                        alertsCreated,
+                    )
+                }}
                 {{
                     hasRed
-                        ? 'Hay un valor crítico: sigue los pasos y envíala a Tierra.'
-                        : 'Revisa qué hacer en el centro de alertas.'
+                        ? t('Registro.criticalHint')
+                        : t('Registro.reviewHint')
                 }}
             </p>
         </div>
@@ -126,13 +143,17 @@ const time = computed(() =>
                 as-child
                 class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
             >
-                <Link :href="alertas()"><BellRing /> Ver alertas</Link>
+                <Link :href="alertas()"
+                    ><BellRing /> {{ t('Registro.seeAlerts') }}</Link
+                >
             </Button>
             <Button variant="outline" as-child>
-                <Link :href="inicio()"><HeartPulse /> Ir a mi inicio</Link>
+                <Link :href="inicio()"
+                    ><HeartPulse /> {{ t('Registro.goHome') }}</Link
+                >
             </Button>
             <Button variant="ghost" @click="$emit('again')">
-                <RotateCcw /> Registrar más
+                <RotateCcw /> {{ t('Registro.logMore') }}
             </Button>
         </div>
     </section>

@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { statusMeta } from '@/lib/status';
 import type { IndicatorCode } from '@/types/health';
 import type { CrewSnapshotRow } from '../../Types/crewTrends';
 import { CHART_INDICATORS, formatValue } from '../../Utils/indicatorMeta';
+
+const { t } = useI18n();
 
 /**
  * El mapa de riesgos: una fila por tripulante y una columna por indicador,
@@ -23,7 +26,9 @@ defineEmits<{ pick: [code: IndicatorCode] }>();
             class="w-full min-w-[760px] border-separate border-spacing-1 text-sm"
         >
             <caption class="sr-only">
-                Último valor de cada indicador por tripulante
+                {{
+                    t('Dashboard.crew.caption')
+                }}
             </caption>
             <thead>
                 <tr>
@@ -31,7 +36,7 @@ defineEmits<{ pick: [code: IndicatorCode] }>();
                         scope="col"
                         class="w-40 text-left text-xs font-medium text-muted-foreground"
                     >
-                        Tripulante
+                        {{ t('Dashboard.crew.member') }}
                     </th>
                     <th
                         v-for="item in CHART_INDICATORS"
@@ -48,7 +53,11 @@ defineEmits<{ pick: [code: IndicatorCode] }>();
                                     : 'text-muted-foreground'
                             "
                             :aria-pressed="selected === item.code"
-                            :title="`Ver ${item.label} en la gráfica`"
+                            :title="
+                                t('Dashboard.crew.seeInChart', {
+                                    name: item.label,
+                                })
+                            "
                             @click="$emit('pick', item.code)"
                         >
                             {{ item.short }}
@@ -58,7 +67,7 @@ defineEmits<{ pick: [code: IndicatorCode] }>();
                         scope="col"
                         class="text-xs font-medium text-muted-foreground"
                     >
-                        Vigilar
+                        {{ t('Dashboard.crew.watch') }}
                     </th>
                 </tr>
             </thead>
@@ -87,8 +96,22 @@ defineEmits<{ pick: [code: IndicatorCode] }>();
                         ]"
                         :title="
                             row.values[item.code]
-                                ? `${row.name} · ${item.label}: ${formatValue(row.values[item.code]!.value, item.code)} ${item.unit} (${statusMeta(row.values[item.code]!.status).label})`
-                                : `${row.name} · ${item.label}: sin datos`
+                                ? t('Dashboard.crew.cellTitle', {
+                                      who: row.name,
+                                      name: item.label,
+                                      value: formatValue(
+                                          row.values[item.code]!.value,
+                                          item.code,
+                                      ),
+                                      unit: item.unit,
+                                      status: statusMeta(
+                                          row.values[item.code]!.status,
+                                      ).label,
+                                  })
+                                : t('Dashboard.crew.cellNoData', {
+                                      who: row.name,
+                                      name: item.label,
+                                  })
                         "
                         @click="$emit('pick', item.code)"
                     >

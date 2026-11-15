@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import type { EnvironmentCode } from '../Types/mission';
+
+const { t } = useI18n();
 
 /**
  * La ilustración del entorno (SVG propio, quieto: nada de fondos animados):
@@ -26,7 +29,11 @@ const STARS = [
         viewBox="0 0 200 200"
         class="size-full"
         role="img"
-        :aria-label="`Ilustración: ${environment}`"
+        :aria-label="
+            t('Entorno.illustration', {
+                name: t(`environments.${environment}`),
+            })
+        "
     >
         <defs>
             <radialGradient id="art-mars" cx="35%" cy="30%" r="75%">

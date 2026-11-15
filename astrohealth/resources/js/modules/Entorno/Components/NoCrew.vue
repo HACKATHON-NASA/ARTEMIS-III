@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { UserPlus, UsersRound } from '@lucide/vue';
 import { usuarios } from '@/routes';
+
+const { t } = useI18n();
 
 /**
  * Estado vacío: la misión elegida todavía no tiene tripulantes. Quien
@@ -19,10 +22,11 @@ defineProps<{ missionName: string; canManage: boolean }>();
         >
             <UsersRound class="size-6" />
         </span>
-        <p class="font-medium">{{ missionName }} aún no tiene tripulantes</p>
+        <p class="font-medium">
+            {{ t('Entorno.noCrew.title', { mission: missionName }) }}
+        </p>
         <p class="max-w-sm text-sm text-muted-foreground">
-            Los tripulantes se crean en Usuarios, asociados a su misión. Cuando
-            registren datos, aquí aparece su salud.
+            {{ t('Entorno.noCrew.body') }}
         </p>
         <Link
             v-if="canManage"
@@ -30,7 +34,7 @@ defineProps<{ missionName: string; canManage: boolean }>();
             class="mt-1 inline-flex items-center gap-2 rounded-lg bg-linear-to-r from-sky-500 to-blue-600 px-4 py-2 text-sm font-medium text-white hover:brightness-110"
         >
             <UserPlus class="size-4" />
-            Crear tripulantes
+            {{ t('Entorno.noCrew.create') }}
         </Link>
     </div>
 </template>

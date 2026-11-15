@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { reminderTitle } from '../Recordatorios/Utils/reminderTypes';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -31,6 +33,9 @@ import HomeSkeleton from './Components/HomeSkeleton.vue';
 import TodayPlan from './Components/TodayPlan.vue';
 import { useBodyStore } from './Stores/useBodyStore';
 import { buildTodayPlan } from './Utils/todayPlan';
+import { badgeName } from '../Gamificacion/Utils/rules';
+
+const { t } = useI18n();
 
 /**
  * Inicio del astronauta (/inicio): cuerpo (M3) + puntaje (M2) + alertas (M5)
@@ -38,7 +43,7 @@ import { buildTodayPlan } from './Utils/todayPlan';
  * pone sus piezas. ⚠️ Por ahora, todos con datos de prueba (ver sus stores).
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Inicio', href: inicio() }] },
+    layout: { breadcrumbs: [{ title: 'nav.home', href: inicio() }] },
 });
 
 const auth = useAuthStore();
@@ -86,15 +91,20 @@ async function sendMessage(message: NewMessage): Promise<void> {
     groundOpen.value = true;
 }
 
+/** El próximo recordatorio por hacer, con su título en el idioma de ahora. */
+const nextReminder = computed(() => {
+    const next = reminders.reminders.find((item) => item.state !== 'done');
+
+    return next ? { ...next, title: reminderTitle(next) } : null;
+});
+
 /** "Tu día": lo que falta medir, la rutina, los tests y la próxima insignia. */
 const plan = computed(() =>
     buildTodayPlan({
         values: Object.values(body.status ?? {}).flatMap((zone) => zone.values),
         routine: {
             ...reminders.progress,
-            next:
-                reminders.reminders.find((item) => item.state !== 'done') ??
-                null,
+            next: nextReminder.value,
         },
         tests: {
             pending: psych.tests.filter((test) =>
@@ -106,7 +116,10 @@ const plan = computed(() =>
             ).length,
             total: psych.tests.length,
         },
-        badges: gamification.profile?.badges ?? [],
+        badges: (gamification.profile?.badges ?? []).map((badge) => ({
+            ...badge,
+            name: badgeName(badge),
+        })),
         links: {
             record: registrar(),
             routine: `${inicio().url}#rutina`,
@@ -124,17 +137,15 @@ async function completeReminder(reminder: Reminder): Promise<void> {
         return;
     }
 
-    const { gained } = await gamification.award(
+    // Los +5 los suma M7 en el backend al marcarlo hecho; aquí solo se celebran.
+    const { gained } = await gamification.refresh(
         auth.actor?.astronaut_id ?? 0,
-        'reminder',
-        `${reminder.id}-${mission.current?.day ?? 1}`,
-        mission.current?.day ?? 1,
     );
     busyReminder.value = null;
 
     if (gained > 0) {
-        toast.success(`¡Hecho! +${gained} puntos`, {
-            description: reminder.title,
+        toast.success(t('Cuerpo.home.done', { n: gained }), {
+            description: reminderTitle(reminder),
         });
     }
 }
@@ -143,7 +154,7 @@ onMounted(async () => {
     const astronautId = auth.actor?.astronaut_id ?? null;
 
     if (astronautId === null) {
-        toast.error('El Inicio es para la tripulación.');
+        toast.error(t('common.crewOnly'));
         router.visit(dashboard());
 
         return;
@@ -156,8 +167,8 @@ onMounted(async () => {
         reminders.load(astronautId),
         mission.load(),
         psych.load(),
+        gamification.load(astronautId),
     ]);
-    await gamification.load(astronautId, mission.current?.day ?? 1);
     ready.value = true;
     await nextTick();
     reveal();
@@ -165,7 +176,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Inicio" />
+    <Head :title="t('Cuerpo.home.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <HomeSkeleton v-if="!ready || !body.status || !mission.current" />
@@ -201,7 +212,7 @@ onMounted(async () => {
 
             <section class="flex flex-col gap-3" data-reveal>
                 <h2 class="text-sm font-semibold text-muted-foreground">
-                    ¿Necesitas a Tierra?
+                    {{ t('Cuerpo.home.needEarth') }}
                 </h2>
                 <AstronautComms
                     @choose="compose = { open: true, kind: $event }"
@@ -219,10 +230,11 @@ onMounted(async () => {
                         class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,rgb(14_165_233/0.12),transparent_65%)]"
                     />
                     <div class="relative">
-                        <h2 class="text-lg font-semibold">Tu cuerpo</h2>
+                        <h2 class="text-lg font-semibold">
+                            {{ t('Cuerpo.home.yourBody') }}
+                        </h2>
                         <p class="mb-4 text-sm text-muted-foreground">
-                            Los órganos que laten necesitan tu atención.
-                            Arrastra para girar y toca un órgano.
+                            {{ t('Cuerpo.home.yourBodyHint') }}
                         </p>
                         <BodyViewer
                             :parts="body.parts"

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { useAlertText } from '../Composables/useAlertText';
 import { ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -13,7 +15,10 @@ import {
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import type { Alert } from '../Types/alerts';
-import { QUICK_REPLIES } from '../Utils/alertKinds';
+import { quickReplies } from '../Utils/alertKinds';
+
+const { t } = useI18n();
+const text = useAlertText();
 
 /**
  * Tierra atiende una alerta y responde. Hay respuestas rápidas; la respuesta
@@ -31,14 +36,14 @@ const saving = ref(false);
 
 watch(open, (isOpen) => {
     if (isOpen) {
-        reply.value = props.alert?.kind === 'sos' ? QUICK_REPLIES[3] : '';
+        reply.value = props.alert?.kind === 'sos' ? quickReplies()[3] : '';
         error.value = null;
     }
 });
 
 async function send(): Promise<void> {
     if (reply.value.trim().length < 3) {
-        error.value = 'Escribe una respuesta o elige una rápida.';
+        error.value = t('Alertas.attend.errReply');
 
         return;
     }
@@ -58,10 +63,11 @@ async function send(): Promise<void> {
     <Dialog v-model:open="open">
         <DialogContent v-if="alert" class="sm:max-w-lg">
             <DialogHeader>
-                <DialogTitle>Atender: {{ alert.message }}</DialogTitle>
+                <DialogTitle>{{
+                    t('Alertas.attend.title', { message: text(alert) })
+                }}</DialogTitle>
                 <DialogDescription>
-                    Tu respuesta tarda en llegar a la nave lo mismo que tardó la
-                    alerta en llegar aquí.
+                    {{ t('Alertas.attend.hint') }}
                 </DialogDescription>
             </DialogHeader>
 
@@ -80,7 +86,7 @@ async function send(): Promise<void> {
             >
                 <div class="flex flex-col gap-1.5">
                     <button
-                        v-for="option in QUICK_REPLIES"
+                        v-for="option in quickReplies()"
                         :key="option"
                         type="button"
                         class="rounded-lg border px-3 py-2 text-left text-sm transition hover:border-sky-500/50"
@@ -98,7 +104,9 @@ async function send(): Promise<void> {
                     </button>
                 </div>
                 <div class="grid gap-2">
-                    <Label for="attend-reply">Respuesta</Label>
+                    <Label for="attend-reply">{{
+                        t('Alertas.attend.reply')
+                    }}</Label>
                     <textarea
                         id="attend-reply"
                         v-model="reply"
@@ -112,7 +120,9 @@ async function send(): Promise<void> {
             </form>
 
             <DialogFooter>
-                <Button variant="ghost" @click="open = false">Cancelar</Button>
+                <Button variant="ghost" @click="open = false">{{
+                    t('common.cancel')
+                }}</Button>
                 <Button
                     type="submit"
                     form="attend-form"
@@ -120,7 +130,7 @@ async function send(): Promise<void> {
                     class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                 >
                     <Spinner v-if="saving" />
-                    Responder y marcar atendida
+                    {{ t('Alertas.attend.send') }}
                 </Button>
             </DialogFooter>
         </DialogContent>

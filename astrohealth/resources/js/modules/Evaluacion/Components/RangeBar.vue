@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { formatNumber } from '@/lib/i18n';
 import { computed } from 'vue';
 import { statusMeta } from '@/lib/status';
 import type { Threshold } from '../Types/threshold';
+
+const { t } = useI18n();
 
 /**
  * Los rangos de un indicador en una barra: rojo · amarillo · verde ·
@@ -60,7 +64,7 @@ const ticks = computed(() => {
         .map((value) => ({
             value,
             left: pct(value),
-            label: value.toLocaleString('es', {
+            label: formatNumber(value, {
                 maximumFractionDigits: props.decimals,
             }),
         }));
@@ -71,7 +75,14 @@ const ticks = computed(() => {
     <div
         class="pt-1 pb-5"
         role="img"
-        :aria-label="`Verde de ${threshold.green_min} a ${threshold.green_max}; amarillo de ${threshold.yellow_min} a ${threshold.yellow_max}; fuera de eso, rojo`"
+        :aria-label="
+            t('Evaluacion.guide.rangeAria', {
+                gmin: threshold.green_min,
+                gmax: threshold.green_max,
+                ymin: threshold.yellow_min,
+                ymax: threshold.yellow_max,
+            })
+        "
     >
         <div class="relative h-3 overflow-hidden rounded-full bg-muted">
             <span

@@ -8,25 +8,25 @@ crew:
     role: Comandante
     age: 44
     sex: F
-    baseline: {hr_rest: 62, bp_sys: 112, bp_dia: 72, sleep_h: 7.4, temp: 36.6, spo2: 98, mood: 4.6, exercise_min: 110, glucose_z: 0.0}
+    baseline: {hr_rest: 62, bp_sys: 112, bp_dia: 72, sleep_h: 7.4, temp: 36.6, spo2: 98, exercise_min: 110, glucose_z: 0.0}
 
   - id: 2
     name: Tomás Okafor
     role: Piloto
     age: 38
     sex: M
-    baseline: {hr_rest: 66, bp_sys: 116, bp_dia: 75, sleep_h: 7.1, temp: 36.7, spo2: 97.5, mood: 4.4, exercise_min: 105, glucose_z: -0.2}
+    baseline: {hr_rest: 66, bp_sys: 116, bp_dia: 75, sleep_h: 7.1, temp: 36.7, spo2: 97.5, exercise_min: 105, glucose_z: -0.2}
 
   - id: 3
     name: Amara Lindqvist
     role: Oficial médica (CMO)
     age: 41
     sex: F
-    baseline: {hr_rest: 64, bp_sys: 114, bp_dia: 74, sleep_h: 7.3, temp: 36.6, spo2: 98, mood: 4.5, exercise_min: 112, glucose_z: 0.1}
+    baseline: {hr_rest: 64, bp_sys: 114, bp_dia: 74, sleep_h: 7.3, temp: 36.6, spo2: 98, exercise_min: 112, glucose_z: 0.1}
 
   - id: 4
     name: Rafael Duarte
     role: Ingeniero de vuelo
     age: 35
     sex: M
-    baseline: {hr_rest: 60, bp_sys: 110, bp_dia: 70, sleep_h: 7.2, temp: 36.7, spo2: 98.2, mood: 4.5, exercise_min: 115, glucose_z: -0.1}
+    baseline: {hr_rest: 60, bp_sys: 110, bp_dia: 70, sleep_h: 7.2, temp: 36.7, spo2: 98.2, exercise_min: 115, glucose_z: -0.1}

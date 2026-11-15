@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from '@lucide/vue';
 import { computed } from 'vue';
 import Sparkline from '@/components/Sparkline.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import type { IndicatorHistory } from '../../Stores/useMyEvolutionStore';
 import { formatValue, indicatorMeta } from '../../Utils/indicatorMeta';
+
+const { t } = useI18n();
 
 /**
  * Un indicador en "Mi evolución": el valor de hoy con su color, la flecha de
@@ -58,10 +61,10 @@ const arrow = computed(() =>
                 "
                 :aria-label="
                     history.trend?.direction === 'stable' || !history.trend
-                        ? 'estable'
+                        ? t('Dashboard.evolution.stable')
                         : history.trend.worse
-                          ? 'empeorando'
-                          : 'mejorando'
+                          ? t('Dashboard.evolution.worsening')
+                          : t('Dashboard.evolution.improving')
                 "
             />
         </div>

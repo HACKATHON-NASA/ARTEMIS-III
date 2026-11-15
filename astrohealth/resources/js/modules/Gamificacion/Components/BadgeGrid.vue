@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { badgeCondition, badgeName } from '../Utils/rules';
 import { Lock } from '@lucide/vue';
 import type { Badge } from '../Types/gamification';
+
+const { t } = useI18n();
 
 /**
  * Las insignias: las ganadas a color con el día en que se ganaron; las
@@ -34,23 +38,27 @@ defineProps<{ badges: Badge[] }>();
             </span>
             <div class="min-w-0 flex-1">
                 <p class="flex items-center gap-1.5 font-semibold">
-                    {{ badge.name }}
+                    {{ badgeName(badge) }}
                     <Lock
                         v-if="badge.earned_day === null"
                         class="size-3.5 text-muted-foreground"
-                        aria-label="bloqueada"
+                        :aria-label="t('Gamificacion.locked')"
                     />
                 </p>
                 <p
                     v-if="badge.earned_day !== null"
                     class="text-xs text-muted-foreground"
                 >
-                    Ganada el día {{ badge.earned_day }} · +{{ badge.bonus }}
-                    pts
+                    {{
+                        t('Gamificacion.earnedOn', {
+                            day: badge.earned_day,
+                            bonus: badge.bonus,
+                        })
+                    }}
                 </p>
                 <template v-else>
                     <p class="text-xs text-muted-foreground">
-                        {{ badge.condition }}
+                        {{ badgeCondition(badge) }}
                     </p>
                     <div class="mt-2 flex items-center gap-2">
                         <div

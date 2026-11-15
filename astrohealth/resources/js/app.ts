@@ -4,6 +4,7 @@ import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BRAND } from '@/lib/brand';
 import { initializeFlashToast } from '@/lib/flashToast';
+import { currentLocale, i18n } from '@/lib/i18n';
 
 // El nombre de la marca en la pestaña (frontend): @/lib/brand.
 const appName = BRAND.name;
@@ -21,6 +22,8 @@ void createInertiaApp({
         FULL_SCREEN_PAGES.includes(name) ? null : AppLayout,
     withApp: (app) => {
         app.use(createPinia());
+        app.use(i18n);
+        document.documentElement.lang = currentLocale();
 
         app.directive('focus', {
             mounted: (el: HTMLElement, shouldFocus) => {

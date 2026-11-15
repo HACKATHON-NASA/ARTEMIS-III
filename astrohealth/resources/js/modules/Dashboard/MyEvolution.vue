@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -17,6 +18,8 @@ import { useMyEvolutionStore } from './Stores/useMyEvolutionStore';
 import type { CrewSeries, TrendRange } from './Types/crewTrends';
 import { indicatorMeta } from './Utils/indicatorMeta';
 
+const { t } = useI18n();
+
 /**
  * Mi evolución (/evolucion, M4): la historia del astronauta en la misión.
  * Avisa lo que viene empeorando, muestra cada indicador con su flecha y su
@@ -24,7 +27,7 @@ import { indicatorMeta } from './Utils/indicatorMeta';
  * ⚠️ Por ahora con datos de prueba (ver los stores).
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Mi evolución', href: evolucion() }] },
+    layout: { breadcrumbs: [{ title: 'nav.myEvolution', href: evolucion() }] },
 });
 
 const auth = useAuthStore();
@@ -40,10 +43,11 @@ const selected = ref<IndicatorCode>('sleep');
 const range = ref<TrendRange>(14);
 const own = computed(() => auth.actor?.astronaut_id ?? 0);
 
+/** El texto de cada periodo es una clave de i18n. */
 const RANGES: { value: TrendRange; label: string }[] = [
-    { value: 7, label: '7 días' },
-    { value: 14, label: '14 días' },
-    { value: 'mission', label: 'Toda la misión' },
+    { value: 7, label: 'Dashboard.evolution.days7' },
+    { value: 14, label: 'Dashboard.evolution.days14' },
+    { value: 'mission', label: 'Dashboard.evolution.wholeMission' },
 ];
 
 const current = computed(() => store.find(selected.value));
@@ -56,7 +60,7 @@ const series = computed<CrewSeries[]>(() => {
     return [
         {
             astronaut_id: own.value,
-            name: 'Tú',
+            name: t('common.youCap'),
             color: 'var(--series-1)',
             points: points.filter((p) => p.day > from),
         },
@@ -70,7 +74,7 @@ function open(code: IndicatorCode): void {
 
 onMounted(async () => {
     if (!auth.actor?.astronaut_id) {
-        toast.error('Mi evolución es para la tripulación.');
+        toast.error(t('common.crewOnly'));
         router.visit(dashboard());
 
         return;
@@ -89,7 +93,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Mi evolución" />
+    <Head :title="t('Dashboard.evolution.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <header data-reveal>
@@ -98,16 +102,19 @@ onMounted(async () => {
             >
                 {{
                     mission.current
-                        ? `${mission.current.name} · día ${mission.current.day} de ${mission.current.day_count}`
-                        : 'Mi salud'
+                        ? t('Dashboard.evolution.missionDay', {
+                              mission: mission.current.name,
+                              day: mission.current.day,
+                              total: mission.current.day_count,
+                          })
+                        : t('Dashboard.evolution.myHealth')
                 }}
             </p>
             <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-                Mi evolución
+                {{ t('Dashboard.evolution.title') }}
             </h1>
             <p class="mt-2 max-w-2xl text-muted-foreground">
-                Cómo ha cambiado tu cuerpo en la misión. Las flechas comparan
-                hoy con hace una semana: en rojo, lo que empeora.
+                {{ t('Dashboard.evolution.subtitle') }}
             </p>
         </header>
 
@@ -145,12 +152,16 @@ onMounted(async () => {
                     class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                     <h2 class="font-semibold">
-                        {{ indicatorMeta(selected).label }}, día a día
+                        {{
+                            t('Dashboard.evolution.dayByDay', {
+                                name: indicatorMeta(selected).label,
+                            })
+                        }}
                     </h2>
                     <div
                         class="inline-flex rounded-lg border bg-muted/40 p-0.5"
                         role="group"
-                        aria-label="Periodo"
+                        :aria-label="t('Dashboard.evolution.period')"
                     >
                         <button
                             v-for="option in RANGES"
@@ -165,7 +176,7 @@ onMounted(async () => {
                             :aria-pressed="range === option.value"
                             @click="range = option.value"
                         >
-                            {{ option.label }}
+                            {{ t(option.label) }}
                         </button>
                     </div>
                 </div>
@@ -177,7 +188,9 @@ onMounted(async () => {
             </section>
 
             <section class="flex flex-col gap-3" data-reveal>
-                <h2 class="text-lg font-semibold">Mis tests psicológicos</h2>
+                <h2 class="text-lg font-semibold">
+                    {{ t('Dashboard.evolution.myTests') }}
+                </h2>
                 <MyTestsSummary
                     :tests="psych.tests"
                     :history="(testId) => psych.history(own, testId)"

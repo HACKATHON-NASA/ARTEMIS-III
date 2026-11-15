@@ -2,7 +2,7 @@
 
 - SEP simulado el día 12 si DONKI no trae ninguno en el rango (`simulated_event`).
 - Astronauta 2, días 18–21: el sueño cae de 5,8 a 5,0 h.
-- Astronauta 3, día 24: presión 148/94 → rojo → alerta a Tierra.
+- Astronauta 3, día 24: presión 148/94 (el sistema principal decide si es alerta).
 
 Los días se cuentan desde 1. Si la misión es más corta, el evento no ocurre.
 """

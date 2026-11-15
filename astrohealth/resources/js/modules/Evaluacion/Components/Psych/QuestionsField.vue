@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Plus, Trash2 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { PsychQuestion } from '../../Types/psych';
+
+const { t } = useI18n();
 
 /**
  * Las preguntas de un cuestionario: el texto y dos marcas, "al revés" (se
@@ -36,13 +39,17 @@ function remove(index: number): void {
                 >
                 <Input
                     v-model="question.text"
-                    :aria-label="`Pregunta ${index + 1}`"
-                    placeholder="Escribe la pregunta"
+                    :aria-label="
+                        t('Evaluacion.editor.questionN', { n: index + 1 })
+                    "
+                    :placeholder="t('Evaluacion.editor.questionPlaceholder')"
                 />
                 <Button
                     variant="ghost"
                     size="icon-sm"
-                    :aria-label="`Quitar la pregunta ${index + 1}`"
+                    :aria-label="
+                        t('Evaluacion.editor.removeQuestion', { n: index + 1 })
+                    "
                     @click="remove(index)"
                 >
                     <Trash2 />
@@ -55,7 +62,7 @@ function remove(index: number): void {
                         type="checkbox"
                         class="accent-sky-500"
                     />
-                    Puntúa al revés
+                    {{ t('Evaluacion.editor.reverse') }}
                 </label>
                 <label class="flex items-center gap-1.5">
                     <input
@@ -63,7 +70,7 @@ function remove(index: number): void {
                         type="checkbox"
                         class="accent-red-500"
                     />
-                    Crítica (avisa a Tierra)
+                    {{ t('Evaluacion.editor.critical') }}
                 </label>
             </div>
         </div>
@@ -72,7 +79,7 @@ function remove(index: number): void {
             size="sm"
             class="justify-self-start"
             @click="add"
-            ><Plus /> Agregar pregunta</Button
+            ><Plus /> {{ t('Evaluacion.editor.addQuestion') }}</Button
         >
     </fieldset>
 </template>

@@ -6,6 +6,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { useI18n } from 'vue-i18n';
 import UserInfo from '@/components/UserInfo.vue';
 import { acceso } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -16,6 +17,7 @@ defineProps<{
 }>();
 
 const auth = useAuthStore();
+const { t } = useI18n();
 
 async function handleLogout(): Promise<void> {
     await auth.logout();
@@ -37,6 +39,6 @@ async function handleLogout(): Promise<void> {
         @select="handleLogout"
     >
         <LogOut class="mr-2 h-4 w-4" />
-        Cerrar sesión
+        {{ t('nav.logout') }}
     </DropdownMenuItem>
 </template>

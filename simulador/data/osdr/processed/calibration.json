@@ -1,0 +1,587 @@
+{
+  "absolute_basophils": {
+    "unit": "cells/uL",
+    "baseline_mean": 55.8182,
+    "baseline_sd": 22.2163,
+    "postflight_mean": 51.5,
+    "delta_pct": -7.74,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "ABSOLUTE BASOPHILS",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "absolute_eosinophils": {
+    "unit": "cells/uL",
+    "baseline_mean": 193.9091,
+    "baseline_sd": 61.2217,
+    "postflight_mean": 192.5,
+    "delta_pct": -0.73,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "ABSOLUTE EOSINOPHILS",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "absolute_lymphocytes": {
+    "unit": "cells/uL",
+    "baseline_mean": 2302.3636,
+    "baseline_sd": 522.4368,
+    "postflight_mean": 1855.25,
+    "delta_pct": -19.42,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "ABSOLUTE LYMPHOCYTES",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "absolute_monocytes": {
+    "unit": "cells/uL",
+    "baseline_mean": 595.5455,
+    "baseline_sd": 224.1086,
+    "postflight_mean": 644.25,
+    "delta_pct": 8.18,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "ABSOLUTE MONOCYTES",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "absolute_neutrophils": {
+    "unit": "cells/uL",
+    "baseline_mean": 4198.0909,
+    "baseline_sd": 1413.8539,
+    "postflight_mean": 3657.25,
+    "delta_pct": -12.88,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "ABSOLUTE NEUTROPHILS",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "albumin": {
+    "unit": "g/dL",
+    "baseline_mean": 4.65,
+    "baseline_sd": 0.2844,
+    "postflight_mean": 4.5,
+    "delta_pct": -3.23,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "ALBUMIN",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "albumin_globulin_ratio": {
+    "unit": "(calc)",
+    "baseline_mean": 1.675,
+    "baseline_sd": 0.2454,
+    "postflight_mean": 1.6,
+    "delta_pct": -4.48,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "ALBUMIN/GLOBULIN RATIO",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "alkaline_phosphatase": {
+    "unit": "U/L",
+    "baseline_mean": 52.9167,
+    "baseline_sd": 14.8719,
+    "postflight_mean": 56.5,
+    "delta_pct": 6.77,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "ALKALINE PHOSPHATASE",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "alt": {
+    "unit": "U/L",
+    "baseline_mean": 20.8333,
+    "baseline_sd": 9.9071,
+    "postflight_mean": 21.0,
+    "delta_pct": 0.8,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "ALT",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "ast": {
+    "unit": "U/L",
+    "baseline_mean": 25.1667,
+    "baseline_sd": 11.8001,
+    "postflight_mean": 26.25,
+    "delta_pct": 4.3,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "AST",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "basophils": {
+    "unit": "%",
+    "baseline_mean": 0.7818,
+    "baseline_sd": 0.3219,
+    "postflight_mean": 0.8,
+    "delta_pct": 2.33,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "BASOPHILS",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "bilirubin_total": {
+    "unit": "mg/dL",
+    "baseline_mean": 0.55,
+    "baseline_sd": 0.2505,
+    "postflight_mean": 0.575,
+    "delta_pct": 4.55,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "BILIRUBIN; TOTAL",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "bun_creatinine_ratio": {
+    "unit": "(calc)",
+    "baseline_mean": 19.5,
+    "baseline_sd": 6.364,
+    "postflight_mean": 23.0,
+    "delta_pct": 17.95,
+    "n_subjects": 3,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "BUN/CREATININE RATIO",
+    "n_baseline_samples": 2,
+    "postflight_timepoint": "R+1"
+  },
+  "calcium": {
+    "unit": "mg/dL",
+    "baseline_mean": 9.825,
+    "baseline_sd": 0.3545,
+    "postflight_mean": 9.525,
+    "delta_pct": -3.05,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "CALCIUM",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "carbon_dioxide": {
+    "unit": "mmol/L",
+    "baseline_mean": 23.5833,
+    "baseline_sd": 1.8809,
+    "postflight_mean": 22.25,
+    "delta_pct": -5.65,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "CARBON DIOXIDE",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "chloride": {
+    "unit": "mmol/L",
+    "baseline_mean": 102.4167,
+    "baseline_sd": 1.7299,
+    "postflight_mean": 103.25,
+    "delta_pct": 0.81,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "CHLORIDE",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "creatinine": {
+    "unit": "mg/dL",
+    "baseline_mean": 1.07,
+    "baseline_sd": 0.148,
+    "postflight_mean": 1.0275,
+    "delta_pct": -3.97,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "CREATININE",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "egfr_african_american": {
+    "unit": "mL/min/1.73m2",
+    "baseline_mean": 87.9167,
+    "baseline_sd": 7.4646,
+    "postflight_mean": 92.0,
+    "delta_pct": 4.64,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "EGFR AFRICAN AMERICAN",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "egfr_non_afr_american": {
+    "unit": "mL/min/1.73m2",
+    "baseline_mean": 75.9167,
+    "baseline_sd": 6.5707,
+    "postflight_mean": 79.5,
+    "delta_pct": 4.72,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "EGFR NON-AFR. AMERICAN",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "eosinophils": {
+    "unit": "%",
+    "baseline_mean": 2.8455,
+    "baseline_sd": 1.2103,
+    "postflight_mean": 3.0,
+    "delta_pct": 5.43,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "EOSINOPHILS",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "globulin": {
+    "unit": "g/dL",
+    "baseline_mean": 2.8167,
+    "baseline_sd": 0.395,
+    "postflight_mean": 2.85,
+    "delta_pct": 1.18,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "GLOBULIN",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "glucose": {
+    "unit": "mg/dL",
+    "baseline_mean": 75.3333,
+    "baseline_sd": 11.2842,
+    "postflight_mean": 93.25,
+    "delta_pct": 23.78,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "GLUCOSE",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "hematocrit": {
+    "unit": "%",
+    "baseline_mean": 43.5364,
+    "baseline_sd": 4.5866,
+    "postflight_mean": 42.425,
+    "delta_pct": -2.55,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "HEMATOCRIT",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "hemoglobin": {
+    "unit": "g/dL",
+    "baseline_mean": 14.4818,
+    "baseline_sd": 1.7702,
+    "postflight_mean": 14.2,
+    "delta_pct": -1.95,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "HEMOGLOBIN",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "lymphocytes": {
+    "unit": "%",
+    "baseline_mean": 32.1273,
+    "baseline_sd": 6.7,
+    "postflight_mean": 29.3,
+    "delta_pct": -8.8,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "LYMPHOCYTES",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "mch": {
+    "unit": "pg",
+    "baseline_mean": 30.83,
+    "baseline_sd": 0.846,
+    "postflight_mean": 29.775,
+    "delta_pct": -3.42,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "MCH",
+    "n_baseline_samples": 10,
+    "postflight_timepoint": "R+1"
+  },
+  "mchc": {
+    "unit": "g/dL",
+    "baseline_mean": 33.3875,
+    "baseline_sd": 0.8254,
+    "postflight_mean": 33.5,
+    "delta_pct": 0.34,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "MCHC",
+    "n_baseline_samples": 8,
+    "postflight_timepoint": "R+1"
+  },
+  "mcv": {
+    "unit": "fL",
+    "baseline_mean": 92.8818,
+    "baseline_sd": 2.3332,
+    "postflight_mean": 89.075,
+    "delta_pct": -4.1,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "MCV",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "monocytes": {
+    "unit": "%",
+    "baseline_mean": 8.0727,
+    "baseline_sd": 2.3529,
+    "postflight_mean": 9.775,
+    "delta_pct": 21.09,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "MONOCYTES",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "mpv": {
+    "unit": "fL",
+    "baseline_mean": 10.3818,
+    "baseline_sd": 0.46,
+    "postflight_mean": 10.375,
+    "delta_pct": -0.07,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "MPV",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "neutrophils": {
+    "unit": "%",
+    "baseline_mean": 56.1727,
+    "baseline_sd": 6.6348,
+    "postflight_mean": 57.125,
+    "delta_pct": 1.7,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "NEUTROPHILS",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "platelet_count": {
+    "unit": "Thousand/uL",
+    "baseline_mean": 265.4545,
+    "baseline_sd": 48.6608,
+    "postflight_mean": 269.5,
+    "delta_pct": 1.52,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "PLATELET COUNT",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "potassium": {
+    "unit": "mmol/L",
+    "baseline_mean": 3.9167,
+    "baseline_sd": 0.3538,
+    "postflight_mean": 3.725,
+    "delta_pct": -4.89,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "POTASSIUM",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "protein_total": {
+    "unit": "g/dL",
+    "baseline_mean": 7.4667,
+    "baseline_sd": 0.5158,
+    "postflight_mean": 7.35,
+    "delta_pct": -1.56,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "PROTEIN; TOTAL",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "rdw": {
+    "unit": "%",
+    "baseline_mean": 12.7091,
+    "baseline_sd": 0.3419,
+    "postflight_mean": 12.55,
+    "delta_pct": -1.25,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "RDW",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "red_blood_cell_count": {
+    "unit": "Million/uL",
+    "baseline_mean": 4.7,
+    "baseline_sd": 0.6006,
+    "postflight_mean": 4.77,
+    "delta_pct": 1.49,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "RED BLOOD CELL COUNT",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  },
+  "sodium": {
+    "unit": "mmol/L",
+    "baseline_mean": 140.25,
+    "baseline_sd": 1.6583,
+    "postflight_mean": 138.0,
+    "delta_pct": -1.6,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "SODIUM",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "urea_nitrogen_bun": {
+    "unit": "mg/dL",
+    "baseline_mean": 19.4167,
+    "baseline_sd": 3.5022,
+    "postflight_mean": 21.25,
+    "delta_pct": 9.44,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-575"
+    ],
+    "analyte_name": "UREA NITROGEN (BUN)",
+    "n_baseline_samples": 12,
+    "postflight_timepoint": "R+1"
+  },
+  "white_blood_cell_count": {
+    "unit": "Thousand/uL",
+    "baseline_mean": 7.3455,
+    "baseline_sd": 1.8245,
+    "postflight_mean": 6.4,
+    "delta_pct": -12.87,
+    "n_subjects": 4,
+    "source": "nasa_osdr",
+    "datasets": [
+      "OSD-569"
+    ],
+    "analyte_name": "WHITE BLOOD CELL COUNT",
+    "n_baseline_samples": 11,
+    "postflight_timepoint": "R+1"
+  }
+}

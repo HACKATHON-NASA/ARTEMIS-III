@@ -1,18 +1,10 @@
+import { indicatorName } from '@/lib/indicators';
 import type { IndicatorCode } from '@/types/health';
 
 /**
- * Nombres de los indicadores para mostrar.
- * ⚠️ Cuando exista GET /api/v1/indicators (M1), vienen de ahí.
+ * El nombre de cada indicador en el idioma de ahora (para el tooltip del
+ * cuerpo, el detalle de una zona y el plan del día).
  */
-export const INDICATOR_NAMES: Record<IndicatorCode, string> = {
-    hr: 'Frecuencia cardíaca',
-    bp_sys: 'Presión sistólica',
-    bp_dia: 'Presión diastólica',
-    glucose: 'Glucosa',
-    temp: 'Temperatura',
-    spo2: 'Saturación de oxígeno',
-    sleep: 'Sueño',
-    mood: 'Estado de ánimo',
-    radiation: 'Radiación diaria',
-    exercise_min: 'Ejercicio',
-};
+export function indicatorLabel(code: IndicatorCode): string {
+    return indicatorName(code);
+}

@@ -28,6 +28,7 @@ final class AlertResource extends JsonResource
             'measurement_id' => $a->measurementId,
             'kind' => $a->kind->value,
             'indicator' => $a->indicatorCode,
+            'value' => $a->value,
             'level' => $a->level->value,
             'message' => $a->message,
             'category' => $a->category,

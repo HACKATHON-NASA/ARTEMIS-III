@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { reactive, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,8 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import type { AdviceCategory, AdviceDraft } from '../Types/advice';
 import { ADVICE_CATEGORIES } from '../Utils/adviceCategories';
+
+const { t } = useI18n();
 
 /**
  * Escribir una indicación para un tripulante: el tema, el título, los pasos
@@ -48,11 +51,12 @@ const form = reactive({
 const error = ref<string | null>(null);
 const saving = ref(false);
 
+/** El texto de cada opción es una clave de i18n. */
 const DAYS = [
-    { value: '3', label: '3 días' },
-    { value: '7', label: '1 semana' },
-    { value: '14', label: '2 semanas' },
-    { value: 'none', label: 'Hasta nuevo aviso' },
+    { value: '3', label: 'Alertas.composer.days3' },
+    { value: '7', label: 'Alertas.composer.week1' },
+    { value: '14', label: 'Alertas.composer.weeks2' },
+    { value: 'none', label: 'Alertas.composer.untilNotice' },
 ];
 
 watch(open, (isOpen) => {
@@ -71,13 +75,13 @@ watch(open, (isOpen) => {
 
 async function send(): Promise<void> {
     if (props.members && recipient.value === '') {
-        error.value = 'Elige a quién va la indicación.';
+        error.value = t('Alertas.composer.errTo');
 
         return;
     }
 
     if (form.title.trim().length < 3 || form.body.trim().length < 3) {
-        error.value = 'Escribe un título y al menos un paso.';
+        error.value = t('Alertas.composer.errText');
 
         return;
     }
@@ -113,14 +117,15 @@ async function send(): Promise<void> {
                 <DialogTitle>
                     {{
                         members
-                            ? 'Nueva indicación'
-                            : `Indicación para ${astronautName}`
+                            ? t('Alertas.composer.newAdvice')
+                            : t('Alertas.composer.adviceFor', {
+                                  name: astronautName,
+                              })
                     }}
                 </DialogTitle>
-                <DialogDescription
-                    >Le llega a la nave en {{ delay }}. La verá en su
-                    Inicio.</DialogDescription
-                >
+                <DialogDescription>{{
+                    t('Alertas.composer.arrives', { delay })
+                }}</DialogDescription>
             </DialogHeader>
 
             <form
@@ -130,14 +135,18 @@ async function send(): Promise<void> {
                 @submit.prevent="send"
             >
                 <div v-if="members" class="grid gap-2">
-                    <Label for="advice-to">Para</Label>
+                    <Label for="advice-to">{{
+                        t('Alertas.composer.to')
+                    }}</Label>
                     <select
                         id="advice-to"
                         v-model="recipient"
                         class="h-9 rounded-md border border-input bg-transparent px-2 text-sm dark:bg-input/30"
                         @change="error = null"
                     >
-                        <option value="" disabled>Elige un tripulante</option>
+                        <option value="" disabled>
+                            {{ t('Alertas.composer.chooseMember') }}
+                        </option>
                         <option
                             v-for="member in members"
                             :key="member.id"
@@ -148,9 +157,9 @@ async function send(): Promise<void> {
                     </select>
                 </div>
                 <div class="grid gap-2">
-                    <span id="advice-category" class="text-sm font-medium"
-                        >Tema</span
-                    >
+                    <span id="advice-category" class="text-sm font-medium">{{
+                        t('Alertas.composer.topic')
+                    }}</span>
                     <div
                         role="radiogroup"
                         aria-labelledby="advice-category"
@@ -176,25 +185,27 @@ async function send(): Promise<void> {
                     </div>
                 </div>
                 <div class="grid gap-2">
-                    <Label for="advice-title">Título</Label>
+                    <Label for="advice-title">{{
+                        t('Alertas.composer.title')
+                    }}</Label>
                     <Input
                         id="advice-title"
                         v-model="form.title"
                         maxlength="80"
-                        placeholder="Ej.: Higiene del sueño"
+                        :placeholder="t('Alertas.composer.titlePlaceholder')"
                         @input="error = null"
                     />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="advice-body"
-                        >Qué hacer (un paso por línea)</Label
-                    >
+                    <Label for="advice-body">{{
+                        t('Alertas.composer.steps')
+                    }}</Label>
                     <textarea
                         id="advice-body"
                         v-model="form.body"
                         rows="4"
                         maxlength="600"
-                        placeholder="Apaga pantallas 1 h antes de dormir&#10;Usa el antifaz y los tapones"
+                        :placeholder="t('Alertas.composer.stepsPlaceholder')"
                         class="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30"
                         @input="error = null"
                     />
@@ -206,10 +217,10 @@ async function send(): Promise<void> {
                             type="checkbox"
                             class="accent-red-500"
                         />
-                        Importante
+                        {{ t('Alertas.composer.important') }}
                     </label>
                     <label class="flex items-center gap-2 text-sm">
-                        Vale por
+                        {{ t('Alertas.composer.validFor') }}
                         <select
                             v-model="form.days"
                             class="h-8 rounded-md border border-input bg-transparent px-2 text-sm dark:bg-input/30"
@@ -219,7 +230,7 @@ async function send(): Promise<void> {
                                 :key="option.value"
                                 :value="option.value"
                             >
-                                {{ option.label }}
+                                {{ t(option.label) }}
                             </option>
                         </select>
                     </label>
@@ -228,7 +239,9 @@ async function send(): Promise<void> {
             </form>
 
             <DialogFooter>
-                <Button variant="ghost" @click="open = false">Cancelar</Button>
+                <Button variant="ghost" @click="open = false">{{
+                    t('common.cancel')
+                }}</Button>
                 <Button
                     type="submit"
                     form="advice-form"
@@ -236,7 +249,7 @@ async function send(): Promise<void> {
                     class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                 >
                     <Spinner v-if="saving" />
-                    Enviar indicación
+                    {{ t('Alertas.composer.send') }}
                 </Button>
             </DialogFooter>
         </DialogContent>

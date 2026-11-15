@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { resultBand } from '../../Utils/psychText';
 import {
     ArrowDownRight,
     ArrowRight,
@@ -8,6 +10,8 @@ import {
 import { computed } from 'vue';
 import { statusMeta } from '@/lib/status';
 import type { PsychResult, PsychTest } from '../../Types/psych';
+
+const { t } = useI18n();
 
 /**
  * El mapa de la tripulación: una fila por tripulante y una columna por test
@@ -33,11 +37,11 @@ const ordered = computed(() =>
 );
 const groups = computed(() => [
     {
-        label: 'Psicológico',
+        label: t('Evaluacion.results.groupPsych'),
         span: ordered.value.filter((t) => t.kind === 'psychological').length,
     },
     {
-        label: 'Intelectual (cognitivo)',
+        label: t('Evaluacion.results.groupCognitive'),
         span: ordered.value.filter((t) => t.kind === 'cognitive').length,
     },
 ]);
@@ -61,7 +65,9 @@ function cell(astronautId: number, testId: number) {
             class="w-full min-w-[640px] border-separate border-spacing-1 text-sm"
         >
             <caption class="sr-only">
-                Último resultado de cada test por tripulante
+                {{
+                    t('Evaluacion.results.caption')
+                }}
             </caption>
             <thead>
                 <tr class="text-xs text-muted-foreground">
@@ -80,7 +86,7 @@ function cell(astronautId: number, testId: number) {
                         scope="col"
                         class="w-40 text-left text-xs font-medium text-muted-foreground"
                     >
-                        Tripulante
+                        {{ t('Evaluacion.results.member') }}
                     </th>
                     <th
                         v-for="test in ordered"
@@ -97,7 +103,11 @@ function cell(astronautId: number, testId: number) {
                                     : 'text-muted-foreground'
                             "
                             :aria-pressed="selected === test.id"
-                            :title="`Ver ${test.name} en la gráfica`"
+                            :title="
+                                t('Evaluacion.results.seeInChart', {
+                                    name: test.name,
+                                })
+                            "
                             @click="$emit('pick', test.id)"
                         >
                             {{ test.code }}
@@ -122,8 +132,21 @@ function cell(astronautId: number, testId: number) {
                         ]"
                         :title="
                             cell(member.id, test.id).last
-                                ? `${member.name} · ${test.name}: ${cell(member.id, test.id).last!.score} ${test.unit} (${cell(member.id, test.id).last!.band})`
-                                : `${member.name} · ${test.name}: sin datos`
+                                ? t('Evaluacion.results.cellTitle', {
+                                      who: member.name,
+                                      name: test.name,
+                                      score: cell(member.id, test.id).last!
+                                          .score,
+                                      unit: test.unit,
+                                      band: resultBand(
+                                          test,
+                                          cell(member.id, test.id).last!,
+                                      ),
+                                  })
+                                : t('Evaluacion.results.cellNoData', {
+                                      who: member.name,
+                                      name: test.name,
+                                  })
                         "
                         @click="$emit('pick', test.id)"
                     >
@@ -137,7 +160,7 @@ function cell(astronautId: number, testId: number) {
                                         cell(member.id, test.id).trend === 'up'
                                     "
                                     class="size-3.5"
-                                    aria-label="subió"
+                                    :aria-label="t('Evaluacion.results.up')"
                                 />
                                 <ArrowDownRight
                                     v-else-if="
@@ -145,23 +168,25 @@ function cell(astronautId: number, testId: number) {
                                         'down'
                                     "
                                     class="size-3.5"
-                                    aria-label="bajó"
+                                    :aria-label="t('Evaluacion.results.down')"
                                 />
                                 <ArrowRight
                                     v-else
                                     class="size-3.5 opacity-50"
-                                    aria-label="igual"
+                                    :aria-label="t('Evaluacion.results.same')"
                                 />
                                 <TriangleAlert
                                     v-if="
                                         cell(member.id, test.id).last!.flagged
                                     "
                                     class="size-3.5 text-[var(--status-red)]"
-                                    aria-label="respuesta de riesgo"
+                                    :aria-label="
+                                        t('Evaluacion.results.riskAnswer')
+                                    "
                                 />
                             </span>
                             <span class="block text-[10px] opacity-80">{{
-                                cell(member.id, test.id).last!.band
+                                resultBand(test, cell(member.id, test.id).last!)
                             }}</span>
                         </template>
                         <span v-else class="text-muted-foreground">—</span>

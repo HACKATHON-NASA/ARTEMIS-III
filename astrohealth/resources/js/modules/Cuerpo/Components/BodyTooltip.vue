@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import StatusBadge from '@/components/StatusBadge.vue';
 import type { MaybeStatus } from '@/types/health';
 import type { ZoneValue } from '../Types/body';
-import { INDICATOR_NAMES } from '../Utils/indicators';
+import { indicatorLabel } from '../Utils/indicators';
+
+const { t } = useI18n();
 
 /**
  * El globo de una zona: su nombre, su estado y el valor que más pesa
@@ -28,11 +31,13 @@ defineProps<{
             <StatusBadge :status="status" />
         </div>
         <p v-if="value" class="mt-1 text-muted-foreground">
-            {{ INDICATOR_NAMES[value.indicator] }}:
+            {{ indicatorLabel(value.indicator) }}:
             <strong class="text-foreground tabular-nums">
                 {{ value.value }} {{ value.unit }}
             </strong>
         </p>
-        <p v-else class="mt-1 text-muted-foreground">Sin mediciones todavía</p>
+        <p v-else class="mt-1 text-muted-foreground">
+            {{ t('Cuerpo.body3d.noMeasurements') }}
+        </p>
     </div>
 </template>

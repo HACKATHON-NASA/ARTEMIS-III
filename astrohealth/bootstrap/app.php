@@ -4,6 +4,7 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Shared\Http\ApiExceptionRenderer;
 use App\Shared\Http\Middleware\ForceJsonResponse;
+use App\Shared\Http\Middleware\SetLocaleFromHeader;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // API /api/v1 (las rutas las registra cada módulo con ModuleServiceProvider).
         $middleware->api(prepend: [
             ForceJsonResponse::class,
+            SetLocaleFromHeader::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

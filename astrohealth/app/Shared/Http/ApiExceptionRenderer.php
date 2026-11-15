@@ -17,7 +17,9 @@ use Throwable;
  * Convierte cualquier excepción de /api/* en el formato de error único.
  *
  * Se registra en bootstrap/app.php. El reporte al log lo sigue haciendo
- * Laravel: aquí solo se decide la respuesta.
+ * Laravel: aquí solo se decide la respuesta. Los mensajes (escritos en
+ * español) salen en el idioma de la petición: __() los busca en
+ * lang/<idioma>.json (SetLocaleFromHeader eligió el idioma).
  */
 final class ApiExceptionRenderer
 {
@@ -25,7 +27,7 @@ final class ApiExceptionRenderer
     {
         return match (true) {
             $e instanceof BusinessError => ApiResponse::error(
-                $e->errorCode(), $e->getMessage(), $e->httpStatus(), $e->errors(), headers: $e->headers(),
+                $e->errorCode(), self::translate($e->getMessage()), $e->httpStatus(), $this->translateErrors($e->errors()), headers: $e->headers(),
             ),
             $e instanceof ValidationException => $this->general(
                 GeneralCode::ValidationFailed, $this->validationErrors($e),
@@ -44,7 +46,7 @@ final class ApiExceptionRenderer
      */
     private function general(GeneralCode $code, array $errors = [], array $headers = []): JsonResponse
     {
-        return ApiResponse::error($code->value, $code->message(), $code->httpStatus(), $errors, headers: $headers);
+        return ApiResponse::error($code->value, self::translate($code->message()), $code->httpStatus(), $this->translateErrors($errors), headers: $headers);
     }
 
     private function httpException(HttpExceptionInterface $e): JsonResponse
@@ -54,7 +56,7 @@ final class ApiExceptionRenderer
         /** @var array<string, string> $headers */
         $headers = $e->getHeaders();
 
-        return ApiResponse::error($code->value, $code->message(), $e->getStatusCode(), headers: $headers);
+        return ApiResponse::error($code->value, self::translate($code->message()), $e->getStatusCode(), headers: $headers);
     }
 
     private function unexpected(Throwable $e): JsonResponse
@@ -68,7 +70,26 @@ final class ApiExceptionRenderer
             'line' => $e->getLine(),
         ] : [];
 
-        return ApiResponse::error($code->value, $code->message(), $code->httpStatus(), debug: $debug);
+        return ApiResponse::error($code->value, self::translate($code->message()), $code->httpStatus(), debug: $debug);
+    }
+
+    private static function translate(string $message): string
+    {
+        $translated = __($message);
+
+        return is_string($translated) ? $translated : $message;
+    }
+
+    /**
+     * @param  array<string, list<string>>  $errors
+     * @return array<string, list<string>>
+     */
+    private function translateErrors(array $errors): array
+    {
+        return array_map(
+            fn (array $messages): array => array_map(self::translate(...), $messages),
+            $errors,
+        );
     }
 
     /**

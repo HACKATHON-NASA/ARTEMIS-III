@@ -12,7 +12,6 @@ from typing import Any
 import numpy as np
 
 from simulador.config import environment_config, load_yaml
-from simulador.engine.evaluate import status_of
 from simulador.generator import events
 from simulador.generator.radiation import daily_dose
 from simulador.models import (
@@ -63,7 +62,7 @@ def generate_astronaut(
     """Todas las mediciones de un astronauta durante la misión."""
     cfg = load_yaml("generator")
     noise, schedule, units = cfg["noise_sd"], cfg["schedule"], cfg["units"]
-    micro, sleep_cfg, mood_cfg = cfg["microgravity"], cfg["sleep"], cfg["mood"]
+    micro, sleep_cfg = cfg["microgravity"], cfg["sleep"]
     base: dict[str, Any] = member.baseline
 
     rng = np.random.default_rng([seed, member.id])
@@ -74,8 +73,7 @@ def generate_astronaut(
 
     out: list[Measurement] = []
 
-    def add(indicator: Indicator, value: float, day: date, hour: int, source: Source,
-            sep_active: bool = False) -> None:
+    def add(indicator: Indicator, value: float, day: date, hour: int, source: Source) -> None:
         out.append(
             Measurement(
                 astronaut_id=member.id,
@@ -83,7 +81,6 @@ def generate_astronaut(
                 value=value,
                 unit=units[indicator.value],
                 measured_at=datetime.combine(day, time(hour), tzinfo=timezone.utc),
-                status=status_of(indicator, value, environment, sep_active),
                 source=source,
             )
         )
@@ -110,13 +107,6 @@ def generate_astronaut(
         if sep_today:
             exercise -= cfg["exercise"]["sep_day_reduction_min"]
         exercise = round(max(exercise, 0))
-
-        # Ánimo: baja con el aislamiento; sube con buen sueño y ejercicio.
-        mood = base["mood"] - mood_cfg["isolation_drop_per_day"] * index
-        mood += mood_cfg["good_sleep_bonus"] if sleep >= 7 else 0
-        mood -= mood_cfg["bad_sleep_penalty"] if sleep < 6 else 0
-        mood += mood_cfg["exercise_bonus"] if exercise >= 90 else 0
-        mood = int(np.clip(round(mood + rng.normal(0, noise["mood"])), 1, 5))
 
         # Pulso: baja en las primeras semanas de microgravedad; más alto de noche.
         hr_drop = micro["hr_drop_bpm"] * zero_g * (1 - math.exp(-index / micro["hr_drop_tau_days"]))
@@ -155,9 +145,8 @@ def generate_astronaut(
         add(Indicator.GLUCOSE, glucose_value, day, schedule["glucose"][0], glucose.source)
         add(Indicator.TEMP, temp, day, schedule["temp"][0], ref)
         add(Indicator.SLEEP, sleep, day, schedule["sleep"][0], ref)
-        add(Indicator.MOOD, mood, day, schedule["mood"][0], ref)
         add(Indicator.EXERCISE_MIN, exercise, day, schedule["exercise_min"][0], ref)
-        add(Indicator.RADIATION, dose, day, schedule["radiation"][0], dose_source, sep_today)
+        add(Indicator.RADIATION, dose, day, schedule["radiation"][0], dose_source)
 
     out.sort(key=lambda m: m.measured_at)
     return out

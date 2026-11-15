@@ -58,8 +58,10 @@ def test_docs_disponibles(client: TestClient) -> None:
     assert client.get("/docs").status_code == 200
     paths = client.get("/openapi.json").json()["paths"]
     for path in ["/health", "/space-weather", "/space-weather/now", "/calibration", "/simulate",
-                 "/evaluate", "/assess", "/trends", "/recommendations", "/environments"]:
+                 "/environments"]:
         assert f"/api/v1{path}" in paths
+    for path in ["/evaluate", "/assess", "/trends", "/recommendations"]:
+        assert f"/api/v1{path}" not in paths  # la evaluación la hace el sistema principal
 
 
 def test_space_weather(client: TestClient) -> None:
@@ -101,9 +103,10 @@ def test_simulate(client: TestClient) -> None:
             "use_real_space_weather": False}
     data = client.post("/api/v1/simulate", json=body).json()["data"]
     assert len(data["crew"]) == 4
-    assert len(data["measurements"]) == 30 * 4 * 12
+    assert len(data["measurements"]) == 30 * 4 * 11
     assert data["meta"]["seed"] == 42
-    assert any(a["notify_ground"] for a in data["alerts"])
+    assert "alerts" not in data
+    assert all("status" not in m for m in data["measurements"])
 
     again = client.post("/api/v1/simulate", json=body).json()["data"]
     assert again["measurements"] == data["measurements"]
@@ -122,38 +125,6 @@ def test_simulate_valida(client: TestClient) -> None:
     body = response.json()
     assert body["error_code"] == "VALIDATION_ERROR" and body["data"] is None
     assert body["message"].startswith("days")
-
-
-def test_evaluate(client: TestClient) -> None:
-    data = client.post("/api/v1/evaluate", json={"indicator": "bp_sys", "value": 148}).json()["data"]
-    assert data == {"status": "red", "message": "Presión sistólica 148 mmHg: fuera de rango"}
-
-    bad = client.post("/api/v1/evaluate", json={"indicator": "pizza", "value": 1})
-    assert bad.status_code == 422
-
-
-def test_assess(client: TestClient) -> None:
-    measurements = [
-        {"astronaut_id": 1, "indicator": "sleep", "value": 5.5, "unit": "h",
-         "measured_at": "2026-11-01T07:00:00Z", "source": "simulated_reference"},
-        {"astronaut_id": 1, "indicator": "hr", "value": 70, "unit": "bpm",
-         "measured_at": "2026-11-01T08:00:00Z", "source": "simulated_reference"},
-    ]
-    data = client.post("/api/v1/assess", json={"measurements": measurements}).json()["data"]
-    assert data["body_status"] == {"brain": "red", "heart": "green"}
-    assert 0 <= data["score"] <= 100
-
-
-def test_trends(client: TestClient) -> None:
-    body = {"indicator": "sleep", "values": [7.2, 7.0, 7.1, 6.9, 5.8, 5.5, 5.0]}
-    data = client.post("/api/v1/trends", json=body).json()["data"]
-    assert data == {"direction": "down", "trend_alert": True}
-
-
-def test_recommendations(client: TestClient) -> None:
-    params = {"indicator": "bp_sys", "status": "red", "environment": "mars"}
-    data = client.get("/api/v1/recommendations", params=params).json()["data"]
-    assert data["notify_ground"] is True and data["ground_delay_seconds"] == 1200
 
 
 def test_environments(client: TestClient) -> None:

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Alertas;
 
 use App\Modules\Alertas\Infrastructure\Listeners\OnMeasurementsRecorded;
+use App\Modules\Alertas\Infrastructure\Listeners\OnPsychCriticalAnswered;
+use App\Modules\Evaluacion\Domain\Eventos\PsychCriticalAnswered;
 use App\Modules\Registro\Domain\Eventos\MeasurementsRecorded;
 use App\Shared\ModuleServiceProvider;
 use Illuminate\Support\Facades\Event;
@@ -26,5 +28,6 @@ final class AlertasServiceProvider extends ModuleServiceProvider
         parent::boot();
 
         Event::listen(MeasurementsRecorded::class, OnMeasurementsRecorded::class);
+        Event::listen(PsychCriticalAnswered::class, OnPsychCriticalAnswered::class);
     }
 }

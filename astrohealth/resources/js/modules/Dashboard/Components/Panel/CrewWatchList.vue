@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { ArrowRight, Users } from '@lucide/vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import { getInitials } from '@/composables/useInitials';
 import { tripulacion, tripulante } from '@/routes';
 import type { WatchRow } from '../../Types/crewTrends';
+
+const { t } = useI18n();
 
 /**
  * Quién necesita atención: la tripulación ordenada por puntaje (el más bajo
@@ -20,13 +23,13 @@ defineProps<{ rows: WatchRow[] }>();
         >
             <h2 class="flex items-center gap-2 font-semibold">
                 <Users class="size-4 text-sky-500" />
-                Quién necesita atención
+                {{ t('Dashboard.panel.whoNeedsAttention') }}
             </h2>
             <Link
                 :href="tripulacion()"
                 class="inline-flex items-center gap-1 text-sm font-medium text-sky-600 hover:underline dark:text-sky-400"
             >
-                Tripulación <ArrowRight class="size-4" />
+                {{ t('Dashboard.panel.crew') }} <ArrowRight class="size-4" />
             </Link>
         </header>
         <ul class="divide-y">

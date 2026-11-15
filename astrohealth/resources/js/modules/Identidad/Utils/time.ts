@@ -1,7 +1,8 @@
+import { currentLocale, t } from '@/lib/i18n';
+
 /**
  * Tiempos para mostrar: "hace 5 min", "hace 2 h".
  */
-const relative = new Intl.RelativeTimeFormat('es', { numeric: 'auto' });
 
 const STEPS: [Intl.RelativeTimeFormatUnit, number][] = [
     ['second', 60],
@@ -13,9 +14,13 @@ const STEPS: [Intl.RelativeTimeFormatUnit, number][] = [
 
 export function timeAgo(iso: string | null): string {
     if (iso === null) {
-        return 'Nunca';
+        return t('Identidad.admin.never');
     }
 
+    // En el idioma de ahora: "5 min ago" · "hace 5 min".
+    const relative = new Intl.RelativeTimeFormat(currentLocale(), {
+        numeric: 'auto',
+    });
     let value = (new Date(iso).getTime() - Date.now()) / 1000;
 
     for (const [unit, size] of STEPS) {

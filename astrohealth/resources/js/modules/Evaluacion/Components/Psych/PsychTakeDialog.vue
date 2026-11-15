@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { resultBand, resultDetail } from '../../Utils/psychText';
 import { ChevronLeft, LifeBuoy } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import StatusBadge from '@/components/StatusBadge.vue';
@@ -17,6 +19,8 @@ import type {
     PsychTest,
 } from '../../Types/psych';
 import PvtRunner from './PvtRunner.vue';
+
+const { t } = useI18n();
 
 /**
  * Responder un test: las instrucciones, una pregunta a la vez (o la prueba
@@ -81,14 +85,13 @@ function answer(option: number): void {
 
             <div v-if="step === 'intro'" class="flex flex-col gap-4">
                 <p class="text-sm text-muted-foreground">
-                    No hay respuestas buenas ni malas. Responde con sinceridad:
-                    solo el equipo médico ve tu puntaje.
+                    {{ t('Evaluacion.psych.noRightAnswers') }}
                 </p>
                 <Button
                     class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                     @click="step = 'run'"
                 >
-                    Empezar
+                    {{ t('Evaluacion.psych.start') }}
                 </Button>
             </div>
 
@@ -141,7 +144,7 @@ function answer(option: number): void {
                     class="self-start"
                     @click="current--"
                 >
-                    <ChevronLeft /> Anterior
+                    <ChevronLeft /> {{ t('Evaluacion.psych.previous') }}
                 </Button>
             </template>
 
@@ -160,14 +163,16 @@ function answer(option: number): void {
                 v-else-if="step === 'saving'"
                 class="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground"
             >
-                <Spinner /> Guardando…
+                <Spinner /> {{ t('Evaluacion.psych.saving') }}
             </div>
 
             <div
                 v-else-if="result"
                 class="flex flex-col items-center gap-3 py-4 text-center"
             >
-                <p class="text-sm text-muted-foreground">Tu resultado</p>
+                <p class="text-sm text-muted-foreground">
+                    {{ t('Evaluacion.psych.yourResult') }}
+                </p>
                 <p class="text-5xl font-semibold tabular-nums">
                     {{ result.score
                     }}<span class="text-base font-normal text-muted-foreground">
@@ -176,10 +181,12 @@ function answer(option: number): void {
                 </p>
                 <div class="flex items-center gap-2">
                     <StatusBadge :status="result.status" size="md" />
-                    <span class="text-sm font-medium">{{ result.band }}</span>
+                    <span class="text-sm font-medium">{{
+                        resultBand(test, result)
+                    }}</span>
                 </div>
                 <p v-if="result.detail" class="text-xs text-muted-foreground">
-                    {{ result.detail }}
+                    {{ resultDetail(result.detail) }}
                 </p>
                 <div
                     v-if="result.flagged"
@@ -189,12 +196,12 @@ function answer(option: number): void {
                         class="mt-0.5 size-4 shrink-0 text-[var(--status-red)]"
                     />
                     <p>
-                        Avisamos al médico de vuelo para que hable contigo
-                        pronto. Si lo necesitas ya, busca al médico de la
-                        tripulación: no estás solo(a).
+                        {{ t('Evaluacion.psych.flagged') }}
                     </p>
                 </div>
-                <Button class="mt-2" @click="open = false">Listo</Button>
+                <Button class="mt-2" @click="open = false">{{
+                    t('Evaluacion.psych.done')
+                }}</Button>
             </div>
         </DialogContent>
     </Dialog>

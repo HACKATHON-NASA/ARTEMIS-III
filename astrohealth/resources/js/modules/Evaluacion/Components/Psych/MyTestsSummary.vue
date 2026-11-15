@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { resultBand } from '../../Utils/psychText';
 import { Link } from '@inertiajs/vue3';
 import { Brain, Zap } from '@lucide/vue';
 import Sparkline from '@/components/Sparkline.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import { psicologia } from '@/routes';
 import type { PsychResult, PsychTest } from '../../Types/psych';
+
+const { t } = useI18n();
 
 /**
  * Mis tests en "Mi evolución": cada test con mi último resultado, su nivel
@@ -48,8 +52,12 @@ withDefaults(
                     <StatusBadge :status="history(test.id).at(-1)!.status" />
                 </div>
                 <p class="text-xs text-muted-foreground">
-                    {{ history(test.id).at(-1)!.band }} · día
-                    {{ history(test.id).at(-1)!.day }}
+                    {{
+                        t('Evaluacion.psych.bandDay', {
+                            band: resultBand(test, history(test.id).at(-1)!),
+                            day: history(test.id).at(-1)!.day,
+                        })
+                    }}
                 </p>
                 <Sparkline
                     :values="history(test.id).map((r) => r.score)"
@@ -57,20 +65,20 @@ withDefaults(
                 />
             </template>
             <p v-else class="text-sm text-muted-foreground">
-                Aún no lo has hecho.
+                {{ t('Evaluacion.psych.notYet') }}
             </p>
             <p
                 v-if="isDue(test) && !own"
                 class="mt-auto text-xs font-medium text-amber-600 dark:text-amber-300"
             >
-                Pendiente esta semana
+                {{ t('Evaluacion.psych.pendingWeek') }}
             </p>
             <Link
                 v-else-if="isDue(test)"
                 :href="psicologia()"
                 class="mt-auto text-xs font-medium text-sky-600 hover:underline dark:text-sky-400"
             >
-                Te toca esta semana → responder
+                {{ t('Evaluacion.psych.dueWeek') }}
             </Link>
         </article>
     </div>

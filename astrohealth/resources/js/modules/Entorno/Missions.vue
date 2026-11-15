@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Head, router } from '@inertiajs/vue3';
 import { Plus, Rocket } from '@lucide/vue';
 import { computed, nextTick, onMounted, ref } from 'vue';
@@ -16,6 +17,8 @@ import { useMissionStore } from './Stores/useMissionStore';
 import { useMissionsStore } from './Stores/useMissionsStore';
 import type { MissionFilter, MissionFormData } from './Types/missions';
 
+const { t } = useI18n();
+
 /**
  * Misiones (/admin/misiones, M6): administración crea las misiones y ve en
  * qué va cada una y quiénes la tripulan. Los tripulantes se crean en
@@ -23,7 +26,7 @@ import type { MissionFilter, MissionFormData } from './Types/missions';
  * ⚠️ Por ahora con datos de prueba (ver Stores/useMissionsStore.ts).
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Misiones', href: misiones() }] },
+    layout: { breadcrumbs: [{ title: 'nav.missions', href: misiones() }] },
 });
 
 const auth = useAuthStore();
@@ -61,14 +64,14 @@ async function create(data: MissionFormData): Promise<void> {
     const mission = await store.createMission(data);
     // Se muestra la pestaña donde quedó la misión nueva.
     filter.value = store.find(mission.id)?.status ?? 'all';
-    toast.success(`Misión ${mission.name} creada`, {
-        description: 'Ahora asóciale tripulantes desde Usuarios.',
+    toast.success(t('Entorno.missions.created', { name: mission.name }), {
+        description: t('Entorno.missions.createdHint'),
     });
 }
 
 onMounted(async () => {
     if (!auth.can('missions.manage')) {
-        toast.error('Esa vista es solo para administración.');
+        toast.error(t('Entorno.missions.onlyAdmin'));
         router.visit(dashboard());
 
         return;
@@ -82,7 +85,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Misiones" />
+    <Head :title="t('Entorno.missions.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <header
@@ -95,14 +98,13 @@ onMounted(async () => {
             <p
                 class="text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
             >
-                Centro de control
+                {{ t('Entorno.missions.eyebrow') }}
             </p>
             <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-                Misiones
+                {{ t('Entorno.missions.title') }}
             </h1>
             <p class="mt-2 max-w-xl text-muted-foreground">
-                Crea las misiones y sigue cada una. Los tripulantes se crean en
-                Usuarios y se asocian a su misión.
+                {{ t('Entorno.missions.subtitle') }}
             </p>
             <div class="mt-6 flex flex-wrap items-center gap-3">
                 <Button
@@ -110,7 +112,7 @@ onMounted(async () => {
                     @click="dialog = true"
                 >
                     <Plus />
-                    Nueva misión
+                    {{ t('Entorno.missions.newMission') }}
                 </Button>
                 <span
                     v-if="ready"
@@ -119,7 +121,7 @@ onMounted(async () => {
                     <Rocket class="size-4 text-sky-500" />
                     <strong class="tabular-nums">{{ inSpace }}</strong>
                     <span class="text-muted-foreground">
-                        tripulantes en el espacio
+                        {{ t('Entorno.missions.inSpace') }}
                     </span>
                 </span>
             </div>
@@ -158,7 +160,7 @@ onMounted(async () => {
                 v-else
                 class="rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground"
             >
-                No hay misiones en este estado.
+                {{ t('Entorno.missions.empty') }}
             </p>
         </template>
 

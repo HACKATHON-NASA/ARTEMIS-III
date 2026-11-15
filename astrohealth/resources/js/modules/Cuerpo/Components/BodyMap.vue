@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { computed, ref } from 'vue';
 import { statusMeta } from '@/lib/status';
 import type { BodyZoneCode } from '@/types/health';
@@ -8,6 +9,8 @@ import { VIEWBOX, ZONES } from '../Utils/zones';
 import BodyFigure from './BodyFigure.vue';
 import BodyTooltip from './BodyTooltip.vue';
 import BodyZone from './BodyZone.vue';
+
+const { t } = useI18n();
 
 /**
  * El cuerpo en SVG (respaldo del 3D): la figura, sus 9 zonas con su color y
@@ -41,8 +44,10 @@ const tooltip = computed(() => {
         : null;
 });
 
-const legend = (['red', 'yellow', 'green', null] as const).map((status) =>
-    statusMeta(status),
+const legend = computed(() =>
+    (['red', 'yellow', 'green', null] as const).map((status) =>
+        statusMeta(status),
+    ),
 );
 </script>
 
@@ -53,7 +58,7 @@ const legend = (['red', 'yellow', 'green', null] as const).map((status) =>
                 :viewBox="`0 0 ${VIEWBOX.width} ${VIEWBOX.height}`"
                 class="w-full overflow-visible"
                 role="group"
-                aria-label="Cuerpo del astronauta: elige una zona para ver su detalle"
+                :aria-label="t('Cuerpo.body3d.mapAria')"
             >
                 <BodyFigure />
                 <BodyZone

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -11,7 +12,6 @@ import type { BodyZoneCode } from '@/types/health';
 import { useAlertsStore } from '../Alertas/Stores/useAlertsStore';
 import BodyViewer from '../Cuerpo/Components/BodyViewer.vue';
 import { useBodyStore } from '../Cuerpo/Stores/useBodyStore';
-import { useMissionStore } from '../Entorno/Stores/useMissionStore';
 import { useGamificationStore } from '../Gamificacion/Stores/useGamificationStore';
 import FlyingValue from './Components/FlyingValue.vue';
 import HowToMeasureDialog from './Components/HowToMeasureDialog.vue';
@@ -26,20 +26,21 @@ import type {
     RecordPayload,
 } from './Types/measurement';
 
+const { t } = useI18n();
+
 /**
  * Registrar (/registrar, M1): el astronauta anota sus indicadores del día y
  * cada valor vuela a su órgano en el cuerpo (M3). Los amarillos y rojos
  * generan su alerta (M5). ⚠️ Por ahora con datos de prueba (ver los stores).
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Registrar datos', href: registrar() }] },
+    layout: { breadcrumbs: [{ title: 'nav.record', href: registrar() }] },
 });
 
 const auth = useAuthStore();
 const store = useMeasurementsStore();
 const body = useBodyStore();
 const alerts = useAlertsStore();
-const mission = useMissionStore();
 const gamification = useGamificationStore();
 
 const root = ref<HTMLElement | null>(null);
@@ -92,11 +93,11 @@ async function submit(payload: RecordPayload): Promise<void> {
     } catch (error) {
         saving.value = false;
         // El backend tiene la última palabra (rango posible, fecha, permisos).
-        toast.error('No se guardaron los datos', {
+        toast.error(t('Registro.notSaved'), {
             description:
                 error instanceof ApiError
                     ? (Object.values(error.errors)[0]?.[0] ?? error.message)
-                    : 'Revisa tu conexión e inténtalo de nuevo.',
+                    : t('Registro.checkConnection'),
         });
 
         return;
@@ -127,30 +128,16 @@ async function finish(): Promise<void> {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/** Lo que suma puntos al registrar (M7): el día completo, dormir 7 h y 90 min de ejercicio. */
+/**
+ * Los puntos del registro (día completo, sueño, ejercicio, racha e
+ * insignias) los suma M7 en el backend al guardar; aquí solo se celebran.
+ */
 async function awardPoints(): Promise<void> {
-    await mission.load();
-    const day = mission.current?.day ?? 1;
-    const value = (code: string) =>
-        store.lastRecorded.find((item) => item.indicator === code)?.value ?? 0;
-    const items: Parameters<typeof gamification.awardMany>[1] = [];
-
-    if (body.measuredToday.done >= body.measuredToday.total) {
-        items.push(['daily_complete', `${day}`]);
-    }
-
-    if (value('sleep') >= 7) items.push(['sleep_7h', `${day}`]);
-    if (value('exercise_min') >= 90) items.push(['exercise', `${day}`]);
-
-    const { gained } = await gamification.awardMany(
-        astronautId.value ?? 0,
-        items,
-        day,
-    );
+    const { gained } = await gamification.refresh(astronautId.value ?? 0);
 
     if (gained > 0) {
-        toast.success(`+${gained} puntos`, {
-            description: 'Por cuidarte hoy.',
+        toast.success(t('Registro.points', { n: gained }), {
+            description: t('Registro.pointsHint'),
         });
     }
 }
@@ -162,7 +149,7 @@ function again(): void {
 
 onMounted(async () => {
     if (!auth.can('measurements.write.own') || astronautId.value === null) {
-        toast.error('El registro es para la tripulación.');
+        toast.error(t('Registro.crewOnly'));
         router.visit(dashboard());
 
         return;
@@ -177,7 +164,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Registrar datos" />
+    <Head :title="t('Registro.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <header
@@ -188,16 +175,15 @@ onMounted(async () => {
                 <p
                     class="text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
                 >
-                    Registro del día
+                    {{ t('Registro.eyebrow') }}
                 </p>
                 <h1
                     class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
                 >
-                    ¿Cómo está tu cuerpo hoy?
+                    {{ t('Registro.title') }}
                 </h1>
                 <p class="mt-2 max-w-2xl text-muted-foreground">
-                    Llena lo que hayas medido; no hace falta todo. Al guardar,
-                    cada valor viaja a su órgano y toma su color.
+                    {{ t('Registro.subtitle') }}
                 </p>
             </div>
             <div
@@ -211,7 +197,7 @@ onMounted(async () => {
                     >
                 </span>
                 <span class="text-xs leading-tight text-muted-foreground">
-                    indicadores<br />medidos hoy
+                    {{ t('Registro.measuredToday') }}
                 </span>
             </div>
         </header>
@@ -256,10 +242,11 @@ onMounted(async () => {
                     class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,rgb(14_165_233/0.12),transparent_65%)]"
                 />
                 <div class="relative">
-                    <h2 class="text-lg font-semibold">Tu cuerpo, en vivo</h2>
+                    <h2 class="text-lg font-semibold">
+                        {{ t('Registro.liveBody') }}
+                    </h2>
                     <p class="mb-4 text-sm text-muted-foreground">
-                        Se ilumina el órgano del campo que estás llenando. Toca
-                        un órgano para ir a sus campos.
+                        {{ t('Registro.liveBodyHint') }}
                     </p>
                     <div ref="bodyHost">
                         <BodyViewer

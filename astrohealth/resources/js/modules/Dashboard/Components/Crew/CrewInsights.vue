@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { ChartSpline, Grid3x3, Radiation } from '@lucide/vue';
 import { onMounted, ref, watch } from 'vue';
 import type { IndicatorCode } from '@/types/health';
@@ -9,6 +10,8 @@ import { CHART_INDICATORS, indicatorMeta } from '../../Utils/indicatorMeta';
 import CrewDoseBars from './CrewDoseBars.vue';
 import CrewRiskMatrix from './CrewRiskMatrix.vue';
 import CrewTrendChart from './CrewTrendChart.vue';
+
+const { t } = useI18n();
 
 /**
  * Cómo va la tripulación (M4): el mapa de riesgos de hoy, la comparación de
@@ -28,10 +31,11 @@ const indicator = ref<IndicatorCode>('sleep');
 const range = ref<TrendRange>(14);
 const ready = ref(false);
 
+/** El texto de cada periodo es una clave de i18n. */
 const RANGES: { value: TrendRange; label: string }[] = [
-    { value: 7, label: '7 días' },
-    { value: 14, label: '14 días' },
-    { value: 'mission', label: 'Toda la misión' },
+    { value: 7, label: 'Dashboard.evolution.days7' },
+    { value: 14, label: 'Dashboard.evolution.days14' },
+    { value: 'mission', label: 'Dashboard.evolution.wholeMission' },
 ];
 
 async function loadAll(): Promise<void> {
@@ -53,18 +57,17 @@ onMounted(loadAll);
     <section class="flex flex-col gap-4">
         <div>
             <h2 class="text-xl font-semibold tracking-tight">
-                Cómo va la tripulación
+                {{ t('Dashboard.crew.howCrew') }}
             </h2>
             <p class="text-sm text-muted-foreground">
-                Compara a todos en cada riesgo. Toca un indicador del mapa para
-                verlo en el tiempo.
+                {{ t('Dashboard.crew.howCrewHint') }}
             </p>
         </div>
 
         <div class="rounded-2xl border bg-card p-4 sm:p-6">
             <h3 class="mb-3 flex items-center gap-2 font-semibold">
                 <Grid3x3 class="size-4 text-sky-500" />
-                Mapa de riesgos de hoy
+                {{ t('Dashboard.crew.riskMap') }}
             </h3>
             <CrewRiskMatrix
                 :rows="store.snapshot"
@@ -79,12 +82,16 @@ onMounted(loadAll);
             >
                 <h3 class="flex items-center gap-2 font-semibold">
                     <ChartSpline class="size-4 text-sky-500" />
-                    {{ indicatorMeta(indicator).label }}, día a día
+                    {{
+                        t('Dashboard.evolution.dayByDay', {
+                            name: indicatorMeta(indicator).label,
+                        })
+                    }}
                 </h3>
                 <div
                     class="inline-flex rounded-lg border bg-muted/40 p-0.5"
                     role="group"
-                    aria-label="Periodo"
+                    :aria-label="t('Dashboard.evolution.period')"
                 >
                     <button
                         v-for="option in RANGES"
@@ -99,7 +106,7 @@ onMounted(loadAll);
                         :aria-pressed="range === option.value"
                         @click="range = option.value"
                     >
-                        {{ option.label }}
+                        {{ t(option.label) }}
                     </button>
                 </div>
             </div>
@@ -107,7 +114,7 @@ onMounted(loadAll);
             <div
                 class="mb-4 flex gap-1.5 overflow-x-auto pb-1"
                 role="group"
-                aria-label="Indicador"
+                :aria-label="t('Dashboard.crew.indicator')"
             >
                 <button
                     v-for="item in CHART_INDICATORS"
@@ -128,7 +135,7 @@ onMounted(loadAll);
 
             <ul
                 class="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs"
-                aria-label="Tripulantes"
+                :aria-label="t('Dashboard.crew.crewMembers')"
             >
                 <li
                     v-for="line in store.series"
@@ -158,11 +165,10 @@ onMounted(loadAll);
         <div class="rounded-2xl border bg-card p-4 sm:p-6">
             <h3 class="mb-1 flex items-center gap-2 font-semibold">
                 <Radiation class="size-4 text-sky-500" />
-                Radiación acumulada en la misión
+                {{ t('Dashboard.crew.accumulated') }}
             </h3>
             <p class="mb-4 text-sm text-muted-foreground">
-                La suma de las dosis diarias de cada uno, frente a lo esperado
-                para el entorno.
+                {{ t('Dashboard.crew.accumulatedHint') }}
             </p>
             <CrewDoseBars
                 :rows="store.doses"

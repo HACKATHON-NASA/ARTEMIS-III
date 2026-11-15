@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import type { Alert } from '../Types/alerts';
 
 /**
@@ -16,11 +17,10 @@ export function alertState(alert: Alert, now = Date.now()): AlertState {
         : 'received';
 }
 
-export const STATE_LABELS: Record<AlertState, string> = {
-    traveling: 'Viajando a Tierra',
-    received: 'Recibida en Tierra',
-    acknowledged: 'Atendida',
-};
+/** "Viajando a Tierra"… en el idioma de ahora. */
+export function stateLabel(state: AlertState): string {
+    return t(`Alertas.states.${state}`);
+}
 
 /** Pestañas del centro de alertas. */
 export type AlertFilter = 'open' | 'urgent' | 'acknowledged' | 'all';

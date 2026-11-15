@@ -15,12 +15,12 @@
 | M0 Identidad | ✅ | ✅ login, refresh, logout, `me`, token de dispositivo · ❌ gestión de usuarios y dispositivos | ✅ `users`, `devices`, `refresh_tokens` | `Identidad/Utils/adminMockData.ts` |
 | M6 Entorno | ✅ | 🟡 modelos, repositorios y contratos · ❌ endpoints · ❌ pruebas | 🟡 `missions` (le faltan `objective` y `status`), `astronauts` | `Entorno/Utils/missionsMockData.ts`, `environments.ts`, `environmentFacts.ts` |
 | M1 Registro | ✅ | ❌ | ❌ | `Registro/Utils/indicatorsMockData.ts`, `recordMock.ts` |
-| M2 Evaluación | ✅ | ❌ | ❌ | `mocks/thresholds.ts`, `Evaluacion/Utils/psychMockData.ts`, `psychScoring.ts` |
+| M2 Evaluación | ✅ | ✅ (F2, F9) | ✅ (F2, F9) | `mocks/thresholds.ts` (solo el primer pintado) |
 | M3 Cuerpo | ✅ | ❌ | ❌ | `Cuerpo/Utils/bodyMockData.ts`, `notesMock.ts`, `mocks/crewProfiles.ts` |
 | M4 Dashboard | ✅ | ❌ | (no tiene tablas) | `mocks/crewHistory.ts`, `mocks/crewHealth.ts` |
 | M5 Alertas | ✅ | ❌ | ❌ | `Alertas/Utils/alertsMock*.ts`, `recommendationsMockData.ts`, `adviceMock.ts` |
-| M7 Gamificación | ✅ | ❌ | ❌ | `Gamificacion/Utils/gamificationMock.ts`, `rules.ts` |
-| M8 Recordatorios | ✅ | ❌ | ❌ | `Recordatorios/Utils/remindersMock.ts` |
+| M7 Gamificación | ✅ | ✅ (F7) | ✅ (F7) | — |
+| M8 Recordatorios | ✅ | ✅ (F8) | ✅ (F8) | — |
 | Simulador | ✅ API propia `:8001` | ❌ no envía lotes a Laravel | — | — |
 
 **Lo que sí está bien:** M0 cumple la norma completa (capas, un repositorio por operación, entidades `readonly`, excepciones de negocio, 15 archivos de pruebas). `app/Shared` ya tiene `ApiResponse`, `BusinessError`, `Transaction` y el `ModuleServiceProvider`. No hay `DB::` fuera de `Infrastructure`, ni comprobaciones de rol fuera de M0. En el frontend ningún archivo pasa de 300 líneas y ningún módulo importa otro.
@@ -282,51 +282,63 @@ Lee por contratos: `MeasurementQuery` (M1), `Evaluator` y `TrendAnalyzer` (M2), 
 
 ---
 
-## F7 · M7 Gamificación
+## F7 · M7 Gamificación · ✅ hecho (16 nov 2026)
 
-**Tablas:** `achievements` (las 9 insignias), `astronaut_achievements`, `points_log` (llave única `(astronaut_id, reason, reference)` para no sumar dos veces).
+**Tablas:** `achievements` (las 9 insignias, con `bonus` y `target`), `astronaut_achievements` (con `earned_day`), `points_log` (con `day` de misión; llave única `(astronaut_id, reason, reference)` para no sumar dos veces).
 
-**Domain:** `PointsRule` (valores por `config/gamification.php`, no en el código: **P7**), `StreakRule::days($dates)`, `LevelRule`, una regla por insignia (`iron_body`, `swiss_clock`, `mission_30`…), todas con pruebas unitarias.
-**Listeners:** `OnMeasurementsRecorded` (día completo, sueño ≥ 7 h, ejercicio), `OnReminderCompleted`, `OnPsychTestTaken`.
-
-| Endpoint | Permiso | Caso de uso |
-|---|---|---|
-| `GET /api/v1/astronauts/{id}/gamification` | `gamification.read` | `GetGamificationProfile` |
-| `GET /api/v1/leaderboard?mission=` | `gamification.read` | `GetLeaderboard` |
-
-**Listo cuando:** los puntos y las insignias los da el backend; borrar `rules.ts` y `gamificationMock.ts` no cambia lo que se ve.
-
----
-
-## F8 · M8 Recordatorios
-
-**Tabla:** `reminders` con `type` (incluye `custom`), `title`, `time`, `active`, `last_done_at`.
+**Domain:** `LevelRule`, `StreakRule` (racha actual, primer día que llega a N seguidos, a N en total, a N en una semana) y `BadgeRule` (una regla por insignia sobre `BadgeFacts`). Los puntos y los umbrales en `config/gamification.php` (**P7**). "Pulso y presión en verde" usa el color que ya guardó M2 (**P4**).
+**Listener:** `OnMeasurementsRecorded` → `AwardForMeasurements` (día completo, sueño ≥ 7 h, ejercicio ≥ 90 min); `PointsAwarder` suma la racha de 7 y las insignias nuevas con su bono.
 
 | Endpoint | Permiso | Caso de uso |
 |---|---|---|
-| `GET` · `POST` · `PATCH` · `DELETE /api/v1/reminders` | el dueño | `ListReminders`, `CreateReminder`, `UpdateReminder`, `DeleteReminder` |
-| `POST /api/v1/reminders/{id}/done` | el dueño | `CompleteReminder` → evento `ReminderCompleted` (hecho hoy dos veces → no suma otra vez) |
-| Comando `recordatorios:pending` en el `schedule` | consola | Marca los pendientes de la hora |
+| `GET /api/v1/astronauts/{id}/gamification` | `gamification.read` + Gate `health.read` | `GetProfile` |
+| `GET /api/v1/gamification/leaderboard?astronauts=` | `gamification.read` + `mission.access` por tripulante | `GetLeaderboard` |
+| `POST /api/v1/gamification/claims` | `gamification.read`, solo tripulantes | `ClaimPoints` (**temporal**) |
 
-**Seeder:** los 5 recordatorios por defecto para cada astronauta.
-**Listo cuando:** completar un recordatorio suma +5 puntos una sola vez al día.
+**Cambios frente a lo planeado:** M8 y los tests psicológicos aún no tienen backend, así que en vez de `OnReminderCompleted` y `OnPsychTestTaken` hay un reclamo temporal (`POST /gamification/claims`, solo `reminder` y `psych_test`, para uno mismo, con los puntos de la configuración). Se borra en F8 y F9 cuando esos módulos publiquen su evento. El ranking recibe `?astronauts=` como la comparación de M4.
+**Datos de demo:** `DemoPointsSeeder` (solo fuera de producción) con los puntos de Ares-1, sacando sueño y ejercicio de la historia real de la base.
+**Frontend:** `useGamificationStore` usa la API (`refresh()` tras registrar, `award()` para reclamar). Borrados `gamificationMock.ts`, `profile.ts` y `mocks/crewHistory.ts`; `rules.ts` quedó solo con textos.
+**Pruebas:** 14 nuevas (5 unitarias de reglas, 9 de la API; 260 en verde).
+**Listo cuando:** ✅ los puntos y las insignias los da el backend; Logros, la barra lateral y el ranking salen de la base de datos.
 
 ---
 
-## F9 · M2 Tests psicológicos (PHQ-9, GAD-7, PSS-4, PVT)
+## F8 · M8 Recordatorios · ✅ hecho (16 nov 2026)
 
-**Tablas nuevas:** `psych_tests` (`code`, `name`, `kind`, `description`, `instructions`, `frequency_days`, `unit`, `scale` JSON, `questions` JSON, `bands` JSON, `source`) y `psych_results` (`test_id`, `astronaut_id`, `taken_at`, `score`, `status`, `band`, `detail`, `flagged`, `answers` JSON).
+**Tabla:** `reminders` con `type` (incluye `custom`), `title`, `time`, `active`, `last_done_at`. "Hecho hoy" = `last_done_at` del mismo día UTC (`DoneTodayRule`), como el día de misión.
+
+| Endpoint | Permiso | Caso de uso |
+|---|---|---|
+| `GET` · `POST /api/v1/reminders` · `PATCH` · `DELETE /api/v1/reminders/{id}` | `reminders.manage.own`, siempre la rutina propia (404 si es de otro) | `ListReminders`, `CreateReminder`, `UpdateReminder`, `DeleteReminder` |
+| `POST /api/v1/reminders/{id}/done` | ídem | `CompleteReminder` → `ReminderCompleted` (409 si ya estaba hecho hoy) |
+
+**M7:** `OnReminderCompleted` → `AwardForReminder` (+5, referencia `«id»-«día»`). El reclamo temporal de M7 quedó solo para los tests (F9).
+**Cambios frente a lo planeado:** sin comando `recordatorios:pending`: el estado se calcula al leer, no hay nada que marcar por consola. Los 5 recordatorios por defecto viven en `config/reminders.php` (**P7**).
+**Seeders:** `ReminderSeeder` (la rutina por defecto, idempotente) y `DemoRemindersSeeder` (solo fuera de producción: la presión de hoy hecha, publicando el evento real).
+**Frontend:** `useRemindersStore` usa la API; Inicio celebra los puntos con `gamification.refresh()`. Borrado `remindersMock.ts`.
+**Pruebas:** 9 nuevas (1 unitaria, 8 de la API; 269 en verde).
+**Listo cuando:** ✅ completar un recordatorio suma +5 puntos una sola vez al día.
+
+---
+
+## F9 · M2 Tests psicológicos (PHQ-9, GAD-7, PSS-4, PVT) · ✅ hecho (16 nov 2026)
+
+**Tablas:** `psych_tests` (`code` único, `name`, `kind`, `description`, `instructions`, `frequency_days`, `unit`, `scale` · `questions` · `bands` en JSON, `source`) y `psych_results` (`test_id`, `astronaut_id`, `day` de misión, `taken_at`, `score`, `status`, `band`, `detail`, `flagged`, `answers` JSON).
 
 | Endpoint | Permiso | Caso de uso |
 |---|---|---|
 | `GET /api/v1/psych-tests` | autenticado | `ListPsychTests` |
-| `POST` · `PUT /api/v1/psych-tests/{id}` | `guide.manage` | `CreatePsychTest`, `UpdatePsychTest` |
-| `POST /api/v1/psych-results` | rol astronauta | `SubmitPsychTest` (el **backend** puntúa) |
-| `GET /api/v1/psych-results?mission=` | `crew.read` / lo suyo | `ListPsychResults` |
+| `POST /api/v1/psych-tests` · `PUT /api/v1/psych-tests/{id}` | `guide.manage` | `SavePsychTest` |
+| `POST /api/v1/psych-results` | solo tripulantes | `SubmitPsychTest` (el **backend** puntúa) |
+| `GET /api/v1/psych-results` | Gate `health.read` por tripulante | `ListPsychResults` (las respuestas, solo el equipo médico) |
 
-**Domain:** `PsychScoringRule` (ítems invertidos, bandas), `PvtScoringRule` (mediana, lapsos > 500 ms, salidas en falso) con pruebas usando los mismos casos de `psychScoring.ts`.
-**Seguridad clínica:** el ítem crítico del PHQ-9 publica `PsychCriticalAnswered` → M5 crea una alerta **urgente** a Tierra. Prueba obligatoria. Las respuestas individuales solo las ve el equipo médico.
-**Listo cuando:** se borra `psychScoring.ts` del frontend y los resultados son los mismos.
+**Domain:** `PsychScoringRule` (suma, ítems invertidos, ítem crítico, bandas) y `PvtScoringRule` (promedio, lapsos > 500 ms, anticipos), con los casos de `psychScoring.ts`. El PVT sigue con el **promedio** que ya usaba la pantalla (no la mediana del plan), para que los resultados sean los mismos.
+**Seguridad clínica:** ✅ el ítem crítico del PHQ-9 publica `PsychCriticalAnswered` → M5 `CreatePsychRiskAlert` crea una petición de ayuda **urgente en rojo** a Tierra (sin la respuesta). Con prueba.
+**M7:** `PsychTestTaken` → `AwardForPsychTest` (+10 por test y día). Se **borró** el reclamo temporal (`POST /gamification/claims`): ya nadie pide puntos.
+**Seeders:** `PsychTestSeeder` y `DemoPsychResultsSeeder` (solo fuera de producción).
+**Frontend:** `usePsychStore` usa la API; la Guía ya no manda la alerta ni pide los puntos (lo hace el backend). Borrados `psychScoring.ts`, `psychMockData.ts` y `psychCatalog.ts`.
+**Pruebas:** 15 nuevas (5 unitarias, 10 de la API; 283 en verde).
+**Listo cuando:** ✅ se borró `psychScoring.ts` y los resultados son los mismos.
 
 ---
 

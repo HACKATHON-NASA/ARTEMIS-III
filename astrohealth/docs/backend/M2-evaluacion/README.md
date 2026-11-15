@@ -73,31 +73,41 @@ app/Modules/Evaluacion/
 
 ## 4. Endpoints
 
-| Método | Ruta                                          | Permiso              | Respuesta                                                                                                                 |
-| ------ | --------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/api/v1/thresholds?environment=`             | autenticado          | 200 los 10 umbrales del entorno                                                                                           |
-| PUT    | `/api/v1/thresholds/{indicator}?environment=` | `guide.manage`       | 200 el umbral · 422 si el verde no queda dentro del amarillo · 404 si el indicador no existe · publica `ThresholdUpdated` |
-| GET    | `/api/v1/astronauts/{id}/assessment`          | `can:health.read,id` | 200 puntaje, estado, `body_status`, resumen, `evaluated_at` · 404 `EVALUATION_NO_DATA`                                    |
+| Método     | Ruta                                          | Permiso              | Respuesta                                                                                                                 |
+| ---------- | --------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| GET        | `/api/v1/thresholds?environment=`             | autenticado          | 200 los 10 umbrales del entorno                                                                                           |
+| PUT        | `/api/v1/thresholds/{indicator}?environment=` | `guide.manage`       | 200 el umbral · 422 si el verde no queda dentro del amarillo · 404 si el indicador no existe · publica `ThresholdUpdated` |
+| GET        | `/api/v1/astronauts/{id}/assessment`          | `can:health.read,id` | 200 puntaje, estado, `body_status`, resumen, `evaluated_at` · 404 `EVALUATION_NO_DATA`                                    |
+| GET        | `/api/v1/psych-tests`                         | autenticado          | 200 el catálogo de la guía psicológica                                                                                    |
+| POST · PUT | `/api/v1/psych-tests` · `/{id}`               | `guide.manage`       | 201/200 el test · 409 código repetido · 422 bandas desordenadas o cuestionario sin preguntas                              |
+| POST       | `/api/v1/psych-results`                       | solo tripulantes     | 201 el resultado **puntuado por el backend** · 422 respuestas que no encajan · 403 si no es tripulante                    |
+| GET        | `/api/v1/psych-results`                       | Gate `health.read`   | 200 los resultados visibles; `answers` solo para el equipo médico (`health.read.any`)                                     |
 
 ## 5. Contratos y eventos
 
-| Tipo    | Nombre             | Lo usa                                                                        |
-| ------- | ------------------ | ----------------------------------------------------------------------------- |
-| Ofrece  | `Evaluator`        | M1 (color al guardar y `assess` después), M4 (`thresholdFor` para las bandas) |
-| Ofrece  | `TrendAnalyzer`    | M4                                                                            |
-| Publica | `ThresholdUpdated` | M1 (volver a colorear las últimas mediciones; _listener_ en F3)               |
-| Usa     | —                  | No depende de ningún módulo (lee `config/environments.php`)                   |
+| Tipo    | Nombre                           | Lo usa                                                                        |
+| ------- | -------------------------------- | ----------------------------------------------------------------------------- |
+| Ofrece  | `Evaluator`                      | M1 (color al guardar y `assess` después), M4 (`thresholdFor` para las bandas) |
+| Ofrece  | `TrendAnalyzer`                  | M4                                                                            |
+| Publica | `ThresholdUpdated`               | M1 (volver a colorear las últimas mediciones; _listener_ en F3)               |
+| Publica | `PsychTestTaken`                 | M7 (+10 por test, una vez por test y día)                                     |
+| Publica | `PsychCriticalAnswered`          | M5 (alerta **urgente** a Tierra; no lleva la respuesta)                       |
+| Usa     | `CrewQuery`, `MissionQuery` (M6) | El día de misión de un resultado y a quién mostrarle resultados               |
 
 Los contratos hablan en texto (`"green"`, `"down"`…), así M1 y M4 no dependen del `Domain` de M2.
 
 ## 6. Códigos de error
 
-| Código                         |   HTTP    | Cuándo                                                                              |
-| ------------------------------ | :-------: | ----------------------------------------------------------------------------------- |
-| `VALIDATION_FAILED`            |    422    | Falta el entorno o no existe; un límite no es número                                |
-| `EVALUATION_INVALID_THRESHOLD` |    422    | El verde no queda dentro del amarillo (con el campo)                                |
-| `EVALUATION_THRESHOLD_MISSING` | 404 · 500 | Editar un indicador que no existe (404) · evaluar sin umbral, falta el seeder (500) |
-| `EVALUATION_NO_DATA`           |    404    | El astronauta aún no tiene evaluación                                               |
+| Código                             |   HTTP    | Cuándo                                                                              |
+| ---------------------------------- | :-------: | ----------------------------------------------------------------------------------- |
+| `VALIDATION_FAILED`                |    422    | Falta el entorno o no existe; un límite no es número                                |
+| `EVALUATION_INVALID_THRESHOLD`     |    422    | El verde no queda dentro del amarillo (con el campo)                                |
+| `EVALUATION_THRESHOLD_MISSING`     | 404 · 500 | Editar un indicador que no existe (404) · evaluar sin umbral, falta el seeder (500) |
+| `EVALUATION_NO_DATA`               |    404    | El astronauta aún no tiene evaluación                                               |
+| `EVALUATION_PSYCH_TEST_NOT_FOUND`  |    404    | El test no existe                                                                   |
+| `EVALUATION_PSYCH_NOT_CREW`        |    403    | Responde un test alguien que no es tripulante                                       |
+| `EVALUATION_PSYCH_INVALID_ANSWERS` |    422    | Respuestas de más o de menos, una opción que no existe, un PVT sin reacciones       |
+| `EVALUATION_PSYCH_CODE_TAKEN`      |    409    | Ya hay un test con ese código                                                       |
 
 ## 7. Pruebas
 
@@ -107,6 +117,23 @@ Los contratos hablan en texto (`"green"`, `"down"`…), así M1 y M4 no dependen
 | `ThresholdsApiTest` | 10 umbrales por entorno · radiación cambia con el entorno · validación · el médico edita y se publica el evento · verde fuera del amarillo → 422 · indicador inexistente → 404 · la tripulación no edita · el seeder no pisa los cambios             |
 | `EvaluatorTest`     | Color con los umbrales del entorno · umbral faltante · `assess` guarda puntaje, zonas y resumen · tendencia · la última evaluación la ven el propio astronauta y su médico; otro astronauta → 403; sin datos → 404                                   |
 
+## 7 bis. Guía psicológica (F9)
+
+**Tablas:** `psych_tests` (el catálogo: escala, preguntas y bandas en JSON) y `psych_results` (puntaje, banda, color, `day` de misión, `flagged` y las respuestas).
+
+**El backend puntúa** (`SubmitPsychTest`): la pantalla manda solo lo respondido (el índice de cada opción, o las reacciones del PVT); un `score` que venga en la petición se ignora.
+
+| Regla              | Qué decide                                                                                                                                                 |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PsychScoringRule` | Suma de puntos; preguntas invertidas (PSS-4) = máximo − puntos; ítem crítico con puntos → `flagged`; la banda es la primera cuyo máximo alcanza el puntaje |
+| `PvtScoringRule`   | Promedio de las reacciones válidas (ms); lapsos > 500 ms y anticipos en el detalle                                                                         |
+
+**Seguridad clínica:** si el PHQ-9 ítem 9 tiene cualquier respuesta distinta de "Nunca", M2 publica `PsychCriticalAnswered` y M5 crea una petición de ayuda **urgente, en rojo**, a nombre del tripulante. La alerta no lleva la respuesta. Las respuestas una por una solo las recibe el equipo médico.
+
+**Seeders:** `PsychTestSeeder` (PHQ-9, GAD-7, PSS-4, PVT; no pisa lo que el equipo médico cambió) y `DemoPsychResultsSeeder` (solo fuera de producción, la historia semanal de Ares-1).
+
+**Pruebas:** `PsychScoringTest` (unitaria, los casos de `psychScoring.ts`) y `PsychApiTest` (puntaje, +10 una vez por día, invertidas y PVT, respuestas inválidas, **la alerta urgente por el ítem crítico**, sin alerta si no hay riesgo, quién ve qué, solo la tripulación responde, el equipo médico crea y cambia tests).
+
 ## 8. Avance
 
 - [x] Migraciones `thresholds` y `assessments` + `ThresholdSeeder`
@@ -115,6 +142,6 @@ Los contratos hablan en texto (`"green"`, `"down"`…), así M1 y M4 no dependen
 - [x] `GET/PUT /thresholds` y `GET /astronauts/{id}/assessment`
 - [x] La Guía de salud usa la API
 - [ ] _Listener_ de `ThresholdUpdated` y uso de `assess` desde M1 (F3)
-- [ ] Tests psicológicos (F9)
+- [x] Tests psicológicos (F9): catálogo, puntaje en el backend, alerta por el ítem crítico, puntos en M7
 
 > 📝 **Documentar siempre:** este documento se actualiza en el mismo _pull request_ que cambia el código.

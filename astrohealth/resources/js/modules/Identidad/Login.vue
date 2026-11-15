@@ -1,22 +1,31 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import LanguageSwitch from '@/components/LanguageSwitch.vue';
 import { dashboard, inicio, salud } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import BrandHeader from './Components/Acceso/BrandHeader.vue';
 import HeartbeatLine from './Components/Acceso/HeartbeatLine.vue';
 import LoginForm from './Components/Acceso/LoginForm.vue';
 import LoginPanel from './Components/Acceso/LoginPanel.vue';
+import QuickAccessPicker from './Components/Acceso/QuickAccessPicker.vue';
 import SpaceBackground from './Components/Acceso/SpaceBackground.vue';
 import { useLoginMotion } from './Composables/useLoginMotion';
 
 /**
  * M0 · Pantalla de acceso (/acceso). Es lo primero que se ve al abrir la app.
- * El principal solo compone: fondo, marca, electrocardiograma y el formulario.
+ * El principal solo compone: fondo, marca, electrocardiograma y el acceso.
+ *
+ * Por defecto se entra eligiendo a una persona (acceso rápido, sin
+ * contraseña: lo pide el reto). El correo y la contraseña siguen como
+ * opción, y salen solos si el backend apaga el acceso rápido.
  */
 const root = ref<HTMLElement | null>(null);
 const auth = useAuthStore();
 const motion = useLoginMotion(root);
+const { t } = useI18n();
+const mode = ref<'quick' | 'password'>('quick');
 
 /**
  * Cada quien entra a su pantalla: administración al Panel de salud, la
@@ -48,7 +57,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Iniciar sesión" />
+    <Head :title="t('Identidad.login.pageTitle')" />
 
     <!-- A todo el ancho y el alto de la pantalla (dvh: respeta la barra del navegador en el celular). -->
     <main
@@ -68,15 +77,42 @@ onMounted(async () => {
                 class="lg:absolute lg:top-[clamp(2rem,6vh,4rem)] lg:left-[6vw]"
             />
 
-            <LoginPanel>
-                <LoginForm @success="enter" />
+            <LoginPanel
+                :subtitle="
+                    mode === 'quick'
+                        ? t('Identidad.login.chooseUser')
+                        : t('Identidad.login.signInPrompt')
+                "
+            >
+                <QuickAccessPicker
+                    v-if="mode === 'quick'"
+                    @success="enter"
+                    @unavailable="mode = 'password'"
+                />
+                <LoginForm v-else @success="enter" />
+
+                <div class="mt-5 text-center">
+                    <button
+                        type="button"
+                        class="text-sm text-sky-400 transition hover:text-sky-300 focus-visible:underline focus-visible:outline-none"
+                        @click="mode = mode === 'quick' ? 'password' : 'quick'"
+                    >
+                        {{
+                            mode === 'quick'
+                                ? t('Identidad.login.useEmail')
+                                : t('Identidad.login.useQuick')
+                        }}
+                    </button>
+                </div>
             </LoginPanel>
         </div>
+
+        <LanguageSwitch dark class="absolute top-4 right-4 z-20" />
 
         <p
             class="absolute inset-x-0 bottom-3 z-10 px-4 text-center text-xs text-slate-400/80"
         >
-            Herramienta de apoyo. No reemplaza el criterio médico.
+            {{ t('common.disclaimer') }}
         </p>
     </main>
 </template>

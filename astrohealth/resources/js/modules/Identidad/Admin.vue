@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
@@ -25,6 +26,8 @@ import type {
 } from './Types/admin';
 import { roleOption } from './Utils/roles';
 
+const { t } = useI18n();
+
 /**
  * M0 · Vista de administración (/admin/usuarios): usuarios y dispositivos.
  * Solo para quien tiene el permiso users.manage (el rol admin). Cada persona
@@ -33,7 +36,7 @@ import { roleOption } from './Utils/roles';
  * ⚠️ Por ahora con datos de prueba: ver Stores/useAdminStore.ts.
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Usuarios', href: usuarios() }] },
+    layout: { breadcrumbs: [{ title: 'nav.users', href: usuarios() }] },
 });
 
 const auth = useAuthStore();
@@ -106,7 +109,9 @@ async function linkFor(data: UserFormData): Promise<UserLink> {
 async function saveUser(data: UserFormData): Promise<void> {
     await store.saveUser(data, await linkFor(data), editing.value?.id);
     toast.success(
-        editing.value ? 'Usuario actualizado' : `${data.name} ya tiene acceso`,
+        editing.value
+            ? t('Identidad.admin.userUpdated')
+            : t('Identidad.admin.userCreated', { name: data.name }),
     );
 }
 
@@ -124,10 +129,21 @@ async function toggle(
             await store.setDeviceActive(item.id, active);
         }
 
-        toast(`${item.name} ${active ? 'activado' : 'desactivado'}`);
+        toast(
+            t(
+                active
+                    ? 'Identidad.admin.activated'
+                    : 'Identidad.admin.deactivated',
+                {
+                    name: item.name,
+                },
+            ),
+        );
     } catch (error) {
         toast.error(
-            error instanceof ApiError ? error.message : 'No se pudo cambiar.',
+            error instanceof ApiError
+                ? error.message
+                : t('Identidad.admin.couldNotChange'),
         );
     } finally {
         busy.value[kind] = null;
@@ -136,7 +152,7 @@ async function toggle(
 
 onMounted(async () => {
     if (!auth.can('users.manage')) {
-        toast.error('Esa vista es solo para administración.');
+        toast.error(t('Identidad.admin.onlyAdmin'));
         router.visit(dashboard());
 
         return;
@@ -149,7 +165,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Usuarios" />
+    <Head :title="t('Identidad.admin.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <template v-if="store.loading || store.mission === null">

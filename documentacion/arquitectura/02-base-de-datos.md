@@ -125,6 +125,12 @@ Detalle en [M0 · backend](../../astrohealth/docs/backend/M0-identidad/README.md
 | `summary` | `string(255)` | "Corazón en precaución; el resto, normal." |
 | `created_at` | `timestamp` | Sin `updated_at`: cada evaluación es una fila nueva |
 
+### M2 · `psych_tests`, `psych_results`
+| Tabla | Columnas |
+|---|---|
+| `psych_tests` | `code` (único), `name`, `kind` (`psychological` · `cognitive`), `description`, `instructions`, `frequency_days`, `unit`, `scale` JSON `[{label, points}]`, `questions` JSON `[{id, text, reverse, critical}]`, `bands` JSON `[{max, label, status}]` de menor a mayor, `source` (*nullable*) |
+| `psych_results` | `test_id` (→ `psych_tests`; no se borra un test con resultados), `astronaut_id`, `day` (día de misión), `taken_at`, `score`, `status`, `band`, `detail` (*nullable*), `flagged` (respuesta de riesgo), `answers` JSON (solo para el equipo médico), `created_at`. Índice `(astronaut_id, test_id, taken_at)`. No se editan |
+
 ### M3 · `body_parts`
 | Columna | Tipo | Notas |
 |---|---|---|
@@ -156,9 +162,9 @@ Detalle en [M0 · backend](../../astrohealth/docs/backend/M0-identidad/README.md
 ### M7 · `achievements`, `astronaut_achievements`, `points_log`
 | Tabla | Columnas |
 |---|---|
-| `achievements` | `code` (único), `name`, `description`, `icon`, `points` |
-| `astronaut_achievements` | `astronaut_id`, `achievement_id`, `earned_at`. Llave única `(astronaut_id, achievement_id)` |
-| `points_log` | `astronaut_id`, `points`, `reason` (`daily_complete`, `streak_7`, `sleep_7h`, `exercise`, `reminder`), `reference` (*nullable*, evita sumar dos veces lo mismo), `created_at`. Llave única `(astronaut_id, reason, reference)` |
+| `achievements` | `code` (único), `name`, `icon`, `condition`, `bonus` (puntos extra al ganarla), `target` (la meta de su barra de avance), `sort_order` |
+| `astronaut_achievements` | `astronaut_id`, `achievement_id`, `earned_day` (día de misión), `earned_at`. Llave única `(astronaut_id, achievement_id)` |
+| `points_log` | `astronaut_id`, `points`, `reason` (`daily_complete`, `streak_7`, `sleep_7h`, `exercise`, `reminder`, `psych_test`, `badge`), `reference` (evita sumar dos veces lo mismo: el día, el recordatorio, el test o la insignia), `day` (día de misión), `created_at`. Llave única `(astronaut_id, reason, reference)`; índice `(astronaut_id, day)` |
 
 ### M8 · `reminders`
 | Columna | Tipo | Notas |
@@ -167,7 +173,8 @@ Detalle en [M0 · backend](../../astrohealth/docs/backend/M0-identidad/README.md
 | `type` | `enum(measure_bp, exercise, log_sleep, mood_check, dosimeter, custom)` | |
 | `title` | `string(80)` | "Hora de medir tu presión 🩺" |
 | `time` | `time` | Hora del día |
-| `last_done_at` | `timestamp`, *nullable* | Si es de hoy, el recordatorio está hecho |
+| `active` | `boolean`, por defecto `true` | Los inactivos no salen en la rutina del día |
+| `last_done_at` | `datetime`, *nullable* | Si es de hoy (día UTC, como el día de misión), el recordatorio está hecho |
 
 ## 4. Datos iniciales (*seeders*)
 
@@ -176,11 +183,12 @@ Detalle en [M0 · backend](../../astrohealth/docs/backend/M0-identidad/README.md
 | `MissionSeeder` | M6 | La misión **Ares-1** (Marte, 30 días) y 4 astronautas |
 | `UserSeeder` · `DeviceSeeder` | M0 | Admin, médico de vuelo y 4 astronautas (enlazados por `astronaut_id`) · el dispositivo del simulador |
 | `IndicatorSeeder` | M1 | Los 10 indicadores, con unidad, rango posible y texto de ayuda |
+| `PsychTestSeeder` · `DemoPsychResultsSeeder` | M2 | Los 4 tests de la guía psicológica · (solo fuera de producción) los resultados semanales de Ares-1 |
 | `ThresholdSeeder` | M2 | Los umbrales del [plan §2](../PLAN_ASTROHEALTH.md#2-umbrales-de-referencia-para-el-motor-de-evaluación) para los 4 entornos |
 | `BodyPartSeeder` | M3 | Las 9 zonas, con su función y su riesgo espacial |
 | `RecommendationSeeder` | M5 | Una recomendación por indicador, en amarillo y en rojo |
-| `AchievementSeeder` | M7 | Las insignias |
-| `ReminderSeeder` | M8 | Los 5 recordatorios por defecto para cada astronauta |
+| `AchievementSeeder` · `DemoPointsSeeder` | M7 | Las 9 insignias · (solo fuera de producción) los puntos e insignias de Ares-1 hasta hoy |
+| `ReminderSeeder` · `DemoRemindersSeeder` | M8 | Los 5 recordatorios por defecto (`config/reminders.php`) para cada astronauta · (solo fuera de producción) la presión de hoy ya hecha en Ares-1 |
 | **El simulador** (ingesta) | M1 | Los 30 días simulados llegan por `POST /api/v1/ingest/readings`. Plan B sin red: `registro:import-file <json>` |
 
 ```powershell

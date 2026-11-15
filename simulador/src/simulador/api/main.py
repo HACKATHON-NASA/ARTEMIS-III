@@ -1,4 +1,4 @@
-"""API REST del simulador (FastAPI) — contrato con Laravel (SIMULADOR.md §8).
+"""API REST del simulador (FastAPI) — SIMULADOR.md §8.
 
 Base: `http://localhost:8001/api/v1` · documentación automática en `/docs`.
 
@@ -23,7 +23,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from simulador import AVISO_MEDICO, __version__
-from simulador.calibration.osdr_calibration import CALIBRATION_FILE, load_calibration
+from simulador.calibration.osdr_calibration import load_calibration
 from simulador.collectors.donki import (
     DonkiUnavailableError,
     daily_space_weather,
@@ -31,25 +31,14 @@ from simulador.collectors.donki import (
     latest_notifications,
 )
 from simulador.config import all_environments
-from simulador.engine import assess, evaluate, recommend, trend
 from simulador.generator.seed import generate_mission
 from simulador.models import (
     AnalyteCalibration,
     ApiError,
     ApiResponse,
-    AssessRequest,
-    AssessResult,
-    Environment,
-    EvaluateRequest,
-    EvaluateResult,
-    Indicator,
     MissionRequest,
     MissionResult,
-    Recommendation,
     SpaceWeatherDay,
-    Status,
-    TrendRequest,
-    TrendResult,
 )
 from simulador.settings import get_settings
 
@@ -161,39 +150,8 @@ async def calibration() -> ApiResponse[dict[str, AnalyteCalibration]]:
 
 @router.post("/simulate", summary="Genera una misión completa")
 async def simulate(request: MissionRequest) -> ApiResponse[MissionResult]:
-    """Tripulación, clima espacial, mediciones y alertas. Reproducible con `seed`."""
+    """Tripulación, clima espacial y valores crudos de los aparatos. Reproducible con `seed`."""
     return ApiResponse(data=await generate_mission(request))
-
-
-@router.post("/evaluate", summary="Semáforo de una medición")
-async def evaluate_endpoint(request: EvaluateRequest) -> ApiResponse[EvaluateResult]:
-    """`{indicator, value, environment}` → `{status, message}`."""
-    return ApiResponse(
-        data=evaluate(request.indicator, request.value, request.environment, request.sep_active)
-    )
-
-
-@router.post("/assess", summary="Puntaje y estado por órgano")
-async def assess_endpoint(request: AssessRequest) -> ApiResponse[AssessResult]:
-    """Lista de mediciones → `{score, body_status, summary}` (usa la última de cada indicador)."""
-    return ApiResponse(data=assess(request.measurements, request.environment))
-
-
-@router.post("/trends", summary="Tendencia de un indicador")
-async def trends_endpoint(request: TrendRequest) -> ApiResponse[TrendResult]:
-    """Serie de valores (de la más antigua a la más reciente) → `{direction, trend_alert}`."""
-    return ApiResponse(data=trend(request.indicator, request.values, request.environment))
-
-
-@router.get("/recommendations", summary="Recomendación por indicador y estado")
-async def recommendations(
-    indicator: Indicator,
-    status: Status,
-    environment: Environment = Environment.MARS,
-    value: float | None = Query(None, description="Opcional: distingue valores bajos de altos"),
-) -> ApiResponse[Recommendation]:
-    """Qué hacer; en rojo incluye `notify_ground` y el retraso de comunicación del entorno."""
-    return ApiResponse(data=recommend(indicator, status, environment, value))
 
 
 @router.get("/environments", summary="Los 4 entornos de misión")
@@ -230,8 +188,8 @@ def create_app(prewarm: bool = True) -> FastAPI:
         title="AstroHealth · Simulador",
         version=__version__,
         description=(
-            "Datos reales de la NASA (DONKI y OSDR), misión simulada calibrada y motor de "
-            f"evaluación. **{AVISO_MEDICO}**"
+            "Datos reales de la NASA (DONKI y OSDR) y misión simulada calibrada: "
+            f"valores crudos de los aparatos, sin evaluar. **{AVISO_MEDICO}**"
         ),
         lifespan=lifespan,
     )
