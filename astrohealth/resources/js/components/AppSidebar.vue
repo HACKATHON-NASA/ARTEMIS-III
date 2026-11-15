@@ -9,6 +9,7 @@ import {
     Rocket,
     ShieldCheck,
     SquarePlus,
+    Trophy,
     Users,
 } from '@lucide/vue';
 import { computed, onMounted } from 'vue';
@@ -25,11 +26,13 @@ import {
     SidebarMenuItem,
     SidebarTrigger,
 } from '@/components/ui/sidebar';
+import SidebarXp from '@/modules/Gamificacion/Components/SidebarXp.vue';
 import { useLiveAlerts } from '@/modules/Alertas/Composables/useLiveAlerts';
 import { useAlertsStore } from '@/modules/Alertas/Stores/useAlertsStore';
 import {
     alertas,
     dashboard,
+    logros,
     evolucion,
     guia,
     inicio,
@@ -67,7 +70,10 @@ const missionItems = computed<NavItem[]>(() => [
         : []),
     // Solo quien va en la nave: Tierra ve la historia en Tripulación y el Panel.
     ...(auth.actor?.astronaut_id
-        ? [{ title: 'Mi evolución', href: evolucion(), icon: ChartLine }]
+        ? [
+              { title: 'Mi evolución', href: evolucion(), icon: ChartLine },
+              { title: 'Logros', href: logros(), icon: Trophy },
+          ]
         : []),
     ...(auth.can('alerts.read')
         ? [
@@ -153,6 +159,10 @@ onMounted(() => {
         </SidebarContent>
 
         <SidebarFooter>
+            <SidebarXp
+                v-if="auth.actor?.astronaut_id"
+                :astronaut-id="auth.actor.astronaut_id"
+            />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

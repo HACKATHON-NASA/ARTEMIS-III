@@ -15,6 +15,7 @@ import RecommendationCard from '../Alertas/Components/RecommendationCard.vue';
 import { useAlertsStore } from '../Alertas/Stores/useAlertsStore';
 import type { Alert, NewMessage } from '../Alertas/Types/alerts';
 import { useMissionStore } from '../Entorno/Stores/useMissionStore';
+import { useGamificationStore } from '../Gamificacion/Stores/useGamificationStore';
 import HealthScore from '../Evaluacion/Components/HealthScore.vue';
 import { useAssessmentStore } from '../Evaluacion/Stores/useAssessmentStore';
 import HeartbeatLine from '../Identidad/Components/Acceso/HeartbeatLine.vue';
@@ -42,6 +43,7 @@ const assessment = useAssessmentStore();
 const alerts = useAlertsStore();
 const reminders = useRemindersStore();
 const mission = useMissionStore();
+const gamification = useGamificationStore();
 
 const root = ref<HTMLElement | null>(null);
 const { reveal } = useReveal(root);
@@ -81,11 +83,17 @@ async function sendMessage(message: NewMessage): Promise<void> {
 
 async function completeReminder(reminder: Reminder): Promise<void> {
     busyReminder.value = reminder.id;
-    const points = await reminders.markDone(reminder.id);
+    await reminders.markDone(reminder.id);
+    const { gained } = await gamification.award(
+        auth.actor?.astronaut_id ?? 0,
+        'reminder',
+        `${reminder.id}-${mission.current?.day ?? 1}`,
+        mission.current?.day ?? 1,
+    );
     busyReminder.value = null;
 
-    if (points > 0) {
-        toast.success(`¡Hecho! +${points} puntos`, {
+    if (gained > 0) {
+        toast.success(`¡Hecho! +${gained} puntos`, {
             description: reminder.title,
         });
     }

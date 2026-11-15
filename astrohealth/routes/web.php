@@ -41,5 +41,8 @@ Route::inertia('guia/resultados', 'Evaluacion/PsychResults')->name('psicologiaTr
 // Mi evolución (M4): la historia del astronauta en la misión.
 Route::inertia('evolucion', 'Dashboard/MyEvolution')->name('evolucion');
 
+// Logros (M7): puntos, nivel, racha, insignias y ranking.
+Route::inertia('logros', 'Gamificacion/Achievements')->name('logros');
+
 // Centro de alertas (M5): todos los roles con alerts.read.
 Route::inertia('alertas', 'Alertas/Alerts')->name('alertas');

@@ -10,6 +10,8 @@ import type { BodyZoneCode } from '@/types/health';
 import { useAlertsStore } from '../Alertas/Stores/useAlertsStore';
 import BodyViewer from '../Cuerpo/Components/BodyViewer.vue';
 import { useBodyStore } from '../Cuerpo/Stores/useBodyStore';
+import { useMissionStore } from '../Entorno/Stores/useMissionStore';
+import { useGamificationStore } from '../Gamificacion/Stores/useGamificationStore';
 import FlyingValue from './Components/FlyingValue.vue';
 import HowToMeasureDialog from './Components/HowToMeasureDialog.vue';
 import MeasurementForm from './Components/MeasurementForm.vue';
@@ -31,6 +33,8 @@ const auth = useAuthStore();
 const store = useMeasurementsStore();
 const body = useBodyStore();
 const alerts = useAlertsStore();
+const mission = useMissionStore();
+const gamification = useGamificationStore();
 
 const root = ref<HTMLElement | null>(null);
 const bodyHost = ref<HTMLElement | null>(null);
@@ -95,9 +99,38 @@ async function finish(): Promise<void> {
         body.load(astronautId.value),
     ]);
     alertsCreated.value = created.length;
+    await awardPoints();
     saving.value = false;
     zone.value = null;
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/** Lo que suma puntos al registrar (M7): el día completo, dormir 7 h y 90 min de ejercicio. */
+async function awardPoints(): Promise<void> {
+    await mission.load();
+    const day = mission.current?.day ?? 1;
+    const value = (code: string) =>
+        store.lastRecorded.find((item) => item.indicator === code)?.value ?? 0;
+    const items: Parameters<typeof gamification.awardMany>[1] = [];
+
+    if (body.measuredToday.done >= body.measuredToday.total) {
+        items.push(['daily_complete', `${day}`]);
+    }
+
+    if (value('sleep') >= 7) items.push(['sleep_7h', `${day}`]);
+    if (value('exercise_min') >= 90) items.push(['exercise', `${day}`]);
+
+    const { gained } = await gamification.awardMany(
+        astronautId.value ?? 0,
+        items,
+        day,
+    );
+
+    if (gained > 0) {
+        toast.success(`+${gained} puntos`, {
+            description: 'Por cuidarte hoy.',
+        });
+    }
 }
 
 function again(): void {

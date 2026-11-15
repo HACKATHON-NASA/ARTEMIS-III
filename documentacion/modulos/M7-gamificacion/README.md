@@ -31,6 +31,7 @@ Es dueño de **`achievements`**, **`astronaut_achievements`** y **`points_log`**
 | Dormir 7 h o más | **+5** | `sleep_7h` | La fecha |
 | Hacer ejercicio (`exercise_min` ≥ 90) | **+15** | `exercise` | La fecha |
 | Completar un recordatorio | **+5** | `reminder` | `reminder_id` + fecha |
+| Hacer un test psicológico (M2) | **+10** | `psych_test` | `test_id` + fecha |
 
 La llave única `(astronaut_id, reason, reference)` garantiza que **nada se cuenta dos veces**, aunque un evento llegue repetido.
 
@@ -50,6 +51,12 @@ La llave única `(astronaut_id, reason, reference)` garantiza que **nada se cuen
 | `steel_heart` | Corazón de acero | ❤️ | 7 días seguidos con `hr`, `bp_sys` y `bp_dia` en verde | 20 |
 | `space_sleeper` | Dormilón espacial | 😴 | 7 noches con 7 h o más de sueño | 20 |
 | `on_time` | Puntual | ⏰ | 10 recordatorios completados | 15 |
+| `mind_check` | Mente al día | 🧠 | Los 4 tests psicológicos de una semana | 15 |
+| `iron_body` | Cuerpo de hierro | 💪 | 14 días con `exercise_min` ≥ 90 | 30 |
+| `swiss_clock` | Reloj suizo | ⌚ | 100 recordatorios completados | 40 |
+| `mission_30` | Misión completa | 🏁 | Racha de 30 días | 100 |
+
+> `space_sleeper` pide **7 noches seguidas** (no sueltas), para que sea un reto real. Las insignias difíciles hacen que siempre haya una meta a la vista.
 
 ## 4. API
 
@@ -139,3 +146,8 @@ La `XpBar` y el `StreakCounter` también se ven en el encabezado de `AppLayout`,
 - [ ] Registrar datos suma puntos.
 - [ ] Se desbloquean insignias visibles.
 - [ ] El ranking muestra a los 4 astronautas.
+
+
+## Estado del frontend (datos de prueba)
+
+Hecho: `Achievements.vue` (`/logros`) con `XpBar` (el `+N` flota), `StreakCounter`, `BadgeGrid` (bloqueadas con su avance), `Leaderboard` y `RecentPoints` (con "cómo se ganan"); `SidebarXp` deja el nivel y la racha siempre a la vista en el menú. Suman puntos de verdad: registrar (día completo, sueño, ejercicio), cumplir recordatorios en el Inicio y hacer tests. El confeti es propio (`Composables/useConfetti.ts`, con GSAP; sin `canvas-confetti`) y no se lanza con "reducir movimiento". ⚠️ El historial de puntos sale de `Utils/gamificationMock.ts` (coherente con la historia de la misión) y lo de hoy se guarda en este navegador.

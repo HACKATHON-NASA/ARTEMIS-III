@@ -10,6 +10,7 @@ import { dashboard, psicologia } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useAlertsStore } from '../Alertas/Stores/useAlertsStore';
 import { useMissionStore } from '../Entorno/Stores/useMissionStore';
+import { useGamificationStore } from '../Gamificacion/Stores/useGamificationStore';
 import GuideTabs from './Components/GuideTabs.vue';
 import PsychTakeDialog from './Components/Psych/PsychTakeDialog.vue';
 import PsychTestCard from './Components/Psych/PsychTestCard.vue';
@@ -34,6 +35,7 @@ const auth = useAuthStore();
 const psych = usePsychStore();
 const alerts = useAlertsStore();
 const mission = useMissionStore();
+const gamification = useGamificationStore();
 
 const root = ref<HTMLElement | null>(null);
 const { reveal } = useReveal(root);
@@ -71,6 +73,15 @@ async function submit(submission: PsychSubmission) {
         submission,
         today.value,
     );
+
+    if (result) {
+        await gamification.award(
+            own.value,
+            'psych_test',
+            `${test.id}-${today.value}`,
+            today.value,
+        );
+    }
 
     if (result?.flagged) {
         await alerts.send(own.value, {

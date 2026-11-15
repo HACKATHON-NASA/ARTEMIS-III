@@ -94,6 +94,13 @@ final class PagesTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component('Dashboard/MyEvolution'));
     }
 
+    public function test_the_achievements_page_is_the_gamificacion_module_principal(): void
+    {
+        $this->get('/logros')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Gamificacion/Achievements'));
+    }
+
     public function test_the_alerts_center_is_the_alertas_module_principal(): void
     {
         $this->get('/alertas')
