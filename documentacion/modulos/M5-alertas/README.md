@@ -157,3 +157,10 @@ Las de tipo `vital` las crea el backend al escuchar `MeasurementsRecorded` (M1),
 - [ ] Un valor rojo dispara la alerta.
 - [ ] La app muestra qué hacer.
 - [ ] "Enviar a Tierra" funciona con el contador del entorno.
+
+
+## Indicaciones del médico (frontend con datos de prueba)
+
+El médico de vuelo o el de la tripulación (permiso `advice.send`) le escribe a un tripulante **qué hacer**: tema (sueño, ejercicio, alimentación, medicamento, descanso, salud mental u otra), título, pasos, si es importante y por cuántos días vale. Se escribe desde la **ficha del tripulante** (`/tripulacion/{id}`, `modules/Cuerpo/CrewMember.vue`), viaja con el retraso de la comunicación y le llega al astronauta en su **Inicio** (`AdviceInbox.vue`), donde la marca como **"Entendido"**. En la ficha se ve en qué va cada una: viajando (con cuenta regresiva), en la nave sin leer o entendida.
+
+Rutas propuestas: `GET/POST /api/v1/advice?astronaut_id=` y `PATCH /api/v1/advice/{id}/read`. ⚠️ Hoy en `Utils/adviceMock.ts` (localStorage, compartido entre ventanas).

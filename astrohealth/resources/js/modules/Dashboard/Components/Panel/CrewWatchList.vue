@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import { ArrowRight, Users } from '@lucide/vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import { getInitials } from '@/composables/useInitials';
-import { tripulacion } from '@/routes';
+import { tripulacion, tripulante } from '@/routes';
 import type { WatchRow } from '../../Types/crewTrends';
 
 /**
@@ -42,7 +42,11 @@ defineProps<{ rows: WatchRow[] }>();
                     {{ getInitials(row.name) }}
                 </span>
                 <div class="min-w-0 flex-1">
-                    <p class="truncate text-sm font-semibold">{{ row.name }}</p>
+                    <Link
+                        :href="tripulante(row.id)"
+                        class="block truncate text-sm font-semibold hover:text-sky-600 hover:underline dark:hover:text-sky-400"
+                        >{{ row.name }}</Link
+                    >
                     <p class="truncate text-xs text-muted-foreground">
                         {{ row.summary }}
                     </p>

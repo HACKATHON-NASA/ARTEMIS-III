@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
+import type { InertiaLinkProps } from '@inertiajs/vue3';
 import StatusBadge from '@/components/StatusBadge.vue';
 import { getInitials } from '@/composables/useInitials';
 import { statusMeta } from '@/lib/status';
@@ -18,6 +20,8 @@ defineProps<{
     parts: BodyPart[];
     body: BodyStatus;
     selected: BodyZoneCode | null;
+    /** La ficha del tripulante. */
+    href: NonNullable<InertiaLinkProps['href']>;
 }>();
 
 defineEmits<{ select: [code: BodyZoneCode] }>();
@@ -40,7 +44,13 @@ defineEmits<{ select: [code: BodyZoneCode] }>();
                     {{ getInitials(name) }}
                 </span>
                 <div class="min-w-0">
-                    <h2 class="truncate font-semibold">{{ name }}</h2>
+                    <h2 class="truncate font-semibold">
+                        <Link
+                            :href="href"
+                            class="hover:text-sky-600 hover:underline dark:hover:text-sky-400"
+                            >{{ name }}</Link
+                        >
+                    </h2>
                     <p class="truncate text-xs text-muted-foreground">
                         {{ crewRole }}
                     </p>
@@ -64,8 +74,15 @@ defineEmits<{ select: [code: BodyZoneCode] }>();
             :selected="selected"
             @select="$emit('select', $event)"
         />
-        <p class="px-4 pb-4 text-center text-xs text-muted-foreground">
-            Toca un órgano para ver su estado
-        </p>
+        <div class="flex items-center justify-between gap-2 px-4 pb-4 text-xs">
+            <span class="text-muted-foreground"
+                >Toca un órgano para ver su estado</span
+            >
+            <Link
+                :href="href"
+                class="font-medium text-sky-600 hover:underline dark:text-sky-400"
+                >Ver ficha →</Link
+            >
+        </div>
     </article>
 </template>

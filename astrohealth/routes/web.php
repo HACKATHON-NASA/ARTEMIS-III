@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /*
 | Páginas (Inertia). Son solo la "cáscara": la sesión y los datos van por la
@@ -22,6 +23,12 @@ Route::inertia('inicio', 'Cuerpo/Home')->name('inicio');
 // Pasan a app/Modules/Cuerpo/web.php y Entorno/web.php con su backend.
 Route::inertia('salud', 'Dashboard/HealthPanel')->name('salud');
 Route::inertia('tripulacion', 'Entorno/Crew')->name('tripulacion');
+
+// La ficha de un tripulante (médicos y administración): su salud completa y
+// las indicaciones del médico. La página pide los datos a la API con el id.
+Route::get('tripulacion/{astronaut}', fn (int $astronaut) => Inertia::render('Cuerpo/CrewMember', [
+    'astronautId' => $astronaut,
+]))->whereNumber('astronaut')->name('tripulante');
 
 // Administración: crear misiones y ver cada una (permiso missions.manage).
 // Pasa a app/Modules/Entorno/web.php con su backend.

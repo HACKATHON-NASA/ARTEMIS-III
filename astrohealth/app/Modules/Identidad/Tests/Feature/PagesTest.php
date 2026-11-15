@@ -108,6 +108,15 @@ final class PagesTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component('Entorno/Mission'));
     }
 
+    public function test_the_crew_member_file_receives_the_astronaut_id(): void
+    {
+        $this->get('/tripulacion/2')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Cuerpo/CrewMember')->where('astronautId', 2));
+
+        $this->get('/tripulacion/abc')->assertNotFound();
+    }
+
     public function test_the_alerts_center_is_the_alertas_module_principal(): void
     {
         $this->get('/alertas')

@@ -8,7 +8,14 @@ import { formatValue, indicatorMeta } from '../../Utils/indicatorMeta';
  * todavía esté en verde. Tocar uno lo abre en la gráfica. Si nada empeora,
  * lo dice (también es una buena noticia).
  */
-defineProps<{ items: IndicatorHistory[] }>();
+withDefaults(
+    defineProps<{
+        items: IndicatorHistory[];
+        /** Nombre del tripulante cuando lo ve el médico (si no, "Tu …"). */
+        who?: string | null;
+    }>(),
+    { who: null },
+);
 
 defineEmits<{ select: [code: IndicatorHistory['code']] }>();
 </script>
@@ -34,7 +41,13 @@ defineEmits<{ select: [code: IndicatorHistory['code']] }>();
                 class="size-4 shrink-0 text-[var(--status-red)]"
             />
             <span>
-                Tu {{ indicatorMeta(item.code).label.toLowerCase() }} viene
+                <template v-if="who"
+                    >{{ indicatorMeta(item.code).label }} de {{ who }}</template
+                ><template v-else
+                    >Tu
+                    {{ indicatorMeta(item.code).label.toLowerCase() }}</template
+                >
+                viene
                 {{ item.trend?.direction === 'down' ? 'bajando' : 'subiendo' }}:
                 de
                 <strong class="tabular-nums">{{
@@ -53,6 +66,10 @@ defineEmits<{ select: [code: IndicatorHistory['code']] }>();
         class="flex items-center gap-3 rounded-2xl border border-[var(--status-green)]/30 bg-[var(--status-green)]/8 p-4 text-sm"
     >
         <CircleCheck class="size-5 shrink-0 text-[var(--status-green)]" />
-        Nada viene empeorando esta semana. ¡Sigue así!
+        {{
+            who
+                ? `Nada viene empeorando esta semana en ${who}.`
+                : 'Nada viene empeorando esta semana. ¡Sigue así!'
+        }}
     </section>
 </template>

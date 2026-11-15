@@ -65,6 +65,7 @@ astrohealth/resources/images/      # Imágenes de la app (marca/, fondos/), opti
 | Panel de salud (médicos y administración): el tablero de la misión en curso, en vivo (novedades y alertas, quién necesita atención, cambios en 72 h) | `modules/Dashboard/HealthPanel.vue` | `/salud` (`/admin` lleva aquí) |
 | Tripulación: el cuerpo 3D de cada astronauta (tocar un órgano abre su ventana) y las gráficas que los comparan | `modules/Entorno/Crew.vue` | `/tripulacion` |
 | Misiones (M6, administración): crear misiones y ver su tripulación | `modules/Entorno/Missions.vue` | `/admin/misiones` |
+| Ficha del tripulante (médicos y administración): su cuerpo, tendencias, indicadores, tests e indicaciones del médico | `modules/Cuerpo/CrewMember.vue` | `/tripulacion/{id}` |
 | Usuarios y dispositivos (M0): cada persona de la nave o médico de vuelo, asociada a una misión | `modules/Identidad/Admin.vue` | `/admin/usuarios` |
 | Registrar (M1) | `modules/Registro/Record.vue` | `/registrar` |
 | Dashboard (M4) | `modules/Dashboard/Dashboard.vue` | `/dashboard` |

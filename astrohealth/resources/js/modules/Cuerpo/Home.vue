@@ -6,6 +6,7 @@ import { useReveal } from '@/composables/useReveal';
 import { dashboard, inicio, logros, psicologia, registrar } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { BodyZoneCode } from '@/types/health';
+import AdviceInbox from '../Alertas/Components/AdviceInbox.vue';
 import AlertBanner from '../Alertas/Components/AlertBanner.vue';
 import AstronautComms from '../Alertas/Components/AstronautComms.vue';
 import GroundLinkModal from '../Alertas/Components/GroundLinkModal.vue';
@@ -28,7 +29,6 @@ import BodyPartPanel from './Components/BodyPartPanel.vue';
 import HomeGreeting from './Components/HomeGreeting.vue';
 import HomeSkeleton from './Components/HomeSkeleton.vue';
 import TodayPlan from './Components/TodayPlan.vue';
-import VitalsGrid from './Components/VitalsGrid.vue';
 import { useBodyStore } from './Stores/useBodyStore';
 import { buildTodayPlan } from './Utils/todayPlan';
 
@@ -193,6 +193,8 @@ onMounted(async () => {
                 />
             </div>
 
+            <AdviceInbox :astronaut-id="auth.actor?.astronaut_id ?? 0" />
+
             <div data-reveal>
                 <TodayPlan :items="plan" />
             </div>
@@ -254,11 +256,6 @@ onMounted(async () => {
                     </section>
                 </div>
             </div>
-
-            <section class="rounded-2xl border bg-card p-4 sm:p-6" data-reveal>
-                <h2 class="mb-4 text-lg font-semibold">Últimos valores</h2>
-                <VitalsGrid :status="body.status" @select="openZone" />
-            </section>
         </template>
 
         <BodyPartPanel

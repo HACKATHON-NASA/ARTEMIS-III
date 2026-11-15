@@ -10,11 +10,16 @@ import type { PsychResult, PsychTest } from '../../Types/psych';
  * Mis tests en "Mi evolución": cada test con mi último resultado, su nivel
  * y cómo ha ido en la misión. Si me toca hacerlo, lleva a la guía.
  */
-defineProps<{
-    tests: PsychTest[];
-    history: (testId: number) => PsychResult[];
-    isDue: (test: PsychTest) => boolean;
-}>();
+withDefaults(
+    defineProps<{
+        tests: PsychTest[];
+        history: (testId: number) => PsychResult[];
+        isDue: (test: PsychTest) => boolean;
+        /** false = lo ve el médico: "Pendiente esta semana", sin enlace. */
+        own?: boolean;
+    }>(),
+    { own: true },
+);
 </script>
 
 <template>
@@ -54,8 +59,14 @@ defineProps<{
             <p v-else class="text-sm text-muted-foreground">
                 Aún no lo has hecho.
             </p>
+            <p
+                v-if="isDue(test) && !own"
+                class="mt-auto text-xs font-medium text-amber-600 dark:text-amber-300"
+            >
+                Pendiente esta semana
+            </p>
             <Link
-                v-if="isDue(test)"
+                v-else-if="isDue(test)"
                 :href="psicologia()"
                 class="mt-auto text-xs font-medium text-sky-600 hover:underline dark:text-sky-400"
             >

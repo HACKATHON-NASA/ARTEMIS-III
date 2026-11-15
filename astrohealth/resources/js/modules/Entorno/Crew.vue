@@ -4,7 +4,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReveal } from '@/composables/useReveal';
-import { dashboard, tripulacion } from '@/routes';
+import { dashboard, tripulacion, tripulante } from '@/routes';
 import type { BodyZoneCode } from '@/types/health';
 import RecommendationCard from '../Alertas/Components/RecommendationCard.vue';
 import { useAlertsStore } from '../Alertas/Stores/useAlertsStore';
@@ -190,6 +190,7 @@ onMounted(async () => {
                                     ? picked.zone
                                     : null
                             "
+                            :href="tripulante(member.id)"
                             @select="pick(member.id, $event)"
                         />
                     </div>
