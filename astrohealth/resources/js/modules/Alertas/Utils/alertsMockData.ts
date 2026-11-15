@@ -206,3 +206,55 @@ export function mockPendingTotal(astronautId: number | null): number {
         (alert) => alert.acknowledged_at === null,
     ).length;
 }
+
+const NAMES: Partial<Record<Alert['indicator'], string>> = {
+    hr: 'Frecuencia cardíaca',
+    bp_sys: 'Presión sistólica',
+    bp_dia: 'Presión diastólica',
+    glucose: 'Glucosa',
+    temp: 'Temperatura',
+    spo2: 'Saturación de oxígeno',
+    sleep: 'Sueño',
+    mood: 'Estado de ánimo',
+    radiation: 'Radiación diaria',
+    exercise_min: 'Ejercicio',
+};
+
+/**
+ * Lo que hará el backend al escuchar MeasurementsRecorded (M1 → M5): cada
+ * valor en amarillo o rojo crea su alerta. Devuelve las creadas.
+ */
+export function mockAlertsFromMeasurements(
+    astronautId: number,
+    measurements: {
+        indicator: Alert['indicator'];
+        value: number;
+        unit: string;
+        status: 'green' | 'yellow' | 'red';
+    }[],
+): Alert[] {
+    const created: Alert[] = [];
+
+    for (const item of measurements) {
+        if (item.status === 'green') {
+            continue;
+        }
+
+        const value = item.value.toLocaleString('es');
+        const unit = item.unit === '1-5' ? 'de 5' : item.unit;
+        const label = item.status === 'red' ? 'crítico' : 'precaución';
+        const alert = build({
+            id: Math.max(...all().map((other) => other.id)) + 1,
+            astronaut_id: astronautId,
+            indicator: item.indicator,
+            level: item.status,
+            message: `${NAMES[item.indicator]} ${value} ${unit} (${label})`,
+            created: 0,
+        });
+
+        all().push(alert);
+        created.push(alert);
+    }
+
+    return created;
+}

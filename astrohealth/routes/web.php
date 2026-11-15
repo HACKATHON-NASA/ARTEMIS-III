@@ -23,5 +23,9 @@ Route::inertia('inicio', 'Cuerpo/Home')->name('inicio');
 Route::inertia('salud', 'Cuerpo/CrewHealth')->name('salud');
 Route::inertia('tripulacion', 'Entorno/Crew')->name('tripulacion');
 
+// Registrar (M1): el astronauta anota sus indicadores del día.
+// Pasa a app/Modules/Registro/web.php cuando exista el backend de M1.
+Route::inertia('registrar', 'Registro/Record')->name('registrar');
+
 // Centro de alertas (M5): todos los roles con alerts.read.
 Route::inertia('alertas', 'Alertas/Alerts')->name('alertas');

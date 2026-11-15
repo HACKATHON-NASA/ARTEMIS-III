@@ -57,6 +57,13 @@ final class PagesTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component('Cuerpo/Home'));
     }
 
+    public function test_the_record_page_is_the_registro_module_principal(): void
+    {
+        $this->get('/registrar')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Registro/Record'));
+    }
+
     public function test_the_alerts_center_is_the_alertas_module_principal(): void
     {
         $this->get('/alertas')

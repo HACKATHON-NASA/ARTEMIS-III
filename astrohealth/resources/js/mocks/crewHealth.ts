@@ -123,6 +123,54 @@ function profileOf(astronautId: number): Profile {
     return PROFILES[astronautId] ?? PROFILES[1];
 }
 
+/** Lo que se registró en esta carga de la página (M1), por astronauta. */
+const RECORDED: Record<
+    number,
+    Partial<
+        Record<IndicatorCode, { value: number; status: Status; at: number }>
+    >
+> = {};
+
+/** Las lecturas del perfil con lo registrado encima (lo último manda). */
+function readingsOf(astronautId: number): Reading[] {
+    const recorded = RECORDED[astronautId] ?? {};
+
+    return profileOf(astronautId).readings.map((reading) => {
+        const latest = recorded[reading[0]];
+
+        return latest
+            ? [
+                  reading[0],
+                  latest.value,
+                  reading[2],
+                  latest.status,
+                  (Date.now() - latest.at) / 60_000,
+              ]
+            : reading;
+    });
+}
+
+/** Guarda mediciones nuevas (lo que hará POST /api/v1/measurements). */
+export function mockRecordReadings(
+    astronautId: number,
+    items: {
+        indicator: IndicatorCode;
+        value: number;
+        status: Status;
+        measured_at: string;
+    }[],
+): void {
+    const recorded = (RECORDED[astronautId] ??= {});
+
+    for (const item of items) {
+        recorded[item.indicator] = {
+            value: item.value,
+            status: item.status,
+            at: new Date(item.measured_at).getTime(),
+        };
+    }
+}
+
 export type MockZone = {
     status: MaybeStatus;
     values: {
@@ -151,9 +199,9 @@ export function mockBodyStatusFor(
         whole_body: empty(),
     };
 
-    for (const [indicator, value, unit, status, minutes] of profileOf(
+    for (const [indicator, value, unit, status, minutes] of readingsOf(
         astronautId,
-    ).readings) {
+    )) {
         const zone = result[ZONE_OF[indicator]];
         zone.values.push({
             indicator,
@@ -192,7 +240,7 @@ export function mockMeasuredToday(astronautId: number): {
     done: number;
     total: number;
 } {
-    const readings = profileOf(astronautId).readings;
+    const readings = readingsOf(astronautId);
 
     return {
         done: readings.filter((reading) => reading[4] < 24 * 60).length,

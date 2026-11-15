@@ -5,6 +5,7 @@ import type { Alert, Recommendation } from '../Types/alerts';
 import {
     MOCK_RECOMMENDATIONS,
     mockAlerts,
+    mockAlertsFromMeasurements,
     mockFindAlert,
     mockPendingTotal,
 } from '../Utils/alertsMockData';
@@ -123,6 +124,24 @@ export const useAlertsStore = defineStore('alerts', () => {
         });
     }
 
+    /**
+     * Tras registrar mediciones (M1): las amarillas y rojas generan su alerta.
+     * ⚠️ El mock las crea aquí; con el backend las crea M5 al escuchar
+     * MeasurementsRecorded y esto solo vuelve a cargar.
+     */
+    async function afterMeasurements(
+        astronautId: number,
+        measurements: Parameters<typeof mockAlertsFromMeasurements>[1],
+    ): Promise<Alert[]> {
+        const created = mockAlertsFromMeasurements(astronautId, measurements);
+        await Promise.all([
+            load(astronautId),
+            loadPendingTotal(pendingScope ?? astronautId),
+        ]);
+
+        return created;
+    }
+
     return {
         alerts,
         history,
@@ -136,5 +155,6 @@ export const useAlertsStore = defineStore('alerts', () => {
         recommendationsFor,
         sendToGround,
         acknowledge,
+        afterMeasurements,
     };
 });

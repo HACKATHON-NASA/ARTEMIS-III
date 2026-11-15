@@ -28,6 +28,7 @@ import {
     alertas,
     dashboard,
     inicio,
+    registrar,
     salud,
     tripulacion,
     usuarios,
@@ -55,7 +56,9 @@ const missionItems = computed<NavItem[]>(() => [
               { title: 'Tripulación', href: tripulacion(), icon: Users },
           ]
         : []),
-    { title: 'Registrar datos', href: '#', icon: SquarePlus, soon: true },
+    ...(auth.can('measurements.write.own') && auth.actor?.astronaut_id
+        ? [{ title: 'Registrar datos', href: registrar(), icon: SquarePlus }]
+        : []),
     { title: 'Historial', href: '#', icon: ChartLine, soon: true },
     ...(auth.can('alerts.read')
         ? [

@@ -99,14 +99,19 @@ Es dueño de **`indicators`** y **`measurements`** ([columnas](../../arquitectur
 
 | Archivo | Qué hace |
 |---|---|
-| `Components/MeasurementForm.vue` | Un `MeasurementField` por indicador, ordenados por `sort_order`. Valida los campos vacíos y envía con el *store* |
-| `Components/MeasurementField.vue` | Etiqueta, campo numérico con su unidad y el botón "¿Cómo me mido?" |
-| `Components/MoodPicker.vue` | 5 caritas clicables, accesibles con el teclado |
-| `Components/HowToMeasureDialog.vue` | Diálogo con el `help_text` |
+| `Components/MeasurementForm.vue` | Los campos agrupados por órgano (`Utils/fieldGroups.ts`), la hora de la medición ("Ahora" o "Más temprano") y la barra de "Guardar". Solo envía los campos llenos |
+| `Components/MeasurementField.vue` | Etiqueta, campo numérico con su unidad, el último valor como referencia y el botón "¿Cómo me mido?" |
+| `Components/MoodPicker.vue` | 5 caritas clicables, accesibles con el teclado (grupo de radio con flechas) |
+| `Components/HowToMeasureDialog.vue` | Diálogo con el `help_text`: cómo medirlo y por qué importa en el espacio |
 | `Components/FlyingValue.vue` | La animación del valor "volando" hacia el órgano (GSAP). Con `prefers-reduced-motion`, solo un *fade* |
+| `Components/RecordSummary.vue` | Lo guardado con su color, las alertas que se crearon y qué sigue |
+| `Composables/useMeasurementForm.ts` | Valores, errores (rango posible) y el *payload* con los campos llenos |
+| `Composables/useBodyLink.ts` | Tocar un órgano enfoca su campo; calcula de dónde a dónde vuela cada valor |
 | `Stores/useMeasurementsStore.ts` | `indicators`, `loadIndicators()`, `record()`, `lastRecorded` |
-| `Types/measurement.ts` | `Indicator`, `Measurement`, `RecordPayload` |
-| Principal `modules/Registro/Record.vue` | Compone el formulario y el resumen de lo que se acaba de guardar |
+| `Types/measurement.ts` | `Indicator`, `Measurement`, `RecordPayload`, `Flight` |
+| Principal `modules/Registro/Record.vue` | Compone el formulario, el cuerpo en vivo (M3) y el resumen; tras guardar, M5 vuelve a cargar las alertas |
+
+> ⚠️ Hoy con datos de prueba: `Utils/indicatorsMockData.ts` (catálogo) y `Utils/recordMock.ts` (imita el POST y el color de M2). Se borran con el backend.
 
 ## 7. Contratos y eventos
 
