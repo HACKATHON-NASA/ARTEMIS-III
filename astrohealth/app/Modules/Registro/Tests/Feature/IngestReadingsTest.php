@@ -91,6 +91,16 @@ final class IngestReadingsTest extends TestCase
         Event::assertDispatchedTimes(MeasurementsRecorded::class, 1);
     }
 
+    public function test_the_simulator_daily_dose_unit_is_accepted(): void
+    {
+        $this->postJson('/api/v1/ingest/readings', $this->batch([
+            $this->reading(['indicator' => 'radiation', 'value' => 0.57, 'unit' => 'mSv/day']),
+        ]), $this->device)
+            ->assertCreated()
+            ->assertJsonPath('data.stored', 1)
+            ->assertJsonPath('data.rejected', []);
+    }
+
     public function test_sending_the_same_batch_again_returns_the_same_summary_and_saves_nothing(): void
     {
         $batch = $this->batch([$this->reading(), $this->reading(['value' => 500])]);
