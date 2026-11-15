@@ -68,6 +68,7 @@ astrohealth/resources/images/      # Imágenes de la app (marca/, fondos/), opti
 | Usuarios y dispositivos (M0): cada persona de la nave o médico de vuelo, asociada a una misión | `modules/Identidad/Admin.vue` | `/admin/usuarios` |
 | Registrar (M1) | `modules/Registro/Record.vue` | `/registrar` |
 | Dashboard (M4) | `modules/Dashboard/Dashboard.vue` | `/dashboard` |
+| Mi evolución (M4, astronauta): su historia en la misión, avisos de tendencia y sus tests | `modules/Dashboard/MyEvolution.vue` | `/evolucion` |
 | Misión (M6) | `modules/Entorno/Mission.vue` | `/mision` |
 | Logros (M7) | `modules/Gamificacion/Achievements.vue` | `/logros` |
 | Centro de alertas (M5) | `modules/Alertas/Alerts.vue` | `/alertas` |

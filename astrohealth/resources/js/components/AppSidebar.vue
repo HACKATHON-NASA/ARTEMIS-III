@@ -30,6 +30,7 @@ import { useAlertsStore } from '@/modules/Alertas/Stores/useAlertsStore';
 import {
     alertas,
     dashboard,
+    evolucion,
     guia,
     inicio,
     misiones,
@@ -64,7 +65,10 @@ const missionItems = computed<NavItem[]>(() => [
     ...(auth.can('measurements.write.own') && auth.actor?.astronaut_id
         ? [{ title: 'Registrar datos', href: registrar(), icon: SquarePlus }]
         : []),
-    { title: 'Historial', href: '#', icon: ChartLine, soon: true },
+    // Solo quien va en la nave: Tierra ve la historia en Tripulación y el Panel.
+    ...(auth.actor?.astronaut_id
+        ? [{ title: 'Mi evolución', href: evolucion(), icon: ChartLine }]
+        : []),
     ...(auth.can('alerts.read')
         ? [
               {

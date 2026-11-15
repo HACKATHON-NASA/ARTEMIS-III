@@ -38,5 +38,8 @@ Route::inertia('guia/psicologica', 'Evaluacion/PsychGuide')->name('psicologia');
 // Resultados psicológicos y cognitivos de la tripulación (health.read.any).
 Route::inertia('guia/resultados', 'Evaluacion/PsychResults')->name('psicologiaTripulacion');
 
+// Mi evolución (M4): la historia del astronauta en la misión.
+Route::inertia('evolucion', 'Dashboard/MyEvolution')->name('evolucion');
+
 // Centro de alertas (M5): todos los roles con alerts.read.
 Route::inertia('alertas', 'Alertas/Alerts')->name('alertas');

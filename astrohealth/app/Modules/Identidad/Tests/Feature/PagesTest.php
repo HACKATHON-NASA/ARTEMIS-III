@@ -87,6 +87,13 @@ final class PagesTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component('Evaluacion/PsychResults'));
     }
 
+    public function test_my_evolution_is_the_dashboard_module_principal(): void
+    {
+        $this->get('/evolucion')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Dashboard/MyEvolution'));
+    }
+
     public function test_the_alerts_center_is_the_alertas_module_principal(): void
     {
         $this->get('/alertas')
