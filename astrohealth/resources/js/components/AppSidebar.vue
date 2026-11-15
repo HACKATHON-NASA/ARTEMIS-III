@@ -15,6 +15,8 @@ import {
     Users,
 } from '@lucide/vue';
 import { computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+import LanguageSwitch from '@/components/LanguageSwitch.vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -53,69 +55,75 @@ import type { NavItem } from '@/types';
 /**
  * Menú lateral. Cada opción aparece según los permisos del actor
  * (ocultar no es proteger: cada pantalla y la API vuelven a comprobar).
- * Las opciones sin pantalla todavía salen como "Pronto".
+ * Las opciones sin pantalla todavía salen como "Pronto". Los títulos son
+ * claves de i18n (NavMain los traduce).
  */
 const auth = useAuthStore();
 const alerts = useAlertsStore();
+const { t } = useI18n();
 
 const canSeeCrew = computed(() => auth.can('health.read.any'));
 
 const missionItems = computed<NavItem[]>(() => [
     ...(auth.actor?.astronaut_id
-        ? [{ title: 'Inicio', href: inicio(), icon: HeartPulse }]
+        ? [{ title: 'nav.home', href: inicio(), icon: HeartPulse }]
         : []),
     ...(canSeeCrew.value
         ? [
-              { title: 'Panel de salud', href: salud(), icon: Activity },
-              { title: 'Tripulación', href: tripulacion(), icon: Users },
+              { title: 'nav.healthPanel', href: salud(), icon: Activity },
+              { title: 'nav.crew', href: tripulacion(), icon: Users },
               {
-                  title: 'Indicaciones',
+                  title: 'nav.advice',
                   href: indicaciones(),
                   icon: ClipboardPen,
               },
           ]
         : []),
     ...(auth.can('measurements.write.own') && auth.actor?.astronaut_id
-        ? [{ title: 'Registrar datos', href: registrar(), icon: SquarePlus }]
+        ? [{ title: 'nav.record', href: registrar(), icon: SquarePlus }]
         : []),
     // Solo quien va en la nave: Tierra ve la historia en Tripulación y el Panel.
     ...(auth.actor?.astronaut_id
         ? [
-              { title: 'Mi evolución', href: evolucion(), icon: ChartLine },
-              { title: 'Logros', href: logros(), icon: Trophy },
-              { title: 'Mi misión', href: mision(), icon: Globe },
+              { title: 'nav.myEvolution', href: evolucion(), icon: ChartLine },
+              { title: 'nav.achievements', href: logros(), icon: Trophy },
+              { title: 'nav.myMission', href: mision(), icon: Globe },
           ]
         : []),
     // El médico de vuelo puede ver y cambiar el entorno de la misión.
     ...(!auth.actor?.astronaut_id &&
     auth.can('mission.update') &&
     !auth.can('users.manage')
-        ? [{ title: 'Misión actual', href: mision(), icon: Globe }]
+        ? [{ title: 'nav.currentMission', href: mision(), icon: Globe }]
         : []),
     ...(auth.can('alerts.read')
         ? [
               {
-                  title: 'Alertas',
+                  title: 'nav.alerts',
                   href: alertas(),
                   icon: BellRing,
                   badge: alerts.pendingTotal,
               },
           ]
         : []),
-    { title: 'Guía de salud', href: guia(), icon: BookOpen },
+    { title: 'nav.healthGuide', href: guia(), icon: BookOpen },
 ]);
 
 /** El astronauta cuida su salud; Tierra y los médicos monitorean a la tripulación. */
 const mainLabel = computed(() =>
-    auth.actor?.astronaut_id && !canSeeCrew.value ? 'Mi salud' : 'Monitoreo',
+    t(
+        auth.actor?.astronaut_id && !canSeeCrew.value
+            ? 'nav.myHealth'
+            : 'nav.monitoring',
+    ),
 );
 
 const adminItems = computed<NavItem[]>(() => [
     ...(auth.can('missions.manage')
-        ? [{ title: 'Misiones', href: misiones(), icon: Rocket }]
+        ? [{ title: 'nav.missions', href: misiones(), icon: Rocket }]
         : []),
     ...(auth.can('users.manage')
-        ? [{ title: 'Usuarios', href: usuarios(), icon: ShieldCheck }]
+        ? [{ title: 'nav.users', href: usuarios(), icon: ShieldCheck }]
         : []),
 ]);
 
@@ -169,7 +177,7 @@ onMounted(() => {
                     </SidebarMenu>
                     <SidebarTrigger
                         class="hidden shrink-0 text-muted-foreground hover:text-foreground md:inline-flex"
-                        title="Abrir o cerrar el menú"
+                        :title="t('nav.toggleMenu')"
                     />
                 </div>
             </SidebarHeader>
@@ -179,11 +187,16 @@ onMounted(() => {
                 <NavMain
                     v-if="adminItems.length"
                     :items="adminItems"
-                    label="Gestión"
+                    :label="t('nav.management')"
                 />
             </SidebarContent>
 
             <SidebarFooter>
+                <div
+                    class="flex justify-center px-2 group-data-[collapsible=icon]:hidden"
+                >
+                    <LanguageSwitch dark />
+                </div>
                 <SidebarXp
                     v-if="auth.actor?.astronaut_id"
                     :astronaut-id="auth.actor.astronaut_id"

@@ -8,6 +8,7 @@ use App\Modules\Identidad\Http\Controllers\Api\ListUsersController;
 use App\Modules\Identidad\Http\Controllers\Api\LoginController;
 use App\Modules\Identidad\Http\Controllers\Api\LogoutController;
 use App\Modules\Identidad\Http\Controllers\Api\MeController;
+use App\Modules\Identidad\Http\Controllers\Api\QuickAccessController;
 use App\Modules\Identidad\Http\Controllers\Api\RefreshController;
 use App\Modules\Identidad\Http\Controllers\Api\SetDeviceActiveController;
 use App\Modules\Identidad\Http\Controllers\Api\SetUserActiveController;
@@ -27,6 +28,14 @@ Route::prefix('auth')->name('api.auth.')->group(function (): void {
     Route::post('login', LoginController::class)
         ->middleware('throttle:api-login')
         ->name('login');
+
+    // Acceso rápido sin contraseña (config identidad.quick_access).
+    Route::get('quick-access', [QuickAccessController::class, 'index'])
+        ->middleware('throttle:api-quick')
+        ->name('quick-access.index');
+    Route::post('quick-access', [QuickAccessController::class, 'store'])
+        ->middleware('throttle:api-quick')
+        ->name('quick-access.store');
 
     Route::post('refresh', RefreshController::class)
         ->middleware(['throttle:api-refresh', VerifyOrigin::class])

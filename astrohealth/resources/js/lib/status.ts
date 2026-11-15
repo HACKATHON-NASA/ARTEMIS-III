@@ -1,4 +1,5 @@
 import type { MaybeStatus } from '@/types/health';
+import { t } from './i18n';
 
 /**
  * Cómo se ve cada estado del semáforo. Los colores son SIEMPRE las variables
@@ -34,8 +35,11 @@ const META: Record<'green' | 'yellow' | 'red' | 'none', StatusMeta> = {
     },
 };
 
+/** El nombre del estado sale del idioma actual (status.green…). */
 export function statusMeta(status: MaybeStatus): StatusMeta {
-    return META[status ?? 'none'];
+    const key = status ?? 'none';
+
+    return { ...META[key], label: t(`status.${key}`) };
 }
 
 /**

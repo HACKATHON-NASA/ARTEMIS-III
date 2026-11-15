@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import nasaLogo from '../../../../../images/marca/nasa-logo.webp';
+import { useI18n } from 'vue-i18n';
 import { BRAND } from '@/lib/brand';
 
 /**
  * La marca: logo de la NASA + el nombre + el lema.
  * Cada hijo directo entra por separado en la animación (data-intro="brand").
  */
+const { t } = useI18n();
 </script>
 
 <template>
@@ -28,7 +30,7 @@ import { BRAND } from '@/lib/brand';
             <p
                 class="mt-2 max-w-xs text-base leading-snug text-slate-200/90 sm:text-xl"
             >
-                Cuidamos la salud de quienes exploran más allá de la Tierra
+                {{ t('Identidad.login.tagline') }}
             </p>
         </div>
     </header>

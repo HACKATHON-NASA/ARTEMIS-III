@@ -2,6 +2,7 @@
 import { Eye, EyeOff } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import type { Component } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 /**
  * Campo con ícono a la izquierda (como en el prototipo). Si `revealable`,
@@ -20,6 +21,7 @@ const props = defineProps<{
 
 const model = defineModel<string>({ required: true });
 const revealed = ref(false);
+const { t } = useI18n();
 
 const inputType = computed(() =>
     props.revealable && revealed.value ? 'text' : (props.type ?? 'text'),
@@ -53,7 +55,9 @@ const inputType = computed(() =>
                 type="button"
                 class="absolute top-1/2 right-4 -translate-y-1/2 rounded-lg p-1.5 text-slate-300 transition hover:text-white focus-visible:ring-2 focus-visible:ring-sky-400/60 focus-visible:outline-none"
                 :aria-label="
-                    revealed ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                    revealed
+                        ? t('Identidad.login.hidePassword')
+                        : t('Identidad.login.showPassword')
                 "
                 @click="revealed = !revealed"
             >

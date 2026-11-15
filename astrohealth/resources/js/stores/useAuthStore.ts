@@ -40,6 +40,18 @@ export const useAuthStore = defineStore('auth', () => {
         start(response);
     }
 
+    /** Acceso rápido: entrar eligiendo a una persona, sin contraseña. */
+    async function quickLogin(userId: number): Promise<void> {
+        const response = await api<TokenResponse>('/auth/quick-access', {
+            method: 'POST',
+            body: { user_id: userId },
+            auth: false,
+            retry: false,
+        });
+
+        start(response);
+    }
+
     /** Renueva la sesión con la cookie. Si hay varias llamadas a la vez, comparten una. */
     function refresh(): Promise<boolean> {
         refreshing ??= api<TokenResponse>('/auth/refresh', {
@@ -91,6 +103,7 @@ export const useAuthStore = defineStore('auth', () => {
         login,
         refresh,
         ensureSession,
+        quickLogin,
         logout,
         can,
     };

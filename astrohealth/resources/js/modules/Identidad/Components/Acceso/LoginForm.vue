@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ArrowRight, LockKeyhole, UserRound } from '@lucide/vue';
 import { reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Spinner } from '@/components/ui/spinner';
 import { ApiError } from '@/lib/api';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -13,6 +14,7 @@ import IconInput from './IconInput.vue';
 const emit = defineEmits<{ success: []; failure: [] }>();
 
 const auth = useAuthStore();
+const { t } = useI18n();
 
 const form = reactive({ email: '', password: '' });
 const errors = ref<{ email?: string; password?: string; general?: string }>({});
@@ -41,7 +43,7 @@ async function submit(): Promise<void> {
 
 function toErrors(error: unknown): typeof errors.value {
     if (!(error instanceof ApiError)) {
-        return { general: 'No se pudo conectar con el servidor.' };
+        return { general: t('common.noConnection') };
     }
 
     if (error.status === 422) {
@@ -60,7 +62,7 @@ function toErrors(error: unknown): typeof errors.value {
         <IconInput
             id="email"
             v-model="form.email"
-            label="Correo electrónico"
+            :label="t('Identidad.login.email')"
             type="email"
             autocomplete="email"
             :icon="UserRound"
@@ -71,7 +73,7 @@ function toErrors(error: unknown): typeof errors.value {
         <IconInput
             id="password"
             v-model="form.password"
-            label="Contraseña"
+            :label="t('Identidad.login.password')"
             type="password"
             autocomplete="current-password"
             :icon="LockKeyhole"
@@ -98,7 +100,11 @@ function toErrors(error: unknown): typeof errors.value {
                     class="pointer-events-none absolute inset-y-0 -left-1/3 w-1/4 -skew-x-12 bg-white/35 blur-md transition-transform duration-[1100ms] ease-out group-hover:translate-x-[560%]"
                 />
                 <Spinner v-if="processing" class="size-5" />
-                <span>{{ processing ? 'Ingresando…' : 'Ingresar' }}</span>
+                <span>{{
+                    processing
+                        ? t('Identidad.login.entering')
+                        : t('Identidad.login.enter')
+                }}</span>
                 <ArrowRight
                     v-if="!processing"
                     class="size-5 transition-transform duration-300 group-hover:translate-x-1"
@@ -112,7 +118,7 @@ function toErrors(error: unknown): typeof errors.value {
                 class="text-sm text-sky-400 transition hover:text-sky-300 focus-visible:underline focus-visible:outline-none"
                 @click="showResetHint = !showResetHint"
             >
-                ¿Olvidaste tu contraseña?
+                {{ t('Identidad.login.forgot') }}
             </button>
             <Transition
                 enter-active-class="transition duration-300 ease-out"
@@ -121,7 +127,7 @@ function toErrors(error: unknown): typeof errors.value {
                 leave-to-class="-translate-y-1 opacity-0"
             >
                 <p v-if="showResetHint" class="mt-2 text-sm text-slate-300">
-                    Pide al administrador de la misión que la restablezca.
+                    {{ t('Identidad.login.forgotHint') }}
                 </p>
             </Transition>
         </div>
