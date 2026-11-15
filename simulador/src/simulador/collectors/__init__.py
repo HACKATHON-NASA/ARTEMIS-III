@@ -1,0 +1,1 @@
+"""Paquete collectors del simulador."""

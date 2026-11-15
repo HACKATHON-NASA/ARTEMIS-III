@@ -1,0 +1,33 @@
+# Órgano o sistema ↔ indicadores ↔ riesgo del NASA Human Research Program (HRP).
+# Cada órgano toma el PEOR estado de sus indicadores.
+# Riesgos HRP: https://www.nasa.gov/hrp/risks/ (nombres resumidos)
+
+body_parts:
+  heart:
+    label: Corazón
+    indicators: [hr, bp_sys, bp_dia]
+    hrp_risk: Cardiovascular adaptations
+  lungs:
+    label: Pulmones
+    indicators: [spo2]
+    hrp_risk: Hypoxia / cabin atmosphere
+  brain:
+    label: Cerebro y conducta
+    indicators: [sleep, mood]
+    hrp_risk: Adverse cognitive or behavioral conditions (BMed)
+  immune:
+    label: Sistema inmune
+    indicators: [temp]
+    hrp_risk: Immune dysregulation
+  metabolism:
+    label: Metabolismo
+    indicators: [glucose]
+    hrp_risk: Inadequate food and nutrition
+  bones:
+    label: Huesos y músculos
+    indicators: [exercise_min]
+    hrp_risk: Bone fracture / muscle loss
+  whole_body:
+    label: Todo el cuerpo
+    indicators: [radiation]
+    hrp_risk: Space radiation exposure

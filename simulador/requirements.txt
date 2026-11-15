@@ -1,0 +1,29 @@
+# Simulador AstroHealth · Python 3.11+
+# Versiones probadas el 2026-11-14.
+
+# API
+fastapi==0.162.7
+uvicorn[standard]==0.54.0
+
+# HTTP hacia la NASA (DONKI y OSDR)
+httpx==0.28.1
+
+# Modelos y configuración
+pydantic==2.14.3
+pydantic-settings==2.16.3
+python-dotenv==1.2.4
+PyYAML==6.0.3
+
+# Datos y generación
+pandas==3.1.1
+numpy==2.5.4
+
+# Exportador MySQL (opcional) y tareas programadas
+SQLAlchemy==2.1.8
+PyMySQL==1.2.4
+APScheduler==3.11.3
+
+# Tests
+pytest==9.2.0
+pytest-asyncio==1.5.0
+respx==0.23.1
