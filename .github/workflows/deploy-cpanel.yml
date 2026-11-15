@@ -1,0 +1,169 @@
+# Despliegue automático de astrohealth/ (Laravel + Vue) a cPanel con Git Version Control.
+#
+# Cuándo: al FUSIONAR (merge) un PR de `development` → `main`. También a mano desde Actions.
+#
+# Qué hace:
+#   1. Compila aquí lo que el hosting no puede compilar: Composer sin dev (vendor/) y Vite (public/build/).
+#   2. Arma un paquete con la forma exacta del servidor y lo guarda en la rama `deploy`:
+#        ArtemisIII/  → ~/ArtemisIII/ArtemisIII   (Laravel, sin public/)
+#        public/      → ~/ArtemisIII/public       (raíz del subdominio; index.php apunta a ../ArtemisIII)
+#        .cpanel.yml  → las tareas que cPanel ejecuta al desplegar (copiar, migrar, cachés)
+#   3. Le pide a cPanel (API con token) que traiga la rama `deploy` y la despliegue.
+#
+# Secretos del environment "production" (Settings → Environments → production):
+#   CPANEL_HOST       servidor de cPanel, sin https ni puerto (p. ej. servidor.hosting.com)
+#   CPANEL_USER       usuario de cPanel
+#   CPANEL_TOKEN      token de "Manage API Tokens"
+#   CPANEL_REPO_ROOT  ruta del repositorio en cPanel (p. ej. /home/usuario/repositories/ARTEMIS-III)
+# Variable opcional:
+#   CPANEL_PHP        PHP 8.3+ de consola en el servidor (por defecto /usr/local/bin/php)
+
+name: deploy-cpanel
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write # para empujar la rama `deploy`
+
+concurrency:
+  group: deploy-cpanel
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       github.event.pull_request.head.ref == 'development')
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Código de main (el commit del merge)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
+          path: src
+          persist-credentials: false
+
+      - name: PHP 8.3
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Node 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: src/astrohealth/package-lock.json
+
+      - name: Dependencias PHP (sin las de desarrollo)
+        working-directory: src/astrohealth
+        run: composer install --no-dev --no-interaction --prefer-dist --no-progress --optimize-autoloader
+
+      - name: Compilar el frontend (Vite + Wayfinder)
+        working-directory: src/astrohealth
+        # Wayfinder ejecuta artisan al compilar: necesita un .env temporal (no se sube).
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+          npm ci
+          npm run build
+          rm .env
+
+      - name: Armar el paquete con la forma del servidor
+        env:
+          PHP_BIN: ${{ vars.CPANEL_PHP || '/usr/local/bin/php' }}
+        run: |
+          mkdir -p pkg/ArtemisIII pkg/public
+
+          # Laravel sin public/, sin secretos, sin pruebas ni archivos de desarrollo.
+          rsync -a src/astrohealth/ pkg/ArtemisIII/ \
+            --exclude='public/' --exclude='.env' --exclude='.env.*' \
+            --exclude='.git*' --exclude='.github/' --exclude='node_modules/' \
+            --exclude='tests/' --exclude='docs/' --exclude='storage/' \
+            --exclude='bootstrap/cache/*.php' --exclude='.phpunit*' --exclude='phpunit.xml'
+
+          # Lo público (con build/), sin archivos de desarrollo.
+          rsync -a src/astrohealth/public/ pkg/public/ \
+            --exclude='hot' --exclude='storage' --exclude='fonts-manifest.dev.json'
+
+          # index.php: Laravel vive en ../ArtemisIII y public_path() es esta carpeta.
+          sed -i "s#__DIR__.'/../#__DIR__.'/../ArtemisIII/#g" pkg/public/index.php
+          sed -i 's#^\$app->handleRequest#$app->usePublicPath(__DIR__);\n\n$app->handleRequest#' pkg/public/index.php
+          grep -q "usePublicPath" pkg/public/index.php
+          grep -q "/../ArtemisIII/vendor/autoload.php" pkg/public/index.php
+
+          # Tareas que cPanel ejecuta al desplegar (desde la carpeta del repositorio).
+          cat > pkg/.cpanel.yml <<YAML
+          ---
+          deployment:
+            tasks:
+              - export APP=\$HOME/ArtemisIII/ArtemisIII
+              - export WEB=\$HOME/ArtemisIII/public
+              - export PHP=${PHP_BIN}
+              - /bin/mkdir -p \$APP \$WEB
+              - if command -v rsync >/dev/null; then rsync -a --delete --exclude=.env --exclude=storage/ --exclude=bootstrap/cache/ ArtemisIII/ \$APP/; else /bin/cp -R ArtemisIII/. \$APP/; fi
+              - if command -v rsync >/dev/null; then rsync -a --delete --exclude=.well-known/ --exclude=storage --exclude=.htaccess.bak public/ \$WEB/; else /bin/cp -R public/. \$WEB/; fi
+              - /bin/mkdir -p \$APP/storage/app/public \$APP/storage/framework/cache/data \$APP/storage/framework/sessions \$APP/storage/framework/views \$APP/storage/logs \$APP/bootstrap/cache
+              - (cd \$APP && \$PHP artisan migrate --force)
+              - (cd \$APP && ( [ -f storage/app/.seeded ] || ( \$PHP artisan db:seed --force && touch storage/app/.seeded ) ))
+              - (cd \$APP && \$PHP artisan optimize:clear && \$PHP artisan optimize)
+          YAML
+          cat pkg/.cpanel.yml
+
+      - name: Guardar el paquete en la rama deploy
+        env:
+          TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
+        run: |
+          URL="https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+          if git ls-remote --exit-code --heads "$URL" deploy >/dev/null; then
+            git clone --quiet --depth 1 --branch deploy "$URL" out
+          else
+            mkdir out && git -C out init --quiet -b deploy && git -C out remote add origin "$URL"
+          fi
+          rsync -a --delete --exclude='.git/' pkg/ out/
+          cd out
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Sin cambios en el paquete."
+          else
+            git commit --quiet -m "deploy: ${SHA::7}"
+            git push --quiet origin deploy
+          fi
+
+      - name: cPanel trae la rama deploy y despliega
+        env:
+          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+          CPANEL_USER: ${{ secrets.CPANEL_USER }}
+          CPANEL_TOKEN: ${{ secrets.CPANEL_TOKEN }}
+          REPO_ROOT: ${{ secrets.CPANEL_REPO_ROOT }}
+        run: |
+          if [ -z "$CPANEL_TOKEN" ] || [ -z "$REPO_ROOT" ]; then
+            echo "::warning::Faltan los secretos de cPanel: la rama deploy quedó lista, pero no se desplegó."
+            exit 0
+          fi
+          api() {
+            curl -sS --fail --max-time 120 \
+              -H "Authorization: cpanel ${CPANEL_USER}:${CPANEL_TOKEN}" \
+              "https://${CPANEL_HOST}:2083/execute/$1" "${@:2}"
+          }
+          ok() { python3 -c 'import json,sys; d=json.load(sys.stdin); print(json.dumps(d.get("errors") or d.get("data"))); sys.exit(0 if d.get("status")==1 else 1)'; }
+
+          echo "1/2 Traer la rama deploy (Update from Remote)"
+          api VersionControl/update --data-urlencode "repository_root=${REPO_ROOT}" --data-urlencode "branch=deploy" | ok
+
+          echo "2/2 Desplegar (Deploy HEAD Commit)"
+          api VersionControlDeployment/create --data-urlencode "repository_root=${REPO_ROOT}" | ok
+          echo "Despliegue en cola. El resultado queda en cPanel → Git Version Control → Manage → Pull or Deploy."
