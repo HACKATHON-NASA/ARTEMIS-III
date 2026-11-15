@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pytest
 
-from simulador.engine import recommend
 from simulador.exporters.json_csv import export_csv, export_json
 from simulador.generator.radiation import mission_space_weather
 from simulador.generator.seed import generate_mission
@@ -20,7 +19,6 @@ from simulador.models import (
     RiskLevel,
     Source,
     SpaceWeatherDay,
-    Status,
 )
 
 START = date(2026, 10, 1)
@@ -58,10 +56,11 @@ def values(result: MissionResult, astronaut: int, indicator: Indicator) -> dict[
 
 async def test_tamano_y_contenido() -> None:
     result = await mission(days=30, crew_size=4)
-    # 12 tomas por día: hr×2, spo2×2 y 8 indicadores ×1
-    assert len(result.measurements) == 30 * 4 * 12
+    # 11 tomas por día: hr×2, spo2×2 y 7 indicadores ×1 (sin ánimo: va en la app)
+    assert len(result.measurements) == 30 * 4 * 11
     assert {m.indicator for m in result.measurements} == set(Indicator)
-    assert all(m.status is not None for m in result.measurements)
+    assert "mood" not in {m.indicator.value for m in result.measurements}
+    assert "status" not in result.measurements[0].model_dump()
     assert [c.id for c in result.crew] == [1, 2, 3, 4]
     assert result.mission.start_date == START
 
@@ -94,18 +93,8 @@ async def test_eventos_de_la_demo() -> None:
     assert values(result, 3, Indicator.BP_SYS)[24] == 148
     assert values(result, 3, Indicator.BP_DIA)[24] == 94
 
-    red = [a for a in result.alerts if not a.trend_alert]
-    bp_alert = next(a for a in red if a.astronaut_id == 3 and a.indicator == Indicator.BP_SYS)
-    assert bp_alert.notify_ground and bp_alert.ground_delay_seconds == 1200
-    assert "148" in bp_alert.message
-
-    radiation_day12 = [
-        m for m in result.measurements
-        if m.indicator == Indicator.RADIATION and (m.measured_at.date() - START).days + 1 == 12
-    ]
-    assert all(m.status == Status.RED for m in radiation_day12)
-    assert any(a.trend_alert and a.indicator == Indicator.SLEEP and a.astronaut_id == 2
-               for a in result.alerts)
+    radiation = values(result, 1, Indicator.RADIATION)
+    assert radiation[12] > 2.5 * radiation[11]  # SEP: dosis ×3
 
 
 async def test_sep_real_no_se_reemplaza() -> None:
@@ -125,15 +114,6 @@ async def test_mision_corta_no_inventa_eventos_fuera_de_rango() -> None:
     assert not any(d.sep_event for d in result.space_weather)
 
 
-async def test_radiacion_normal_en_verde_y_alta_con_sep() -> None:
-    result = await mission(seed=1)
-    for m in result.measurements:
-        if m.indicator != Indicator.RADIATION:
-            continue
-        day = (m.measured_at.date() - START).days + 1
-        assert m.status == (Status.RED if day == 12 else Status.GREEN)
-
-
 def test_glucosa_calibrada_o_de_referencia() -> None:
     cal = AnalyteCalibration(
         unit="mg/dL", baseline_mean=75.3, baseline_sd=11.3, postflight_mean=93.2,
@@ -151,13 +131,6 @@ async def test_clima_simulado_sin_donki() -> None:
     assert all(d.source == Source.SIMULATED_REFERENCE and not d.sep_event for d in weather)
 
 
-def test_recomendacion_para_valores_bajos() -> None:
-    low = recommend(Indicator.BP_DIA, Status.RED, Environment.MARS, value=55)
-    high = recommend(Indicator.BP_DIA, Status.RED, Environment.MARS, value=95)
-    assert low.recommendation.startswith("Diastólica baja")
-    assert high.recommendation.startswith("Diastólica alta")
-
-
 async def test_exporta_json_y_csv(tmp_path: Path) -> None:
     result = await mission(days=3, mission_name="Prueba Marte")
     json_path = export_json(result, tmp_path)
@@ -165,14 +138,14 @@ async def test_exporta_json_y_csv(tmp_path: Path) -> None:
 
     assert json_path.name == "Prueba_Marte_42.json"
     data = json.loads(json_path.read_text(encoding="utf-8"))
-    assert len(data["measurements"]) == 3 * 4 * 12
+    assert len(data["measurements"]) == 3 * 4 * 11
     assert data["meta"]["seed"] == 42
     lines = csv_paths[0].read_text(encoding="utf-8").splitlines()
-    assert len(lines) == 1 + 3 * 4 * 12
+    assert len(lines) == 1 + 3 * 4 * 11
     assert "source" in lines[0]
 
 
 @pytest.mark.parametrize("env", list(Environment))
 async def test_todos_los_entornos(env: Environment) -> None:
     result = await mission(environment=env, days=5)
-    assert len(result.measurements) == 5 * 4 * 12
+    assert len(result.measurements) == 5 * 4 * 11

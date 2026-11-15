@@ -10,7 +10,6 @@ schedule:
   temp: [8]
   spo2: [8, 20]
   sleep: [7]            # al despertar: horas de la noche anterior
-  mood: [21]
   radiation: [23]       # dosis acumulada del día
   exercise_min: [19]
 
@@ -22,7 +21,6 @@ units:
   temp: °C
   spo2: "%"
   sleep: h
-  mood: "1-5"
   radiation: mSv/day
   exercise_min: min
 
@@ -33,7 +31,6 @@ noise_sd:
   temp: 0.15
   spo2: 0.6
   sleep: 0.2
-  mood: 0.3
   exercise_min: 10.0
 
 microgravity:
@@ -49,12 +46,6 @@ sleep:
   target_h: 6.5
   tau_days: 10
   after_sep_drop_h: 0.6     # la noche siguiente a un SEP (estrés, refugio)
-
-mood:
-  isolation_drop_per_day: 0.025
-  good_sleep_bonus: 0.25    # si durmió >= 7 h
-  bad_sleep_penalty: 0.3    # si durmió < 6 h
-  exercise_bonus: 0.15      # si hizo >= 90 min
 
 exercise:
   sep_day_reduction_min: 50 # en el refugio no se puede entrenar
