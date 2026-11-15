@@ -54,5 +54,8 @@ Route::inertia('logros', 'Gamificacion/Achievements')->name('logros');
 // Mi misión (M6): el entorno, lo que cambia para el cuerpo y la tripulación.
 Route::inertia('mision', 'Entorno/Mission')->name('mision');
 
+// Indicaciones (M5): el historial de lo indicado por los médicos, por misión.
+Route::inertia('indicaciones', 'Alertas/AdviceHistory')->name('indicaciones');
+
 // Centro de alertas (M5): todos los roles con alerts.read.
 Route::inertia('alertas', 'Alertas/Alerts')->name('alertas');

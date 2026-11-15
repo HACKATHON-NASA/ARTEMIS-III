@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
+import type { InertiaLinkProps } from '@inertiajs/vue3';
 import { CheckCheck, Clock, Inbox } from '@lucide/vue';
 import type { Advice } from '../Types/advice';
 import { ADVICE_CATEGORIES } from '../Utils/adviceMock';
@@ -7,7 +9,19 @@ import { ADVICE_CATEGORIES } from '../Utils/adviceMock';
  * Las indicaciones que se le han dado a un tripulante (ficha del médico):
  * el tema, los pasos y en qué va: viajando a la nave, recibida o entendida.
  */
-defineProps<{ items: Advice[]; now: number }>();
+withDefaults(
+    defineProps<{
+        items: Advice[];
+        now: number;
+        /** En el historial por misión: a quién y el enlace a su ficha. */
+        nameOf?: ((astronautId: number) => string) | null;
+        hrefOf?:
+            | ((astronautId: number) => NonNullable<InertiaLinkProps['href']>)
+            | null;
+        empty?: string;
+    }>(),
+    { nameOf: null, hrefOf: null, empty: 'Aún no le has dado indicaciones.' },
+);
 
 function mmss(ms: number): string {
     const total = Math.ceil(ms / 1000);
@@ -44,6 +58,12 @@ function sentAgo(iso: string, now: number): string {
                     />
                 </span>
                 <div class="min-w-0 flex-1">
+                    <Link
+                        v-if="nameOf && hrefOf"
+                        :href="hrefOf(item.astronaut_id)"
+                        class="text-xs font-semibold tracking-wide text-sky-600 uppercase hover:underline dark:text-sky-400"
+                        >Para {{ nameOf(item.astronaut_id) }}</Link
+                    >
                     <p class="text-sm font-semibold">
                         {{ item.title }}
                         <span
@@ -99,6 +119,6 @@ function sentAgo(iso: string, now: number): string {
         v-else
         class="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground"
     >
-        Aún no le has dado indicaciones.
+        {{ empty }}
     </p>
 </template>

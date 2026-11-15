@@ -88,7 +88,7 @@ flowchart LR
 | `mission.update` — cambiar el entorno                   |   ✅    |        ✅        |                        |             |          |
 | `missions.manage` — crear misiones y tripulantes        |   ✅    |                  |                        |             |          |
 | `guide.manage` — rangos, qué hacer y tests psicológicos |   ✅    |        ✅        |                        |             |          |
-| `advice.send` — dar indicaciones a un tripulante       |         |        ✅        |           ✅           |             |          |
+| `advice.send` — dar indicaciones a un tripulante        |         |        ✅        |           ✅           |             |          |
 | `reminders.manage.own` — sus recordatorios              |         |                  |           ✅           |     ✅      |          |
 | `gamification.read` — puntos y ranking                  |   ✅    |        ✅        |           ✅           |     ✅      |          |
 | `users.manage` · `devices.manage`                       |   ✅    |                  |                        |             |          |

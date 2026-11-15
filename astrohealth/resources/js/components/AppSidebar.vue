@@ -5,6 +5,7 @@ import {
     BellRing,
     BookOpen,
     ChartLine,
+    ClipboardPen,
     Globe,
     HeartPulse,
     Rocket,
@@ -34,6 +35,7 @@ import { useAlertsStore } from '@/modules/Alertas/Stores/useAlertsStore';
 import {
     alertas,
     dashboard,
+    indicaciones,
     logros,
     mision,
     evolucion,
@@ -66,6 +68,11 @@ const missionItems = computed<NavItem[]>(() => [
         ? [
               { title: 'Panel de salud', href: salud(), icon: Activity },
               { title: 'Tripulación', href: tripulacion(), icon: Users },
+              {
+                  title: 'Indicaciones',
+                  href: indicaciones(),
+                  icon: ClipboardPen,
+              },
           ]
         : []),
     ...(auth.can('measurements.write.own') && auth.actor?.astronaut_id

@@ -21,14 +21,23 @@ import { ADVICE_CATEGORIES } from '../Utils/adviceMock';
  * (uno por línea), si es importante y por cuántos días vale. Llega a la nave
  * con el retraso de la comunicación.
  */
-const props = defineProps<{
-    astronautName: string;
-    delay: string;
-    submit: (draft: AdviceDraft) => Promise<void>;
-}>();
+const props = withDefaults(
+    defineProps<{
+        astronautName: string;
+        delay: string;
+        /** Desde el historial: elegir a quién (si no, va a astronautName). */
+        members?: { id: number; name: string }[] | null;
+        submit: (
+            draft: AdviceDraft,
+            astronautId: number | null,
+        ) => Promise<void>;
+    }>(),
+    { members: null },
+);
 
 const open = defineModel<boolean>('open', { required: true });
 
+const recipient = ref('');
 const form = reactive({
     category: 'sleep' as AdviceCategory,
     title: '',
@@ -56,10 +65,17 @@ watch(open, (isOpen) => {
             days: '7',
         });
         error.value = null;
+        recipient.value = '';
     }
 });
 
 async function send(): Promise<void> {
+    if (props.members && recipient.value === '') {
+        error.value = 'Elige a quién va la indicación.';
+
+        return;
+    }
+
     if (form.title.trim().length < 3 || form.body.trim().length < 3) {
         error.value = 'Escribe un título y al menos un paso.';
 
@@ -69,17 +85,20 @@ async function send(): Promise<void> {
     saving.value = true;
 
     try {
-        await props.submit({
-            category: form.category,
-            title: form.title.trim(),
-            body: form.body
-                .split('\n')
-                .map((line) => line.trim())
-                .filter(Boolean)
-                .join('\n'),
-            important: form.important,
-            valid_days: form.days === 'none' ? null : Number(form.days),
-        });
+        await props.submit(
+            {
+                category: form.category,
+                title: form.title.trim(),
+                body: form.body
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .join('\n'),
+                important: form.important,
+                valid_days: form.days === 'none' ? null : Number(form.days),
+            },
+            recipient.value === '' ? null : Number(recipient.value),
+        );
         open.value = false;
     } finally {
         saving.value = false;
@@ -91,7 +110,13 @@ async function send(): Promise<void> {
     <Dialog v-model:open="open">
         <DialogContent class="max-h-[92vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
-                <DialogTitle>Indicación para {{ astronautName }}</DialogTitle>
+                <DialogTitle>
+                    {{
+                        members
+                            ? 'Nueva indicación'
+                            : `Indicación para ${astronautName}`
+                    }}
+                </DialogTitle>
                 <DialogDescription
                     >Le llega a la nave en {{ delay }}. La verá en su
                     Inicio.</DialogDescription
@@ -104,6 +129,24 @@ async function send(): Promise<void> {
                 novalidate
                 @submit.prevent="send"
             >
+                <div v-if="members" class="grid gap-2">
+                    <Label for="advice-to">Para</Label>
+                    <select
+                        id="advice-to"
+                        v-model="recipient"
+                        class="h-9 rounded-md border border-input bg-transparent px-2 text-sm dark:bg-input/30"
+                        @change="error = null"
+                    >
+                        <option value="" disabled>Elige un tripulante</option>
+                        <option
+                            v-for="member in members"
+                            :key="member.id"
+                            :value="String(member.id)"
+                        >
+                            {{ member.name }}
+                        </option>
+                    </select>
+                </div>
                 <div class="grid gap-2">
                     <span id="advice-category" class="text-sm font-medium"
                         >Tema</span

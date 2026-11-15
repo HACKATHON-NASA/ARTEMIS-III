@@ -117,6 +117,13 @@ final class PagesTest extends TestCase
         $this->get('/tripulacion/abc')->assertNotFound();
     }
 
+    public function test_the_advice_history_is_an_alertas_module_principal(): void
+    {
+        $this->get('/indicaciones')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Alertas/AdviceHistory'));
+    }
+
     public function test_the_alerts_center_is_the_alertas_module_principal(): void
     {
         $this->get('/alertas')

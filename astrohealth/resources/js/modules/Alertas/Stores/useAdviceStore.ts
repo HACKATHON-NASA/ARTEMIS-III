@@ -19,6 +19,8 @@ const wait = (ms = 250) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const useAdviceStore = defineStore('advice', () => {
     const items = ref<Advice[]>([]);
+    /** Las de toda una tripulación (el historial por misión). */
+    const history = ref<Advice[]>([]);
     const now = ref(Date.now());
 
     /** Las que ya llegaron a la nave y no se han leído (para el astronauta). */
@@ -38,6 +40,14 @@ export const useAdviceStore = defineStore('advice', () => {
             .sort((a, b) => b.sent_at.localeCompare(a.sent_at));
     }
 
+    async function loadForCrew(astronautIds: number[]): Promise<void> {
+        await wait();
+        now.value = Date.now();
+        history.value = mockAdvice()
+            .filter((item) => astronautIds.includes(item.astronaut_id))
+            .sort((a, b) => b.sent_at.localeCompare(a.sent_at));
+    }
+
     async function send(
         astronautId: number,
         author: string,
@@ -46,6 +56,7 @@ export const useAdviceStore = defineStore('advice', () => {
         await wait(400);
         const advice = mockSendAdvice(astronautId, author, draft);
         await load(astronautId);
+        history.value = [advice, ...history.value];
 
         return advice;
     }
@@ -64,5 +75,15 @@ export const useAdviceStore = defineStore('advice', () => {
         now.value = Date.now();
     }
 
-    return { items, now, unread, load, send, markRead, tick };
+    return {
+        items,
+        history,
+        now,
+        unread,
+        load,
+        loadForCrew,
+        send,
+        markRead,
+        tick,
+    };
 });
