@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { computed, reactive, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -17,13 +18,15 @@ import { ApiError } from '@/lib/api';
 import type { EnvironmentCode } from '../Types/mission';
 import type { MissionFormData } from '../Types/missions';
 import {
-    STATUS_LABELS,
     endDate,
     formatDate,
     missionStatus,
+    statusLabel,
     today,
 } from '../Utils/missionDates';
 import EnvironmentPicker from './EnvironmentPicker.vue';
+
+const { t } = useI18n();
 
 /**
  * Crear una misión: nombre, entorno, fecha de inicio, duración y objetivo.
@@ -60,7 +63,7 @@ const preview = computed(() => {
 
     return {
         end: formatDate(endDate(form.start, dayCount.value)),
-        status: STATUS_LABELS[missionStatus(form.start, dayCount.value).status],
+        status: statusLabel(missionStatus(form.start, dayCount.value).status),
     };
 });
 
@@ -94,21 +97,21 @@ function validate(): boolean {
     const name = form.name.trim();
 
     if (name.length < 3) {
-        errors.value.name = 'Escribe un nombre de al menos 3 letras.';
+        errors.value.name = t('Entorno.form.errName');
     } else if (
         props.takenNames.some(
             (taken) => taken.toLowerCase() === name.toLowerCase(),
         )
     ) {
-        errors.value.name = 'Ya hay una misión con ese nombre.';
+        errors.value.name = t('Entorno.form.errTaken');
     }
 
     if (form.environment === null) {
-        errors.value.environment = 'Elige dónde será la misión.';
+        errors.value.environment = t('Entorno.form.errEnv');
     }
 
     if (form.start === '') {
-        errors.value.start = 'Elige la fecha de inicio.';
+        errors.value.start = t('Entorno.form.errStart');
     }
 
     if (
@@ -116,7 +119,7 @@ function validate(): boolean {
         dayCount.value < 1 ||
         dayCount.value > 1000
     ) {
-        errors.value.days = 'La duración va de 1 a 1000 días.';
+        errors.value.days = t('Entorno.form.errDays');
     }
 
     return Object.keys(errors.value).length === 0;
@@ -164,9 +167,9 @@ async function save(): Promise<void> {
     <Dialog v-model:open="open">
         <DialogContent class="max-h-[92vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
-                <DialogTitle>Nueva misión</DialogTitle>
+                <DialogTitle>{{ t('Entorno.form.title') }}</DialogTitle>
                 <DialogDescription>
-                    Después podrás asociarle tripulantes desde Usuarios.
+                    {{ t('Entorno.form.hint') }}
                 </DialogDescription>
             </DialogHeader>
 
@@ -177,11 +180,13 @@ async function save(): Promise<void> {
                 @submit.prevent="save"
             >
                 <div class="grid gap-2">
-                    <Label for="mission-name">Nombre</Label>
+                    <Label for="mission-name">{{
+                        t('Entorno.form.name')
+                    }}</Label>
                     <Input
                         id="mission-name"
                         v-model="form.name"
-                        placeholder="Ej.: Ares-2"
+                        :placeholder="t('Entorno.form.namePlaceholder')"
                         autocomplete="off"
                     />
                     <InputError :message="errors.name" />
@@ -189,7 +194,7 @@ async function save(): Promise<void> {
 
                 <div class="grid gap-2">
                     <span id="mission-env" class="text-sm font-medium">
-                        Entorno
+                        {{ t('Entorno.form.environment') }}
                     </span>
                     <EnvironmentPicker
                         v-model="form.environment"
@@ -200,7 +205,9 @@ async function save(): Promise<void> {
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div class="grid gap-2">
-                        <Label for="mission-start">Fecha de inicio</Label>
+                        <Label for="mission-start">{{
+                            t('Entorno.form.start')
+                        }}</Label>
                         <Input
                             id="mission-start"
                             v-model="form.start"
@@ -209,7 +216,9 @@ async function save(): Promise<void> {
                         <InputError :message="errors.start" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="mission-days">Duración (días)</Label>
+                        <Label for="mission-days">{{
+                            t('Entorno.form.days')
+                        }}</Label>
                         <Input
                             id="mission-days"
                             v-model="form.days"
@@ -226,9 +235,9 @@ async function save(): Promise<void> {
                     v-if="preview"
                     class="rounded-lg bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
                 >
-                    Termina el
+                    {{ t('Entorno.form.endsOn') }}
                     <strong class="text-foreground">{{ preview.end }}</strong>
-                    · quedará
+                    {{ t('Entorno.form.willBe') }}
                     <strong class="text-foreground">{{
                         preview.status.toLowerCase()
                     }}</strong>
@@ -236,9 +245,9 @@ async function save(): Promise<void> {
 
                 <div class="grid gap-2">
                     <Label for="mission-objective">
-                        Objetivo
+                        {{ t('Entorno.form.objective') }}
                         <span class="font-normal text-muted-foreground">
-                            (opcional)
+                            {{ t('Entorno.form.optional') }}
                         </span>
                     </Label>
                     <textarea
@@ -247,13 +256,15 @@ async function save(): Promise<void> {
                         rows="2"
                         maxlength="200"
                         class="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30"
-                        placeholder="¿Qué se estudia en esta misión?"
+                        :placeholder="t('Entorno.form.objectivePlaceholder')"
                     />
                 </div>
             </form>
 
             <DialogFooter>
-                <Button variant="ghost" @click="open = false">Cancelar</Button>
+                <Button variant="ghost" @click="open = false">{{
+                    t('common.cancel')
+                }}</Button>
                 <Button
                     type="submit"
                     form="mission-form"
@@ -261,7 +272,7 @@ async function save(): Promise<void> {
                     class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                 >
                     <Spinner v-if="saving" />
-                    Crear misión
+                    {{ t('Entorno.form.create') }}
                 </Button>
             </DialogFooter>
         </DialogContent>

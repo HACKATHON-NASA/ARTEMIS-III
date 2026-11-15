@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { getInitials } from '@/composables/useInitials';
 import type { LeaderRow } from '../Types/gamification';
+
+const { t } = useI18n();
 
 /**
  * El ranking de la tripulación por puntos. Resalta a quien está viendo.
@@ -20,7 +23,7 @@ const MEDALS = ['🥇', '🥈', '🥉'];
         >
             <span
                 class="w-7 text-center text-lg"
-                :aria-label="`Puesto ${index + 1}`"
+                :aria-label="t('Gamificacion.place', { n: index + 1 })"
             >
                 {{ MEDALS[index] ?? index + 1 }}
             </span>
@@ -36,12 +39,17 @@ const MEDALS = ['🥇', '🥈', '🥉'];
                     <span
                         v-if="row.astronaut_id === me"
                         class="text-xs font-normal text-sky-600 dark:text-sky-400"
-                        >(tú)</span
+                        >({{ t('common.you') }})</span
                     >
                 </p>
                 <p class="text-xs text-muted-foreground">
-                    Nivel {{ row.level }} · 🔥 {{ row.streak_days }} ·
-                    {{ row.badges }} insignias
+                    {{
+                        t('Gamificacion.rowDetail', {
+                            level: row.level,
+                            streak: row.streak_days,
+                            badges: row.badges,
+                        })
+                    }}
                 </p>
             </div>
             <span class="font-semibold tabular-nums">{{ row.points }}</span>

@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import type { PointEntry } from '../Types/gamification';
-import { POINTS, REASON_LABELS } from '../Utils/rules';
+import { POINTS, reasonLabel } from '../Utils/rules';
+
+const { t } = useI18n();
 
 /**
  * Lo último que sumó puntos y, debajo, cómo se ganan (para que sea claro
@@ -8,17 +11,10 @@ import { POINTS, REASON_LABELS } from '../Utils/rules';
  */
 defineProps<{ recent: PointEntry[]; today: number }>();
 
-const HOW: { label: string; points: number }[] = [
-    {
-        label: 'Registrar los 10 indicadores del día',
-        points: POINTS.daily_complete,
-    },
-    { label: 'Racha de 7 días seguidos', points: POINTS.streak_7 },
-    { label: 'Dormir 7 h o más', points: POINTS.sleep_7h },
-    { label: 'Hacer 90 min de ejercicio', points: POINTS.exercise },
-    { label: 'Cumplir un recordatorio', points: POINTS.reminder },
-    { label: 'Hacer un test psicológico', points: POINTS.psych_test },
-];
+const HOW = Object.entries(POINTS).map(([reason, points]) => ({
+    reason,
+    points,
+}));
 </script>
 
 <template>
@@ -30,9 +26,14 @@ const HOW: { label: string; points: number }[] = [
                 class="flex items-center justify-between gap-3 text-sm"
             >
                 <span class="min-w-0 truncate">
-                    {{ REASON_LABELS[item.reason] }}
+                    {{ reasonLabel(item.reason) }}
                     <span class="text-xs text-muted-foreground">
-                        · {{ item.day === today ? 'hoy' : `día ${item.day}` }}
+                        ·
+                        {{
+                            item.day === today
+                                ? t('common.today')
+                                : t('common.dayShort', { n: item.day })
+                        }}
                     </span>
                 </span>
                 <span
@@ -45,15 +46,15 @@ const HOW: { label: string; points: number }[] = [
             <p
                 class="mb-2 text-xs font-semibold text-muted-foreground uppercase"
             >
-                Cómo se ganan
+                {{ t('Gamificacion.how.title') }}
             </p>
             <ul class="flex flex-col gap-1 text-sm">
                 <li
                     v-for="item in HOW"
-                    :key="item.label"
+                    :key="item.reason"
                     class="flex justify-between gap-3"
                 >
-                    <span>{{ item.label }}</span>
+                    <span>{{ t(`Gamificacion.how.${item.reason}`) }}</span>
                     <span class="font-medium tabular-nums"
                         >+{{ item.points }}</span
                     >

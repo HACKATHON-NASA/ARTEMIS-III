@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { computed, reactive, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import InputError from '@/components/InputError.vue';
@@ -30,6 +31,8 @@ import type {
 } from '../../Types/admin';
 import { ROLE_OPTIONS, roleOption } from '../../Utils/roles';
 import UserMissionFields from './UserMissionFields.vue';
+
+const { t } = useI18n();
 
 /**
  * Crear una persona o editar su nombre, rol y misión. El correo no se
@@ -106,23 +109,23 @@ function validate(): boolean {
     errors.value = {};
 
     if (form.name.trim().length < 3) {
-        errors.value.name = 'Escribe el nombre completo.';
+        errors.value.name = t('Identidad.admin.errName');
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-        errors.value.email = 'Escribe un correo válido.';
+        errors.value.email = t('Identidad.admin.errEmail');
     }
 
     if (form.role === '') {
-        errors.value.role = 'Elige un rol.';
+        errors.value.role = t('Identidad.admin.errRole');
     }
 
     if (needsMission.value && form.mission === '') {
-        errors.value.mission = 'Elige la misión de esta persona.';
+        errors.value.mission = t('Identidad.admin.errMission');
     }
 
     if (needsCrewRole.value && form.crewRole === '') {
-        errors.value.crewRole = 'Elige su cargo en la tripulación.';
+        errors.value.crewRole = t('Identidad.admin.errCrewRole');
     }
 
     return Object.keys(errors.value).length === 0;
@@ -179,13 +182,17 @@ function showServerErrors(error: unknown): void {
         <DialogContent class="max-h-[92vh] overflow-y-auto sm:max-w-md">
             <DialogHeader>
                 <DialogTitle>
-                    {{ isEdit ? 'Editar usuario' : 'Nuevo usuario' }}
+                    {{
+                        isEdit
+                            ? t('Identidad.admin.editUser')
+                            : t('Identidad.admin.newUser')
+                    }}
                 </DialogTitle>
                 <DialogDescription>
                     {{
                         isEdit
-                            ? 'Cambia el nombre, el rol o la misión.'
-                            : 'La persona entrará con este correo. La contraseña se le asigna aparte.'
+                            ? t('Identidad.admin.editUserHint')
+                            : t('Identidad.admin.newUserHint')
                     }}
                 </DialogDescription>
             </DialogHeader>
@@ -197,7 +204,9 @@ function showServerErrors(error: unknown): void {
                 @submit.prevent="save"
             >
                 <div class="grid gap-2">
-                    <Label for="user-name">Nombre</Label>
+                    <Label for="user-name">{{
+                        t('Identidad.admin.name')
+                    }}</Label>
                     <Input
                         id="user-name"
                         v-model="form.name"
@@ -206,7 +215,9 @@ function showServerErrors(error: unknown): void {
                     <InputError :message="errors.name" />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="user-email">Correo</Label>
+                    <Label for="user-email">{{
+                        t('Identidad.admin.email')
+                    }}</Label>
                     <Input
                         id="user-email"
                         v-model="form.email"
@@ -217,10 +228,14 @@ function showServerErrors(error: unknown): void {
                     <InputError :message="errors.email" />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="user-role">Rol</Label>
+                    <Label for="user-role">{{
+                        t('Identidad.admin.role')
+                    }}</Label>
                     <Select v-model="form.role">
                         <SelectTrigger id="user-role" class="w-full">
-                            <SelectValue placeholder="Elige un rol" />
+                            <SelectValue
+                                :placeholder="t('Identidad.admin.chooseRole')"
+                            />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem
@@ -228,13 +243,13 @@ function showServerErrors(error: unknown): void {
                                 :key="option.value"
                                 :value="option.value"
                             >
-                                {{ option.label }}
+                                {{ t(`roles.${option.value}`) }}
                                 <span class="text-muted-foreground">
                                     ·
                                     {{
                                         option.location === 'earth'
-                                            ? 'Tierra'
-                                            : 'Nave'
+                                            ? t('Identidad.admin.earth')
+                                            : t('Identidad.admin.ship')
                                     }}
                                 </span>
                             </SelectItem>
@@ -258,7 +273,9 @@ function showServerErrors(error: unknown): void {
             </form>
 
             <DialogFooter>
-                <Button variant="ghost" @click="open = false">Cancelar</Button>
+                <Button variant="ghost" @click="open = false">{{
+                    t('common.cancel')
+                }}</Button>
                 <Button
                     type="submit"
                     form="user-form"
@@ -266,7 +283,11 @@ function showServerErrors(error: unknown): void {
                     class="bg-linear-to-r from-sky-500 to-blue-600 text-white hover:brightness-110"
                 >
                     <Spinner v-if="saving" />
-                    {{ isEdit ? 'Guardar cambios' : 'Crear usuario' }}
+                    {{
+                        isEdit
+                            ? t('Identidad.admin.saveChanges')
+                            : t('Identidad.admin.createUser')
+                    }}
                 </Button>
             </DialogFooter>
         </DialogContent>

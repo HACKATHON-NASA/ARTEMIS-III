@@ -75,7 +75,16 @@ export const i18n = createI18n<false>({
 const global = i18n.global as unknown as {
     locale: { value: string };
     t: (key: string, params?: Record<string, unknown>) => string;
+    te: (key: string) => boolean;
 };
+
+/**
+ * El texto de una clave o, si no existe, el que llegó (p. ej. el nombre de
+ * un test que creó el equipo médico y no tiene traducción).
+ */
+export function tOr(key: string, fallback: string): string {
+    return global.te(key) ? global.t(key) : fallback;
+}
 
 /** El idioma de ahora (reactivo: quien lo lee se vuelve a pintar al cambiarlo). */
 export function currentLocale(): Locale {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Cpu, Power, RadioTower } from '@lucide/vue';
 import { computed } from 'vue';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,8 @@ import type { ManagedDevice } from '../../Types/admin';
 import { isOnline, timeAgo } from '../../Utils/time';
 import CopyButton from './CopyButton.vue';
 import StatusDot from './StatusDot.vue';
+
+const { t } = useI18n();
 
 /**
  * Una máquina que envía lecturas: su estado, a quién mide y su client_id.
@@ -15,12 +18,15 @@ defineEmits<{ toggle: [] }>();
 
 const state = computed(() => {
     if (!props.device.active) {
-        return { dot: 'inactive' as const, label: 'Desactivado' };
+        return {
+            dot: 'inactive' as const,
+            label: t('Identidad.admin.stateInactive'),
+        };
     }
 
     return isOnline(props.device.last_seen_at)
-        ? { dot: 'online' as const, label: 'En línea' }
-        : { dot: 'offline' as const, label: 'Sin señal' };
+        ? { dot: 'online' as const, label: t('Identidad.admin.stateOnline') }
+        : { dot: 'offline' as const, label: t('Identidad.admin.stateOffline') };
 });
 
 const isGateway = computed(() => props.device.astronaut_id === null);
@@ -43,8 +49,10 @@ const isGateway = computed(() => props.device.astronaut_id === null);
                 <p class="truncate text-sm text-muted-foreground">
                     {{
                         isGateway
-                            ? 'Gateway de toda la misión'
-                            : `Mide a ${device.astronaut_name}`
+                            ? t('Identidad.admin.gateway')
+                            : t('Identidad.admin.measures', {
+                                  name: device.astronaut_name,
+                              })
                     }}
                 </p>
             </div>
@@ -52,8 +60,19 @@ const isGateway = computed(() => props.device.astronaut_id === null);
                 variant="ghost"
                 size="icon-sm"
                 :disabled="busy"
-                :aria-label="`${device.active ? 'Desactivar' : 'Activar'} ${device.name}`"
-                :title="device.active ? 'Desactivar' : 'Activar'"
+                :aria-label="
+                    t(
+                        device.active
+                            ? 'Identidad.admin.deactivateWho'
+                            : 'Identidad.admin.activateWho',
+                        { name: device.name },
+                    )
+                "
+                :title="
+                    device.active
+                        ? t('Identidad.admin.deactivate')
+                        : t('Identidad.admin.activate')
+                "
                 :class="
                     device.active
                         ? 'hover:text-destructive'
@@ -73,7 +92,10 @@ const isGateway = computed(() => props.device.astronaut_id === null);
             >
                 {{ device.client_id }}
             </code>
-            <CopyButton :value="device.client_id" label="Copiar client_id" />
+            <CopyButton
+                :value="device.client_id"
+                :label="t('Identidad.admin.copy', { what: 'client_id' })"
+            />
         </div>
 
         <div class="flex items-center justify-between text-sm">

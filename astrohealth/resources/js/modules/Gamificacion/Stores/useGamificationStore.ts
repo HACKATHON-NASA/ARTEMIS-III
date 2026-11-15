@@ -3,11 +3,13 @@ import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { api } from '@/lib/api';
 import { launchConfetti } from '../Composables/useConfetti';
+import { badgeName } from '../Utils/rules';
 import type {
     AwardResult,
     GamificationProfile,
     LeaderRow,
 } from '../Types/gamification';
+import { t } from '@/lib/i18n';
 
 /**
  * Puntos, nivel, racha, insignias y ranking (M7).
@@ -58,13 +60,19 @@ export const useGamificationStore = defineStore('gamification', () => {
         }
 
         result.newBadges.forEach((badge) =>
-            toast.success(`¡Nueva insignia: ${badge.name}! ${badge.icon}`, {
-                description: `+${badge.bonus} puntos extra`,
-            }),
+            toast.success(
+                t('Gamificacion.newBadge', {
+                    name: badgeName(badge),
+                    icon: badge.icon,
+                }),
+                {
+                    description: t('Gamificacion.bonus', { n: badge.bonus }),
+                },
+            ),
         );
 
         if (result.levelUp) {
-            toast.success(`¡Subiste al nivel ${result.levelUp}!`);
+            toast.success(t('Gamificacion.levelUp', { n: result.levelUp }));
         }
     }
 

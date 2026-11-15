@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Head, router } from '@inertiajs/vue3';
 import { CalendarDays, Eye, Repeat } from '@lucide/vue';
 import { computed, nextTick, onMounted, ref } from 'vue';
@@ -18,8 +19,10 @@ import { useCrewStore } from './Stores/useCrewStore';
 import { useMissionStore } from './Stores/useMissionStore';
 import type { EnvironmentCode } from './Types/mission';
 import { ENVIRONMENT_FACTS } from './Utils/environmentFacts';
-import { environmentInfo } from './Utils/environments';
+import { crewRoleLabel, environmentInfo } from './Utils/environments';
 import { formatDate } from './Utils/missionDates';
+
+const { t } = useI18n();
 
 /**
  * Mi misión (/mision, M6): dónde está la nave y qué significa para el
@@ -29,7 +32,7 @@ import { formatDate } from './Utils/missionDates';
  * ⚠️ Por ahora con datos de prueba (ver Stores/useMissionStore.ts).
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Mi misión', href: mision() }] },
+    layout: { breadcrumbs: [{ title: 'nav.myMission', href: mision() }] },
 });
 
 const auth = useAuthStore();
@@ -67,15 +70,17 @@ async function change(): Promise<void> {
     try {
         await mission.changeEnvironment(shown.value);
         preview.value = null;
-        toast.success(`La misión ahora está: ${facts.value.label}`, {
-            description:
-                'Cambian la gravedad, el retraso con Tierra y la radiación de referencia.',
-        });
+        toast.success(
+            t('Entorno.myMission.changed', { label: facts.value.label }),
+            {
+                description: t('Entorno.myMission.changedHint'),
+            },
+        );
     } catch (error) {
         toast.error(
             error instanceof ApiError
                 ? error.message
-                : 'No se pudo cambiar el entorno.',
+                : t('Entorno.myMission.changeFailed'),
         );
     } finally {
         changing.value = false;
@@ -101,7 +106,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Mi misión" />
+    <Head :title="t('Entorno.myMission.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <template v-if="!ready || !mission.current">
@@ -121,7 +126,11 @@ onMounted(async () => {
                     <p
                         class="text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
                     >
-                        {{ isPreview ? 'Vista previa' : 'Tu misión' }}
+                        {{
+                            isPreview
+                                ? t('Entorno.myMission.preview')
+                                : t('Entorno.myMission.yours')
+                        }}
                     </p>
                     <h1
                         class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
@@ -130,7 +139,8 @@ onMounted(async () => {
                         {{
                             isPreview
                                 ? info.name
-                                : mission.current.environment_label
+                                : environmentInfo(mission.current.environment)
+                                      .name
                         }}
                     </h1>
                     <p
@@ -141,10 +151,12 @@ onMounted(async () => {
                     </p>
                     <div class="mt-5 max-w-md">
                         <div class="mb-1.5 flex justify-between text-sm">
-                            <span class="font-medium"
-                                >Día {{ mission.current.day }} de
-                                {{ mission.current.day_count }}</span
-                            >
+                            <span class="font-medium">{{
+                                t('Entorno.dayOf', {
+                                    day: mission.current.day,
+                                    total: mission.current.day_count,
+                                })
+                            }}</span>
                             <span class="text-muted-foreground tabular-nums"
                                 >{{ progress }} %</span
                             >
@@ -174,14 +186,14 @@ onMounted(async () => {
 
             <section class="flex flex-col gap-3" data-reveal>
                 <h2 class="text-lg font-semibold">
-                    Lo que cambia para tu cuerpo
+                    {{ t('Entorno.myMission.whatChanges') }}
                 </h2>
                 <EnvironmentStats :info="info" :facts="facts" />
             </section>
 
             <section class="flex flex-col gap-3" data-reveal>
                 <h2 class="text-lg font-semibold">
-                    Riesgos del entorno · {{ info.name }}
+                    {{ t('Entorno.myMission.risksOf', { name: info.name }) }}
                 </h2>
                 <RiskList :risks="facts.risks" />
             </section>
@@ -194,7 +206,11 @@ onMounted(async () => {
                     data-reveal
                 >
                     <h2 class="mb-3 font-semibold">
-                        Tripulación · {{ crew.members.length }}
+                        {{
+                            t('Entorno.myMission.crew', {
+                                n: crew.members.length,
+                            })
+                        }}
                     </h2>
                     <ul class="flex flex-col gap-3">
                         <li
@@ -217,11 +233,11 @@ onMounted(async () => {
                                             auth.actor?.astronaut_id
                                         "
                                         class="text-xs font-normal text-sky-600 dark:text-sky-400"
-                                        >(tú)</span
+                                        >({{ t('common.you') }})</span
                                     >
                                 </p>
                                 <p class="text-xs text-muted-foreground">
-                                    {{ member.crew_role }}
+                                    {{ crewRoleLabel(member.crew_role) }}
                                 </p>
                             </div>
                         </li>
@@ -233,14 +249,14 @@ onMounted(async () => {
                     data-reveal
                 >
                     <h2 class="flex items-center gap-2 font-semibold">
-                        <Eye class="size-4 text-sky-500" /> Explorar entornos
+                        <Eye class="size-4 text-sky-500" />
+                        {{ t('Entorno.myMission.explore') }}
                     </h2>
                     <p
                         id="explore-env"
                         class="mb-3 text-sm text-muted-foreground"
                     >
-                        ¿Cómo sería tu misión en otro lugar? Toca uno para
-                        comparar.
+                        {{ t('Entorno.myMission.exploreHint') }}
                     </p>
                     <EnvironmentPicker
                         :model-value="shown"
@@ -261,7 +277,7 @@ onMounted(async () => {
                                 preview = null;
                                 confirming = false;
                             "
-                            >Volver a mi misión</Button
+                            >{{ t('Entorno.myMission.backToMine') }}</Button
                         >
                         <Button
                             v-if="auth.can('mission.update')"
@@ -273,8 +289,10 @@ onMounted(async () => {
                             <Repeat />
                             {{
                                 confirming
-                                    ? `¿Seguro? Cambiar a ${info.name}`
-                                    : 'Cambiar la misión a este entorno'
+                                    ? t('Entorno.myMission.confirmChange', {
+                                          name: info.name,
+                                      })
+                                    : t('Entorno.myMission.changeTo')
                             }}
                         </Button>
                     </div>

@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { CircleAlert, Globe, Rocket } from '@lucide/vue';
 import { computed } from 'vue';
 import type { PersonRole } from '../../Types/admin';
 import { roleOption } from '../../Utils/roles';
+
+const { t } = useI18n();
 
 /**
  * El rol de una persona, con dónde está: 🌍 Tierra o 🚀 nave.
@@ -25,13 +28,13 @@ const option = computed(() => roleOption(props.role));
     >
         <Globe v-if="option.location === 'earth'" class="size-3.5" />
         <Rocket v-else class="size-3.5" />
-        {{ option.label }}
+        {{ t(`roles.${option.value}`) }}
     </span>
     <span
         v-else
         class="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium whitespace-nowrap text-amber-700 dark:text-amber-300"
     >
         <CircleAlert class="size-3.5" />
-        Sin rol
+        {{ t('Identidad.admin.noRole') }}
     </span>
 </template>

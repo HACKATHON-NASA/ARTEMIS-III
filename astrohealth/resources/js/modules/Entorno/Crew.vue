@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
@@ -21,6 +22,8 @@ import NoCrew from './Components/NoCrew.vue';
 import { useCrewStore } from './Stores/useCrewStore';
 import { environmentInfo } from './Utils/environments';
 
+const { t } = useI18n();
+
 /**
  * Tripulación (/tripulacion): la tripulación de UNA misión, cada uno con su
  * cuerpo en 3D (M3) y su puntaje (M2). Tocar un órgano abre su ventana en
@@ -29,7 +32,7 @@ import { environmentInfo } from './Utils/environments';
  * ⚠️ Por ahora con datos de prueba (ver los stores de M6 y M2).
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Tripulación', href: tripulacion() }] },
+    layout: { breadcrumbs: [{ title: 'nav.crew', href: tripulacion() }] },
 });
 
 const auth = useAuthStore();
@@ -98,9 +101,7 @@ watch(
 
 onMounted(async () => {
     if (!auth.can('health.read.any')) {
-        toast.error(
-            'La vista de tripulación es para médicos y administración.',
-        );
+        toast.error(t('Entorno.crewPage.onlyMedical'));
         router.visit(dashboard());
 
         return;
@@ -115,7 +116,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Tripulación" />
+    <Head :title="t('Entorno.crewPage.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <header
@@ -126,15 +127,15 @@ onMounted(async () => {
                 <p
                     class="text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
                 >
-                    {{ crew.mission?.name ?? 'Misión' }}
+                    {{ crew.mission?.name ?? t('Entorno.mission') }}
                 </p>
                 <h1
                     class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
                 >
-                    Tripulación
+                    {{ t('Entorno.crewPage.title') }}
                 </h1>
                 <p class="mt-2 text-muted-foreground">
-                    Quién va en la misión y cómo está cada uno hoy.
+                    {{ t('Entorno.crewPage.subtitle') }}
                 </p>
             </div>
             <MissionPicker

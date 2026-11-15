@@ -58,6 +58,24 @@ export default {
         red: 'Crítico',
         none: 'Sin datos',
     },
+    environments: {
+        iss: 'Estación Espacial',
+        transit: 'Tránsito',
+        moon: 'Luna',
+        mars: 'Marte',
+    },
+    crewRoles: {
+        commander: 'Comandante',
+        pilot: 'Piloto',
+        flightEngineer: 'Ingeniero de vuelo',
+        missionSpecialist: 'Especialista de misión',
+        medicalOfficer: 'Médico de la tripulación',
+    },
+    units: {
+        mSvPerDay: '{value} mSv/día',
+        seconds: '{value} s',
+        minutes: '{value} min',
+    },
     roles: {
         astronaut: 'Astronauta',
         crew_medical_officer: 'Médico de la tripulación',

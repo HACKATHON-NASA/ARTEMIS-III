@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { onMounted } from 'vue';
 import { logros } from '@/routes';
 import { useGamificationStore } from '../Stores/useGamificationStore';
 import XpBar from './XpBar.vue';
+
+const { t } = useI18n();
 
 /**
  * El nivel y la racha siempre a la vista, en el menú lateral (ficha M7:
@@ -26,7 +29,7 @@ onMounted(async () => {
         v-if="store.profile"
         :href="logros()"
         class="mx-2 mb-1 block rounded-xl border bg-sidebar-accent/40 p-3 transition group-data-[collapsible=icon]:hidden hover:border-sky-500/40"
-        aria-label="Ver mis logros"
+        :aria-label="t('Gamificacion.seeMine')"
     >
         <XpBar
             compact
@@ -35,7 +38,13 @@ onMounted(async () => {
             :progress="store.profile.level_progress"
         />
         <p class="mt-2 text-xs text-muted-foreground">
-            🔥 {{ store.profile.streak_days }} días de racha
+            {{
+                t(
+                    'Gamificacion.sidebarStreak',
+                    { n: store.profile.streak_days },
+                    store.profile.streak_days,
+                )
+            }}
         </p>
     </Link>
 </template>

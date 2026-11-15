@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Head, router } from '@inertiajs/vue3';
 import { Medal, Trophy } from '@lucide/vue';
 import { computed, nextTick, onMounted, ref } from 'vue';
@@ -15,12 +16,14 @@ import StreakCounter from './Components/StreakCounter.vue';
 import XpBar from './Components/XpBar.vue';
 import { useGamificationStore } from './Stores/useGamificationStore';
 
+const { t } = useI18n();
+
 /**
  * Logros (/logros, M7): nivel y racha → insignias → ranking de la
  * tripulación, y cómo se ganan los puntos. Cuidarse como un hábito.
  */
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Logros', href: logros() }] },
+    layout: { breadcrumbs: [{ title: 'nav.achievements', href: logros() }] },
 });
 
 const auth = useAuthStore();
@@ -59,21 +62,21 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head title="Logros" />
+    <Head :title="t('Gamificacion.pageTitle')" />
 
     <div ref="root" class="flex flex-col gap-6 p-4 sm:p-6">
         <header data-reveal>
             <p
                 class="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-sky-600 uppercase dark:text-sky-400"
             >
-                <Trophy class="size-3.5" /> {{ crew.mission?.name ?? 'Misión' }}
+                <Trophy class="size-3.5" />
+                {{ crew.mission?.name ?? t('Gamificacion.mission') }}
             </p>
             <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-                Logros
+                {{ t('Gamificacion.title') }}
             </h1>
             <p class="mt-2 max-w-2xl text-muted-foreground">
-                Cuidarte suma: registrar tus datos, dormir bien, hacer ejercicio
-                y cumplir tu rutina te dan puntos, rachas e insignias.
+                {{ t('Gamificacion.subtitle') }}
             </p>
         </header>
 
@@ -107,7 +110,7 @@ onMounted(async () => {
                             >
                         </p>
                         <p class="mt-1 text-xs text-muted-foreground">
-                            insignias
+                            {{ t('Gamificacion.badgesCount') }}
                         </p>
                     </div>
                 </div>
@@ -118,7 +121,9 @@ onMounted(async () => {
                 class="flex flex-col gap-3"
                 data-reveal
             >
-                <h2 class="text-lg font-semibold">Insignias</h2>
+                <h2 class="text-lg font-semibold">
+                    {{ t('Gamificacion.badgesTitle') }}
+                </h2>
                 <BadgeGrid :badges="store.profile.badges" />
             </section>
 
@@ -127,7 +132,7 @@ onMounted(async () => {
             >
                 <section class="rounded-2xl border bg-card" data-reveal>
                     <h2 class="border-b p-4 font-semibold sm:px-6">
-                        Ranking de la tripulación
+                        {{ t('Gamificacion.ranking') }}
                     </h2>
                     <Leaderboard :rows="store.leaderboard" :me="own" />
                 </section>
@@ -136,7 +141,9 @@ onMounted(async () => {
                     class="rounded-2xl border bg-card p-4 sm:p-6"
                     data-reveal
                 >
-                    <h2 class="mb-3 font-semibold">Tus últimos puntos</h2>
+                    <h2 class="mb-3 font-semibold">
+                        {{ t('Gamificacion.recentTitle') }}
+                    </h2>
                     <RecentPoints
                         :recent="store.profile.recent"
                         :today="today"
