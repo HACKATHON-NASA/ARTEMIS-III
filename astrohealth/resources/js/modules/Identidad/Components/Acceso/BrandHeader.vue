@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import logoColor from '../../../../../images/marca/logo-color.png';
+import { BRAND } from '@/lib/brand';
 
 /**
- * La marca: logo de color + AstroHealth + el lema.
+ * La marca: logo de color + el nombre + el lema.
  * Cada hijo directo entra por separado en la animación (data-intro="brand").
  */
 </script>
@@ -12,7 +13,7 @@ import logoColor from '../../../../../images/marca/logo-color.png';
         <div class="shrink-0">
             <img
                 :src="logoColor"
-                alt="Logo de AstroHealth"
+                :alt="`Logo de ${BRAND.name}`"
                 class="brand-logo size-20 object-contain sm:size-28"
             />
         </div>
@@ -21,7 +22,8 @@ import logoColor from '../../../../../images/marca/logo-color.png';
             <h1
                 class="text-4xl font-semibold tracking-tight text-white sm:text-5xl"
             >
-                Astro<span class="text-sky-400">Health</span>
+                {{ BRAND.first
+                }}<span class="text-sky-400">{{ BRAND.accent }}</span>
             </h1>
             <p
                 class="mt-2 max-w-xs text-base leading-snug text-slate-200/90 sm:text-xl"

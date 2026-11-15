@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { BRAND } from '@/lib/brand';
 </script>
 
 <template>
@@ -8,7 +9,8 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
     </div>
     <div class="ml-1 grid flex-1 text-left text-sm">
         <span class="mb-0.5 truncate leading-tight font-semibold">
-            Astro<span class="text-sky-500">Health</span>
+            {{ BRAND.first
+            }}<span class="text-sky-500">{{ BRAND.accent }}</span>
         </span>
     </div>
 </template>

@@ -2,9 +2,11 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { createPinia } from 'pinia';
 import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { BRAND } from '@/lib/brand';
 import { initializeFlashToast } from '@/lib/flashToast';
 
-const appName = import.meta.env.VITE_APP_NAME || 'AstroHealth';
+// El nombre de la marca en la pestaña (frontend): @/lib/brand.
+const appName = BRAND.name;
 
 /** Pantallas a pantalla completa, sin el layout de la app (no exigen sesión). */
 const FULL_SCREEN_PAGES = ['Identidad/Login'];

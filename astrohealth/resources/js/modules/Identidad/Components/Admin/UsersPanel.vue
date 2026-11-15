@@ -3,6 +3,7 @@ import { Search, UserPlus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { BRAND } from '@/lib/brand';
 import {
     Select,
     SelectContent,
@@ -51,7 +52,7 @@ const visible = computed(() => {
             <div>
                 <h2 class="text-lg font-semibold">Usuarios</h2>
                 <p class="text-sm text-muted-foreground">
-                    {{ users.length }} personas con acceso a AstroHealth
+                    {{ users.length }} personas con acceso a {{ BRAND.name }}
                 </p>
             </div>
 
