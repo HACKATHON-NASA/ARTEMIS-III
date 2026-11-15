@@ -9,6 +9,7 @@
 | | Documento | Qué tiene |
 |:---:|---|---|
 | 1 | [**El plan**](PLAN_ASTROHEALTH.md) | Qué se construye: la arquitectura, la base de datos, los umbrales, los 8 módulos, las pantallas, el reparto, el orden y el guion de la demo |
+| 1b | [**Plan del backend**](PLAN_BACKEND.md) | Cómo pasar cada módulo de datos de prueba a Laravel + MySQL: estado actual, receta por módulo, fases F0–F9 con tablas, endpoints, permisos y pruebas |
 | 2 | [**Los 8 módulos**](modulos/README.md) | Una ficha por módulo con todo para construirlo: datos, API, archivos por capa, componentes y criterios de aceptación |
 | 3 | [**Guía técnica**](arquitectura/README.md) | Cómo se programa: [ARCHITECTURE.md](arquitectura/ARCHITECTURE.md) (norma obligatoria), la API, la base de datos, el frontend, Python, el entorno local y Git |
 | 4 | [**Simulador**](../simulador/docs/SIMULADOR.md) | El servicio de Python: datos de la NASA (DONKI y OSDR), la misión simulada y el motor de evaluación |
