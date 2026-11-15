@@ -64,3 +64,6 @@ export type WatchRow = {
     status: Status | null;
     summary: string;
 };
+
+/** Lo que necesita la gráfica de líneas para nombrar y formatear los valores. */
+export type ChartMeta = { label: string; unit: string; decimals: number };

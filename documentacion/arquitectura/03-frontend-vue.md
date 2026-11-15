@@ -71,6 +71,9 @@ astrohealth/resources/images/      # Imágenes de la app (marca/, fondos/), opti
 | Misión (M6) | `modules/Entorno/Mission.vue` | `/mision` |
 | Logros (M7) | `modules/Gamificacion/Achievements.vue` | `/logros` |
 | Centro de alertas (M5) | `modules/Alertas/Alerts.vue` | `/alertas` |
+| Guía de salud · física (M2 + M5): rangos por entorno y qué hacer | `modules/Evaluacion/Guide.vue` | `/guia` |
+| Guía de salud · psicológica (M2): los tests, responderlos y crearlos | `modules/Evaluacion/PsychGuide.vue` | `/guia/psicologica` |
+| Guía de salud · resultados psicológicos y cognitivos de la tripulación | `modules/Evaluacion/PsychResults.vue` | `/guia/resultados` |
 
 La ruta de cada pantalla va en el `web.php` del módulo: `Route::inertia('acceso', 'Identidad/Login')`.
 

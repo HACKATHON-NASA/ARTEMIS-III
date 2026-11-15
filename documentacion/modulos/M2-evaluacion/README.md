@@ -162,3 +162,16 @@ flowchart LR
 - [ ] Cada medición devuelve su color y el puntaje se actualiza.
 - [ ] El respaldo local da los mismos colores que Python.
 - [ ] `HealthScore` se anima y `StatusBadge` se usa en toda la app.
+
+
+## Guía de salud (frontend con datos de prueba)
+
+En `/guia`, con tres partes:
+
+1. **Salud física** (`Guide.vue`): cada indicador con sus rangos verde, amarillo y rojo **por entorno** y qué hacer en amarillo y en rojo (M5). Todos la consultan; editan quienes tienen `guide.manage` (administración y médicos de vuelo).
+2. **Guía psicológica** (`PsychGuide.vue`): el catálogo de tests. Vienen PHQ-9 (ánimo), GAD-7 (ansiedad) y PSS-4 (estrés), en español y de uso libre, y un PVT corto (atención y reacción, el de la batería *Cognition* de la NASA). El equipo médico crea y edita tests: preguntas (con "al revés" y "crítica"), respuestas con puntos y niveles con su color. El astronauta responde los que le tocan según su frecuencia.
+3. **Resultados de la tripulación** (`PsychResults.vue`, `health.read.any`): el último resultado de cada uno en cada test (psicológico e intelectual), con flecha de tendencia, y la evolución del test elegido en la misión.
+
+**Seguridad:** si una pregunta **crítica** (la 9 del PHQ-9) recibe algo distinto de "Nunca", sale sola una alerta **urgente** a Tierra (M5). Las respuestas son privadas: el equipo médico ve el puntaje, no cada respuesta. Los tests **no reemplazan** la evaluación de un profesional; las interpretaciones del PSS-4 y del PVT son referencias de la demo.
+
+Rutas propuestas: `GET/PUT /api/v1/thresholds`, `GET/POST/PUT /api/v1/psych-tests`, `GET/POST /api/v1/psych-results` (el backend calcula el puntaje y avisa a M5).

@@ -41,6 +41,8 @@ export type NewMessage = {
     kind: Exclude<AlertKind, 'vital'>;
     category: string | null;
     note: string;
+    /** Un pedido de ayuda que sale en rojo (p. ej. lo manda solo un test con respuesta de riesgo). */
+    urgent?: boolean;
 };
 
 export type Recommendation = {

@@ -149,6 +149,10 @@ Todas las llamadas a Python viven en `app/Modules/Evaluacion/Infrastructure/Clie
 | GET | `/api/v1/missions/current` | M6 | `crew.read` |
 | PATCH | `/api/v1/missions/{id}` | M6 | `mission.update` |
 | GET · POST | `/api/v1/missions` | M6 | `missions.manage` |
+| GET · PUT | `/api/v1/thresholds?environment=` · `/api/v1/thresholds/{indicator}` | M2 | `crew.read` · `guide.manage` |
+| PUT | `/api/v1/recommendations/{indicator}/{status}` | M5 | `guide.manage` |
+| GET · POST · PUT | `/api/v1/psych-tests` · `/api/v1/psych-tests/{id}` | M2 | `crew.read` · `guide.manage` |
+| GET · POST | `/api/v1/psych-results` | M2 | `health.read` (de la tripulación, `health.read.any`) · el astronauta manda las suyas |
 | POST · PATCH | `/api/v1/astronauts` · `/api/v1/astronauts/{id}` | M6 | `missions.manage` |
 | GET | `/api/v1/astronauts` | M6 | `crew.read` |
 | GET | `/api/v1/astronauts/{id}/gamification` | M7 | `gamification.read` |

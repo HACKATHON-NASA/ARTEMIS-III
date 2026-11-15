@@ -147,7 +147,7 @@ onMounted(loadAll);
                 v-if="ready"
                 :series="store.series"
                 :bands="store.bands"
-                :indicator="indicator"
+                :meta="indicatorMeta(indicator)"
             />
             <div
                 v-else

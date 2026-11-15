@@ -20,12 +20,13 @@ export function niceTicks(min: number, max: number, count = 5): number[] {
         10 * power;
     const ticks: number[] = [];
 
-    for (
-        let tick = Math.floor(min / step) * step;
-        tick <= max + step / 2;
-        tick += step
-    ) {
+    // La última marca siempre cubre el máximo (si no, la línea se sale).
+    for (let tick = Math.floor(min / step) * step; ; tick += step) {
         ticks.push(Math.round(tick * 1e6) / 1e6);
+
+        if (tick >= max) {
+            break;
+        }
     }
 
     return ticks;

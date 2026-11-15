@@ -46,7 +46,12 @@ export function useTrendGeometry(
         const max = Math.max(...values);
         const pad = (max - min || 1) * 0.12;
 
-        return niceTicks(min - pad, max + pad, 5);
+        // Sin valores negativos, el eje no baja de 0.
+        return niceTicks(
+            min >= 0 ? Math.max(0, min - pad) : min - pad,
+            max + pad,
+            5,
+        );
     });
 
     /** En pantallas angostas las etiquetas finales van sin unidad: menos margen. */

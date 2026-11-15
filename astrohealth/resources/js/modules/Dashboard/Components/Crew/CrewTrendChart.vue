@@ -2,7 +2,6 @@
 import gsap from 'gsap';
 import { computed, nextTick, ref, toRef, watch } from 'vue';
 import { statusMeta } from '@/lib/status';
-import type { IndicatorCode } from '@/types/health';
 import { useElementWidth } from '../../Composables/useElementWidth';
 import {
     HEIGHT,
@@ -10,7 +9,7 @@ import {
     useTrendGeometry,
 } from '../../Composables/useTrendGeometry';
 import type { Bands, CrewSeries } from '../../Types/crewTrends';
-import { formatValue, indicatorMeta } from '../../Utils/indicatorMeta';
+import type { ChartMeta } from '../../Types/crewTrends';
 
 /**
  * Un indicador, una línea por tripulante, día a día. La franja gris es el
@@ -21,7 +20,8 @@ import { formatValue, indicatorMeta } from '../../Utils/indicatorMeta';
 const props = defineProps<{
     series: CrewSeries[];
     bands: Bands | null;
-    indicator: IndicatorCode;
+    /** Qué se grafica: nombre, unidad y decimales (un indicador o un test). */
+    meta: ChartMeta;
 }>();
 
 const host = ref<HTMLElement | null>(null);
@@ -32,7 +32,11 @@ const geo = useTrendGeometry(
     toRef(props, 'bands'),
     width,
 );
-const meta = computed(() => indicatorMeta(props.indicator));
+const fmt = (value: number) =>
+    value.toLocaleString('es', {
+        minimumFractionDigits: props.meta.decimals,
+        maximumFractionDigits: props.meta.decimals,
+    });
 const hoverDay = ref<number | null>(null);
 
 const hovered = computed(() =>
@@ -156,7 +160,7 @@ watch(
                         text-anchor="end"
                         class="fill-muted-foreground"
                     >
-                        {{ formatValue(tick, indicator) }}
+                        {{ fmt(tick) }}
                     </text>
                 </g>
                 <text
@@ -219,7 +223,7 @@ watch(
                 >
                     {{ line.name.split(' ')[0] }}
                     <tspan class="fill-muted-foreground font-normal">
-                        {{ formatValue(line.last.value, indicator) }}
+                        {{ fmt(line.last.value) }}
                         <template v-if="!geo.compact.value">
                             {{ meta.unit }}
                         </template>
@@ -271,7 +275,7 @@ watch(
                     line.name.split(' ')[0]
                 }}</span>
                 <span class="font-semibold tabular-nums">{{
-                    formatValue(point.value, indicator)
+                    fmt(point.value)
                 }}</span>
                 <span
                     class="flex w-[4.5rem] items-center gap-1 text-xs text-muted-foreground"

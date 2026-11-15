@@ -87,6 +87,7 @@ flowchart LR
 | `alerts.acknowledge` — confirmar desde Tierra           |   ✅    |        ✅        |                        |             |          |
 | `mission.update` — cambiar el entorno                   |   ✅    |        ✅        |                        |             |          |
 | `missions.manage` — crear misiones y tripulantes        |   ✅    |                  |                        |             |          |
+| `guide.manage` — rangos, qué hacer y tests psicológicos |   ✅    |        ✅        |                        |             |          |
 | `reminders.manage.own` — sus recordatorios              |         |                  |           ✅           |     ✅      |          |
 | `gamification.read` — puntos y ranking                  |   ✅    |        ✅        |           ✅           |     ✅      |          |
 | `users.manage` · `devices.manage`                       |   ✅    |                  |                        |             |          |

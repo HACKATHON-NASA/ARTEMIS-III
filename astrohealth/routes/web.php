@@ -33,6 +33,10 @@ Route::inertia('registrar', 'Registro/Record')->name('registrar');
 
 // Guía de salud (M2 + M5): rangos y qué hacer; editan quienes tienen guide.manage.
 Route::inertia('guia', 'Evaluacion/Guide')->name('guia');
+// Guía psicológica: los tests (crear y editar con guide.manage) y responderlos.
+Route::inertia('guia/psicologica', 'Evaluacion/PsychGuide')->name('psicologia');
+// Resultados psicológicos y cognitivos de la tripulación (health.read.any).
+Route::inertia('guia/resultados', 'Evaluacion/PsychResults')->name('psicologiaTripulacion');
 
 // Centro de alertas (M5): todos los roles con alerts.read.
 Route::inertia('alertas', 'Alertas/Alerts')->name('alertas');

@@ -14,6 +14,7 @@ import { useMissionStore } from '../Entorno/Stores/useMissionStore';
 import { ENVIRONMENTS } from '../Entorno/Utils/environments';
 import { useMeasurementsStore } from '../Registro/Stores/useMeasurementsStore';
 import GuideCard from './Components/GuideCard.vue';
+import GuideTabs from './Components/GuideTabs.vue';
 import GuideEditDialog from './Components/GuideEditDialog.vue';
 import { useThresholdsStore } from './Stores/useThresholdsStore';
 import type {
@@ -206,6 +207,13 @@ onMounted(async () => {
                 </button>
             </div>
         </header>
+
+        <div data-reveal>
+            <GuideTabs
+                active="physical"
+                :show-results="auth.can('health.read.any')"
+            />
+        </div>
 
         <div v-if="!ready" class="grid gap-4 lg:grid-cols-2">
             <Skeleton v-for="n in 4" :key="n" class="h-64 rounded-2xl" />

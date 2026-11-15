@@ -103,7 +103,7 @@ export function mockSendMessage(
             kind: message.kind,
             indicator: null,
             level:
-                message.kind === 'sos'
+                message.kind === 'sos' || message.urgent
                     ? 'red'
                     : message.kind === 'help'
                       ? 'yellow'
