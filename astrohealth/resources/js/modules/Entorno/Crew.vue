@@ -6,16 +6,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useReveal } from '@/composables/useReveal';
 import { dashboard, salud, tripulacion } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
+import CrewInsights from '../Dashboard/Components/Crew/CrewInsights.vue';
 import { useAssessmentStore } from '../Evaluacion/Stores/useAssessmentStore';
 import CrewCard from './Components/CrewCard.vue';
 import MissionPicker from './Components/MissionPicker.vue';
 import MissionStrip from './Components/MissionStrip.vue';
 import NoCrew from './Components/NoCrew.vue';
 import { useCrewStore } from './Stores/useCrewStore';
+import { environmentInfo } from './Utils/environments';
 
 /**
  * Tripulación (/tripulacion): la tripulación de UNA misión, cada uno con su
- * puntaje y estado, y el acceso a su cuerpo en el Panel de salud. Médicos y
+ * puntaje y estado, el acceso a su cuerpo en el Panel de salud y, si la
+ * misión está en curso, las gráficas que los comparan (M4). Médicos y
  * administración eligen la misión; quien va en la nave ve la suya.
  * ⚠️ Por ahora con datos de prueba (ver los stores de M6 y M2).
  */
@@ -154,6 +157,22 @@ onMounted(async () => {
                         "
                     />
                 </div>
+            </div>
+
+            <div
+                v-if="crew.mission.status === 'active' && crew.members.length"
+                data-reveal
+            >
+                <CrewInsights
+                    :members="crew.members"
+                    :today="crew.mission.current_day ?? 1"
+                    :base-dose="
+                        environmentInfo(crew.mission.environment).radiationBase
+                    "
+                    :environment-name="
+                        environmentInfo(crew.mission.environment).name
+                    "
+                />
             </div>
         </template>
     </div>

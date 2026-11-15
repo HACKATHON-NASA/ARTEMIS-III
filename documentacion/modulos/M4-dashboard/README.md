@@ -88,6 +88,17 @@ No tiene tablas. Lee las mediciones de M1 y pide las tendencias a M2. Las bandas
 | `Stores/useDashboardStore.ts` | `trends`, `series`, `selected`, `range`, `loadTrends()`, `loadSeries()` |
 | Principal `modules/Dashboard/Dashboard.vue` | Banner → cuadrícula → gráfica del indicador seleccionado |
 
+**Comparación de la tripulación (en Tripulación, misión en curso):** `Components/Crew/CrewInsights.vue` compone tres gráficas SVG hechas a mano (sin librería):
+
+| Archivo | Qué muestra |
+|---|---|
+| `Components/Crew/CrewRiskMatrix.vue` | Mapa de riesgos: tripulante × indicador, con el último valor y su color del semáforo. Tocar una columna la abre en la gráfica |
+| `Components/Crew/CrewTrendChart.vue` | Un indicador, una línea por tripulante, día a día (7, 14 días o toda la misión), con la franja del rango sano, guía al pasar el mouse y flechas del teclado |
+| `Components/Crew/CrewDoseBars.vue` | Radiación acumulada de cada uno frente a lo esperado para el entorno (dosis base × días) |
+| `Stores/useCrewTrendsStore.ts` | `snapshot`, `series`, `bands`, `doses`, `load()`, `loadSeries()` |
+
+Cada tripulante conserva su color de identidad (`--series-1…8` de `app.css`, validados para daltonismo) en las tres gráficas; los estados siempre usan `--status-*` y van con texto. Ruta propuesta para el backend: `GET /api/v1/missions/{id}/crew-measurements?indicator=&range=` (una serie por tripulante con las bandas de M2). ⚠️ Hoy con datos de prueba: `@/mocks/crewHistory.ts`.
+
 **Animación de las gráficas:** la de Chart.js (`animation.duration: 600`) y, con `prefers-reduced-motion`, `animation: false`.
 
 ## 7. Contratos y eventos
