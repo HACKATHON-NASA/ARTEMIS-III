@@ -35,7 +35,8 @@ const root = ref<HTMLElement | null>(null);
 const { reveal } = useReveal(root);
 const ready = ref(false);
 const dialog = ref(false);
-const filter = ref<MissionFilter>('all');
+// Lo que importa es lo que está pasando: se abre en "En curso".
+const filter = ref<MissionFilter>('active');
 
 const counts = computed(() => ({
     all: store.views.length,
@@ -58,7 +59,8 @@ const inSpace = computed(() =>
 
 async function create(data: MissionFormData): Promise<void> {
     const mission = await store.createMission(data);
-    filter.value = 'all';
+    // Se muestra la pestaña donde quedó la misión nueva.
+    filter.value = store.find(mission.id)?.status ?? 'all';
     toast.success(`Misión ${mission.name} creada`, {
         description: 'Ahora asóciale tripulantes desde Usuarios.',
     });

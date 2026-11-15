@@ -22,7 +22,8 @@ import ZoneDetailCard from './Components/ZoneDetailCard.vue';
 import { useBodyStore } from './Stores/useBodyStore';
 
 /**
- * Panel de salud (/salud): médicos y administración eligen la misión y un
+ * Panel de salud (/salud): médicos y administración eligen la misión (solo
+ * las en curso: aquí se monitorea lo que está pasando) y un
  * tripulante, y ven su estado, sus alertas y su cuerpo en 3D con el detalle
  * del órgano al lado. Se puede abrir con ?astronaut=ID (desde Tripulación):
  * entonces se elige sola la misión de ese tripulante.
@@ -106,7 +107,8 @@ onMounted(async () => {
         return;
     }
 
-    await crew.load(auth.actor?.astronaut_id ?? null);
+    // Aquí se monitorea: solo las misiones en curso.
+    await crew.load(auth.actor?.astronaut_id ?? null, { activeOnly: true });
     const fromUrl = Number(
         new URLSearchParams(window.location.search).get('astronaut'),
     );
@@ -167,8 +169,16 @@ onMounted(async () => {
             <MissionStrip :mission="crew.mission" />
         </div>
 
+        <p
+            v-if="!crew.mission && !loading"
+            class="rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground"
+        >
+            No hay misiones en curso. El Panel de salud monitorea a las
+            tripulaciones que están volando.
+        </p>
+
         <NoCrew
-            v-if="crew.mission && crew.members.length === 0"
+            v-else-if="crew.mission && crew.members.length === 0"
             :mission-name="crew.mission.name"
             :can-manage="auth.can('users.manage')"
         />

@@ -17,7 +17,8 @@ defineProps<{
     score: number | null;
     status: MaybeStatus;
     summary: string;
-    href: NonNullable<InertiaLinkProps['href']>;
+    /** Al Panel de salud; null si su misión no está en curso. */
+    href: NonNullable<InertiaLinkProps['href']> | null;
 }>();
 </script>
 
@@ -65,7 +66,11 @@ defineProps<{
 
         <p class="min-h-10 text-sm text-muted-foreground">{{ summary }}</p>
 
+        <p v-if="href === null" class="text-sm text-muted-foreground">
+            Su misión no está en curso
+        </p>
         <Link
+            v-else
             :href="href"
             class="inline-flex items-center gap-1.5 text-sm font-medium text-sky-600 transition group-hover:gap-2.5 dark:text-sky-400"
         >

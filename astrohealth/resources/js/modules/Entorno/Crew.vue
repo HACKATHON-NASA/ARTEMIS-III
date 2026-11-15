@@ -147,7 +147,11 @@ onMounted(async () => {
                         :summary="
                             result?.summary ?? 'Todavía no registra mediciones.'
                         "
-                        :href="salud({ query: { astronaut: member.id } })"
+                        :href="
+                            crew.mission.status === 'active'
+                                ? salud({ query: { astronaut: member.id } })
+                                : null
+                        "
                     />
                 </div>
             </div>

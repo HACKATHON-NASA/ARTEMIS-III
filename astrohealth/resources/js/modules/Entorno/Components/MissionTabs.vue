@@ -9,10 +9,10 @@ defineProps<{ counts: Record<MissionFilter, number> }>();
 const filter = defineModel<MissionFilter>({ required: true });
 
 const TABS: { value: MissionFilter; label: string }[] = [
-    { value: 'all', label: 'Todas' },
     { value: 'active', label: 'En curso' },
     { value: 'planned', label: 'Planificadas' },
     { value: 'finished', label: 'Terminadas' },
+    { value: 'all', label: 'Todas' },
 ];
 </script>
 
