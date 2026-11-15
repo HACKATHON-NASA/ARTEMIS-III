@@ -1,4 +1,10 @@
 <script setup lang="ts">
+/**
+ * El layout de la app: menú lateral + contenido. Sin barra superior en
+ * escritorio (cada pantalla ya tiene su título); en el celular, una barra
+ * mínima para abrir el menú. `breadcrumbs` queda por compatibilidad con las
+ * pantallas que lo declaran.
+ */
 import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
@@ -19,7 +25,7 @@ withDefaults(defineProps<Props>(), {
     <AppShell variant="sidebar">
         <AppSidebar />
         <AppContent variant="sidebar" class="min-w-0 overflow-x-clip">
-            <AppSidebarHeader :breadcrumbs="breadcrumbs" />
+            <AppSidebarHeader />
             <slot />
         </AppContent>
         <Toaster />

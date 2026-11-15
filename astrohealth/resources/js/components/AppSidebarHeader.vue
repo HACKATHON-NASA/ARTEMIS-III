@@ -1,27 +1,19 @@
 <script setup lang="ts">
-import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import AppLogo from '@/components/AppLogo.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import type { BreadcrumbItem } from '@/types';
 
-withDefaults(
-    defineProps<{
-        breadcrumbs?: BreadcrumbItem[];
-    }>(),
-    {
-        breadcrumbs: () => [],
-    },
-);
+/**
+ * Barra superior SOLO en el celular: ahí el menú va escondido y este botón
+ * es la única forma de abrirlo. En escritorio no hay barra (no gasta
+ * pantalla): el botón va junto al logo, dentro del menú (AppSidebar).
+ */
 </script>
 
 <template>
     <header
-        class="flex h-16 shrink-0 items-center gap-2 border-b border-sidebar-border/70 px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4"
+        class="flex h-12 shrink-0 items-center gap-2 border-b border-sidebar-border/70 px-4 md:hidden"
     >
-        <div class="flex items-center gap-2">
-            <SidebarTrigger class="-ml-1" />
-            <template v-if="breadcrumbs && breadcrumbs.length > 0">
-                <Breadcrumbs :breadcrumbs="breadcrumbs" />
-            </template>
-        </div>
+        <SidebarTrigger class="-ml-1" />
+        <AppLogo />
     </header>
 </template>

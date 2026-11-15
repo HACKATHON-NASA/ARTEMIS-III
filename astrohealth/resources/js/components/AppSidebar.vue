@@ -23,6 +23,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { useAlertsStore } from '@/modules/Alertas/Stores/useAlertsStore';
 import {
@@ -106,15 +107,25 @@ onMounted(() => {
 <template>
     <Sidebar collapsible="icon" variant="inset">
         <SidebarHeader>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
-                        <Link :href="homeLink">
-                            <AppLogo />
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
+            <!-- Logo y, al lado, el botón de abrir/cerrar el menú (antes iba en
+                 una barra arriba que gastaba pantalla). Cerrado, van apilados. -->
+            <div
+                class="flex items-center gap-1 group-data-[collapsible=icon]:flex-col"
+            >
+                <SidebarMenu class="min-w-0 flex-1">
+                    <SidebarMenuItem>
+                        <SidebarMenuButton size="lg" as-child>
+                            <Link :href="homeLink">
+                                <AppLogo />
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+                <SidebarTrigger
+                    class="hidden shrink-0 text-muted-foreground hover:text-foreground md:inline-flex"
+                    title="Abrir o cerrar el menú"
+                />
+            </div>
         </SidebarHeader>
 
         <SidebarContent>
