@@ -25,6 +25,13 @@ final class FindAstronautRepository implements CrewQuery
         return $missionId === null ? null : (int) $missionId;
     }
 
+    public function findById(int $astronautId): ?CrewMember
+    {
+        $astronaut = Astronaut::query()->find($astronautId);
+
+        return $astronaut === null ? null : AstronautMapper::toCrewMember($astronaut);
+    }
+
     public function all(): array
     {
         return array_values(Astronaut::query()

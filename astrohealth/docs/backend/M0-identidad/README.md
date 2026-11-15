@@ -133,11 +133,13 @@ return [
 
 **El Gate de "lo suyo"** — `health.read`, con el id del astronauta de la ruta:
 
-```php
-Gate::define('health.read', fn (Actor $actor, int|string $astronautId): bool =>
-    $actor->can('health.read.any')
-    || ($actor->can('health.read.own') && $actor->astronautId() === (int) $astronautId));
+- Con `health.read.own`: solo su propio `astronaut_id`.
+- Con `health.read.any`: los tripulantes de **su misión** (la `mission_id` de su token, comparada con `CrewQuery::missionOf()`). Con `missions.manage` (admin): todos.
+- Un médico de vuelo sin misión no ve a nadie.
 
+**El Gate de una misión** — `mission.access`: la misión de su token, o todas con `missions.manage`. Lo usa M6 (por nombre, con el `Gate` de Laravel) para listar misiones y para que el médico de vuelo solo cambie el entorno de la suya.
+
+```php
 // En cualquier módulo:
 Route::get('astronauts/{id}/assessment', …)->middleware('can:health.read,id');
 ```

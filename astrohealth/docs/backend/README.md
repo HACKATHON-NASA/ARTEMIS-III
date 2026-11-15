@@ -94,7 +94,7 @@ flowchart LR
 | `gamification.read` — puntos y ranking                  |   ✅    |        ✅        |           ✅           |     ✅      |          |
 | `users.manage` · `devices.manage`                       |   ✅    |                  |                        |             |          |
 
-> **"Suyo"** lo decide la _Policy_ de cada módulo con el `astronaut_id` del token: un astronauta con `health.read.own` que pide `/astronauts/3/...` siendo el 2 recibe 403.
+> **"Suyo"** lo decide el Gate `health.read` con el `astronaut_id` del token: un astronauta con `health.read.own` que pide `/astronauts/3/...` siendo el 2 recibe 403. Con `health.read.any`, un médico ve **solo a la tripulación de su misión** (la `mission_id` de su token); el admin (`missions.manage`) ve todas. El Gate `mission.access` aplica la misma regla a una misión.
 
 ## 4. Los módulos
 

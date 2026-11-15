@@ -72,12 +72,12 @@ flowchart LR
 
 **Revisar (ya existe):**
 - [x] `config/permissions.php` tiene todos los permisos que usan las pantallas (`users.manage`, `devices.manage`, `missions.manage`, `mission.update`, `crew.read`, `alerts.read`, `alerts.send`, `alerts.acknowledge`, `advice.send`, `clinical_notes.manage`, `guide.manage`, `gamification.read`, `measurements.ingest`, `measurements.write.own/crew`, `reminders.manage.own`, más el Gate `health.read`) y `AuthorizationMatrixTest` prueba cada uno con cada rol.
-- [ ] ⚠️ El Gate `health.read` decide "lo suyo" para el astronauta, pero **los médicos y el admin ven a los tripulantes de todas las misiones** (`health.read.any`). Acotarlo a la misión del médico en F1, ahora que `users.mission_id` existe y va en su token.
+- [x] El Gate `health.read` decide "lo suyo": el astronauta, solo sus datos; el médico, los tripulantes de **su** misión; el admin, todas (cerrado en F1).
 - [x] `TokenFactory` incluye `astronaut_id` y `mission_id` en el token; desde F0 también el del médico de vuelo.
 - [x] Los seeders crean los mismos usuarios que usan los *mocks* (Elena, Kenji, Amara, Lucas, la Dra. Sofía Ramírez, el admin); la Dra. Sofía sigue Ares-1.
 
 **Hecho en F0:** las 7 rutas de abajo, la columna `users.mission_id`, el comando `identidad:user-password <correo>` (el admin crea a la persona sin contraseña conocida), errores de negocio con su campo, `CreateDevice` con errores de negocio en vez de `InvalidArgumentException`, 20 pruebas nuevas y la pantalla de Usuarios sin `mockUsers`/`mockDevices`.
-**Queda con datos de prueba en esa pantalla:** la misión del encabezado (F1) y el contador de alertas (F5). **Mientras no exista F1**, crear un usuario de la nave falla con `AUTH_UNKNOWN_ASTRONAUT`, porque el tripulante nuevo se crea en el store de prueba de M6 y no existe en la base de datos.
+**Queda con datos de prueba en esa pantalla:** solo el contador de alertas (F5). Desde F1, la misión del encabezado es real y crear un usuario de la nave funciona.
 
 **Construir:**
 
@@ -93,24 +93,26 @@ flowchart LR
 
 ---
 
-## F1 · M6 Entorno
+## F1 · M6 Entorno · ✅ hecho (16 nov 2026)
 
-**Tablas:** migración nueva que agrega a `missions` → `objective` `string(255)` y `status` `enum(planned, active, finished)`. Los datos de cada entorno (gravedad, radiación diaria, retraso, riesgos) van en `config/environments.php` (**D14**), no en tablas.
+**Tablas:** migración nueva que agrega a `missions` → `objective` `string(255)` y nombre único. El **estado no se guarda**: lo calcula la regla `MissionCalendar` con las fechas (una columna quedaría vieja al pasar los días). Los datos de cada entorno (gravedad, radiación diaria, retraso, riesgos) van en `config/environments.php` (**D14**), no en tablas.
 
 | Endpoint | Permiso | Caso de uso |
 |---|---|---|
 | `GET /api/v1/environments` | autenticado | `ListEnvironments` (lee `config/environments.php`) |
-| `GET /api/v1/missions` | `crew.read` | `ListMissions` (con `status` y número de tripulantes) |
-| `GET /api/v1/missions/current` | autenticado | `GetCurrentMission` (la del token; calcula `day` con `MissionDayRule`) |
-| `POST /api/v1/missions` · `PATCH /api/v1/missions/{id}` | `missions.manage` | `CreateMission`, `UpdateMission` |
-| `PATCH /api/v1/missions/{id}/environment` | `mission.update` | `ChangeEnvironment` → evento `EnvironmentChanged` |
-| `GET /api/v1/astronauts?mission=` | `crew.read` | `ListCrew` |
+| `GET /api/v1/missions` | `crew.read` | `ListMissions` (estado, día, fin y **tripulación dentro**; admin: todas; los demás: la suya) |
+| `GET /api/v1/missions/current` | autenticado | `GetCurrentMission` (la suya; admin: la primera en curso) |
+| `POST /api/v1/missions` | `missions.manage` | `CreateMission` |
+| `PATCH /api/v1/missions/{id}/environment` | `mission.update` + Gate `mission.access` | `ChangeEnvironment` → evento `MissionEnvironmentChanged` |
 | `POST /api/v1/astronauts` · `PATCH /{id}` | `missions.manage` | `AddCrewMember`, `UpdateCrewMember` |
 
-**Domain:** `MissionDayRule` (día actual, sin pasarse de `day_count`), `MissionStatusRule`, enum `Environment`.
-**Contratos que ofrece:** `MissionQuery` (`exists`, `environmentOf`, `delayOf`, `current`), `CrewQuery` (`exists`, `missionOf`, `namesOf`).
-**Pruebas:** hoy M6 no tiene ninguna; empezar por las de `FindMissionRepository` y `FindAstronautRepository`.
-**Listo cuando:** Mi misión, Misiones (admin) y el selector de misión del médico funcionan sin `missionsMockData.ts`, y cambiar el entorno se guarda en la base de datos.
+**Cambios frente a lo planeado:** no se hizo `GET /astronauts?mission=` (la tripulación viene en cada misión) ni `PATCH /missions/{id}` (la pantalla no edita misiones; se agrega cuando haga falta).
+**Domain:** `MissionCalendar` (estado, día y fin, en UTC), enums `Environment` y `MissionStatus`.
+**Contratos:** `MissionQuery` (`exists`, `names`, `environmentOf`), `CrewQuery` (`exists`, `missionOf`, `all`).
+**Permisos:** el Gate `health.read` quedó acotado a la misión del médico, y hay un Gate nuevo `mission.access`. M6 los consulta por nombre para no crear un círculo con M0.
+**Frontend:** `missionsMockData.ts` borrado. `useMissionsStore`, `useMissionStore` y la misión del admin usan la API. Los números de los entornos llegan de `GET /environments` (`useEnvironmentsStore`). Crear un usuario de la nave ya funciona de punta a punta.
+**Pruebas:** 28 nuevas (162 en verde).
+**Listo cuando:** ✅ Mi misión, Misiones (admin) y el selector de misión del médico funcionan sin `missionsMockData.ts`, y cambiar el entorno se guarda en la base de datos.
 
 ---
 

@@ -17,4 +17,7 @@ interface MissionQuery
      * @return array<int, string>
      */
     public function names(): array;
+
+    /** El entorno de la misión (iss · transit · moon · mars), o null si no existe. */
+    public function environmentOf(int $missionId): ?string;
 }

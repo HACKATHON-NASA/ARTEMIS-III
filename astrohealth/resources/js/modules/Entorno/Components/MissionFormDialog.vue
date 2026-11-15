@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { ApiError } from '@/lib/api';
 import type { EnvironmentCode } from '../Types/mission';
 import type { MissionFormData } from '../Types/missions';
 import {
@@ -137,6 +138,22 @@ async function save(): Promise<void> {
             objective: form.objective,
         });
         open.value = false;
+    } catch (error) {
+        if (!(error instanceof ApiError)) {
+            throw error;
+        }
+
+        // Los errores del backend, en su campo (o arriba del botón).
+        errors.value = {
+            name: error.fieldError('name') ?? error.fieldError('objective'),
+            environment: error.fieldError('environment'),
+            start: error.fieldError('start_date'),
+            days: error.fieldError('day_count'),
+        };
+
+        if (Object.values(errors.value).every((item) => item === undefined)) {
+            errors.value.name = error.message;
+        }
     } finally {
         saving.value = false;
     }

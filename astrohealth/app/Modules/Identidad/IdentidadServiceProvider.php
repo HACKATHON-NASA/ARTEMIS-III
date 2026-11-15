@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Identidad;
 
+use App\Modules\Entorno\Contratos\CrewQuery;
 use App\Modules\Identidad\Console\CreateDeviceCommand;
 use App\Modules\Identidad\Console\JwtSecretCommand;
 use App\Modules\Identidad\Console\SetUserPasswordCommand;
@@ -17,6 +18,7 @@ use App\Modules\Identidad\Infrastructure\Jwt\JwtVerifier;
 use App\Modules\Identidad\Infrastructure\Jwt\RevokedTokens;
 use App\Modules\Identidad\Infrastructure\Repositorios\Actor\FindActorRepository;
 use App\Shared\ModuleServiceProvider;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Foundation\Application;
@@ -76,7 +78,8 @@ final class IdentidadServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * Un Gate por permiso de config/permissions.php, más "health.read" (lo suyo o de cualquiera).
+     * Un Gate por permiso de config/permissions.php, más "health.read" (lo suyo o
+     * de su misión) y "mission.access" (su misión, o todas si administra misiones).
      */
     private function registerGates(): void
     {
@@ -86,10 +89,41 @@ final class IdentidadServiceProvider extends ModuleServiceProvider
             Gate::define($permission, fn (Authenticatable $user): bool => self::allows($matrix, $user, $permission));
         }
 
-        Gate::define('health.read', fn (Authenticatable $user, int|string $astronautId): bool => self::allows($matrix, $user, 'health.read.any')
-            || (self::allows($matrix, $user, 'health.read.own')
+        // La salud de un tripulante: el suyo propio (health.read.own), o
+        // cualquiera de SU misión (health.read.any). Quien administra
+        // misiones (missions.manage) ve todas.
+        Gate::define('health.read', function (Authenticatable $user, int|string $astronautId) use ($matrix): bool {
+            if (self::allows($matrix, $user, 'health.read.own')
                 && $user instanceof Actor
-                && $user->actorAstronautId() === (int) $astronautId));
+                && $user->actorAstronautId() === (int) $astronautId) {
+                return true;
+            }
+
+            if (! self::allows($matrix, $user, 'health.read.any')) {
+                return false;
+            }
+
+            return self::allows($matrix, $user, 'missions.manage')
+                || $this->sameMission($this->app->make(CrewQuery::class)->missionOf((int) $astronautId));
+        });
+
+        // Una misión: la suya, o cualquiera si administra misiones.
+        Gate::define('mission.access', fn (Authenticatable $user, int|string $missionId): bool => self::allows($matrix, $user, 'missions.manage')
+            || $this->sameMission((int) $missionId));
+    }
+
+    /** ¿La misión es la del actor (la que va en su token)? */
+    private function sameMission(?int $missionId): bool
+    {
+        if ($missionId === null) {
+            return false;
+        }
+
+        try {
+            return $this->app->make(CurrentActor::class)->claims()->missionId === $missionId;
+        } catch (AuthenticationException) {
+            return false;
+        }
     }
 
     private function registerRateLimiters(): void

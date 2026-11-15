@@ -6,6 +6,7 @@ import { toast } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getInitials } from '@/composables/useInitials';
+import { ApiError } from '@/lib/api';
 import { useReveal } from '@/composables/useReveal';
 import { dashboard, mision } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -62,14 +63,24 @@ async function change(): Promise<void> {
     }
 
     changing.value = true;
-    await mission.changeEnvironment(shown.value);
-    changing.value = false;
-    confirming.value = false;
-    preview.value = null;
-    toast.success(`La misión ahora está: ${facts.value.label}`, {
-        description:
-            'Cambian la gravedad, el retraso con Tierra y la radiación de referencia.',
-    });
+
+    try {
+        await mission.changeEnvironment(shown.value);
+        preview.value = null;
+        toast.success(`La misión ahora está: ${facts.value.label}`, {
+            description:
+                'Cambian la gravedad, el retraso con Tierra y la radiación de referencia.',
+        });
+    } catch (error) {
+        toast.error(
+            error instanceof ApiError
+                ? error.message
+                : 'No se pudo cambiar el entorno.',
+        );
+    } finally {
+        changing.value = false;
+        confirming.value = false;
+    }
 }
 
 onMounted(async () => {

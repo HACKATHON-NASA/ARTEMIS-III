@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $environment
  * @property CarbonImmutable $start_date
  * @property int $day_count
+ * @property string|null $objective
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
@@ -24,7 +25,7 @@ final class Mission extends Model
     /** @use HasFactory<MissionFactory> */
     use HasFactory;
 
-    protected $fillable = ['name', 'environment', 'start_date', 'day_count'];
+    protected $fillable = ['name', 'environment', 'start_date', 'day_count', 'objective'];
 
     /**
      * @return HasMany<Astronaut, $this>

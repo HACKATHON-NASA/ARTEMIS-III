@@ -11,7 +11,7 @@ import type {
     UserFormData,
     UserLink,
 } from '../Types/admin';
-import { MOCK_MISSION, MOCK_PENDING_ALERTS } from '../Utils/adminMockData';
+import { MOCK_PENDING_ALERTS } from '../Utils/adminMockData';
 import { isOnline } from '../Utils/time';
 
 /**
@@ -22,8 +22,8 @@ import { isOnline } from '../Utils/time';
  * y devices.manage). Los errores salen como ApiError para que el formulario
  * los muestre en su campo.
  *
- * ⚠️ La misión del encabezado y las alertas pendientes siguen con datos de
- * prueba (Utils/adminMockData.ts) hasta F1 (M6) y F5 (M5).
+ * La misión del encabezado: GET /api/v1/missions/current (M6).
+ * ⚠️ Las alertas pendientes siguen con datos de prueba hasta F5 (M5).
  */
 export const useAdminStore = defineStore('admin', () => {
     const users = ref<ManagedUser[]>([]);
@@ -48,11 +48,11 @@ export const useAdminStore = defineStore('admin', () => {
         loading.value = true;
 
         try {
-            [users.value, devices.value] = await Promise.all([
+            [users.value, devices.value, mission.value] = await Promise.all([
                 api<ManagedUser[]>('/users'),
                 api<ManagedDevice[]>('/devices'),
+                api<MissionSummary>('/missions/current'),
             ]);
-            mission.value = MOCK_MISSION;
             pendingAlerts.value = MOCK_PENDING_ALERTS;
         } finally {
             loading.value = false;

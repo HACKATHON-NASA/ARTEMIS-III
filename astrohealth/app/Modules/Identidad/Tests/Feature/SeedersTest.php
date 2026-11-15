@@ -23,8 +23,8 @@ final class SeedersTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
 
-        $this->assertDatabaseCount('missions', 1);
-        $this->assertDatabaseCount('astronauts', 4);
+        $this->assertDatabaseCount('missions', 3);
+        $this->assertDatabaseCount('astronauts', 6);
         $this->assertSame(
             ['admin' => 1, 'astronaut' => 3, 'crew_medical_officer' => 1, 'flight_surgeon' => 1],
             User::query()->get()->countBy(fn (User $user): string => $user->role === null ? 'sin rol' : $user->role->value)->sortKeys()->all(),
@@ -43,8 +43,8 @@ final class SeedersTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $this->seed(DatabaseSeeder::class);
 
-        $this->assertDatabaseCount('missions', 1);
-        $this->assertDatabaseCount('astronauts', 4);
+        $this->assertDatabaseCount('missions', 3);
+        $this->assertDatabaseCount('astronauts', 6);
         $this->assertDatabaseCount('users', 6);
         $this->assertDatabaseCount('devices', 1);
     }

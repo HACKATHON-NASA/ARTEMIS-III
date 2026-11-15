@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Identidad\Tests\Feature;
 
+use App\Models\User;
 use App\Modules\Identidad\Contratos\Actor;
 use App\Modules\Identidad\Domain\Enums\Role;
 use App\Modules\Identidad\Domain\ValueObjects\PermissionMatrix;
@@ -75,15 +76,36 @@ final class AuthorizationMatrixTest extends TestCase
         $this->getJson("/api/v1/_test/health/{$other->id}", $this->bearer($token))->assertForbidden();
     }
 
-    public function test_health_read_both_doctors_and_admin_see_the_whole_crew(): void
+    public function test_health_read_doctors_see_only_the_crew_of_their_mission(): void
     {
-        $crewMate = $this->astronaut();
+        $mission = $this->mission();
+        $crewMate = $this->astronaut($mission);
+        $stranger = $this->astronaut();
 
-        foreach ([Role::CrewMedicalOfficer, Role::FlightSurgeon, Role::Admin] as $role) {
-            $token = $this->tokenFor($this->userWithRole($role));
+        $cmo = $this->userWithRole(Role::CrewMedicalOfficer, $this->astronaut($mission));
+        $surgeon = User::factory()->create(['role' => Role::FlightSurgeon, 'mission_id' => $mission->id]);
+
+        foreach ([$cmo, $surgeon] as $doctor) {
+            $token = $this->tokenFor($doctor);
 
             $this->getJson("/api/v1/_test/health/{$crewMate->id}", $this->bearer($token))->assertOk();
+            $this->getJson("/api/v1/_test/health/{$stranger->id}", $this->bearer($token))->assertForbidden();
         }
+    }
+
+    public function test_health_read_a_flight_surgeon_without_mission_sees_nobody(): void
+    {
+        $token = $this->tokenFor($this->userWithRole(Role::FlightSurgeon));
+
+        $this->getJson("/api/v1/_test/health/{$this->astronaut()->id}", $this->bearer($token))->assertForbidden();
+    }
+
+    public function test_health_read_the_admin_sees_every_mission(): void
+    {
+        $token = $this->tokenFor($this->userWithRole(Role::Admin));
+
+        $this->getJson("/api/v1/_test/health/{$this->astronaut()->id}", $this->bearer($token))->assertOk();
+        $this->getJson("/api/v1/_test/health/{$this->astronaut()->id}", $this->bearer($token))->assertOk();
     }
 
     public function test_health_read_a_device_sees_nobody(): void

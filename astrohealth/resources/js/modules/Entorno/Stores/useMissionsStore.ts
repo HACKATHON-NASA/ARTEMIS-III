@@ -1,99 +1,95 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+import { api } from '@/lib/api';
 import type {
     Astronaut,
     Mission,
     MissionFormData,
     MissionView,
 } from '../Types/missions';
-import { endDate, missionStatus } from '../Utils/missionDates';
-import { mockAstronauts, mockMissions } from '../Utils/missionsMockData';
+import { useEnvironmentsStore } from './useEnvironmentsStore';
 
 /**
- * Las misiones y sus tripulantes (M6, vista de administración). Lo usan la
- * pantalla Misiones y el formulario de usuarios (cada persona de la nave o
- * médico de vuelo va asociada a una misión).
+ * Las misiones y sus tripulantes (M6). Lo usan la pantalla Misiones, el
+ * formulario de usuarios y la tripulación de cada pantalla.
  *
- * ⚠️ HOY con datos de prueba en memoria (se pierden al recargar). Cuando
- * existan GET/POST /api/v1/missions y POST/PATCH /api/v1/astronauts, el
- * interior de estas acciones pasa a usar `api()`; los componentes no cambian.
+ * GET /api/v1/missions trae cada misión con su estado, su día y su
+ * tripulación, ya ordenadas (las en curso primero). Administración ve
+ * todas; los demás, solo la suya. Crear: POST /missions. Tripulantes:
+ * POST/PATCH /astronauts (missions.manage).
  */
-const wait = (ms = 350) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export type AstronautData = Omit<Astronaut, 'id'>;
 
 export const useMissionsStore = defineStore('missions', () => {
-    const missions = ref<Mission[]>([]);
-    const astronauts = ref<Astronaut[]>([]);
+    const views = ref<MissionView[]>([]);
     const loaded = ref(false);
+    const environments = useEnvironmentsStore();
 
-    /** Cada misión con su estado, su día y su tripulación. Las en curso primero. */
-    const views = computed<MissionView[]>(() => {
-        const order = { active: 0, planned: 1, finished: 2 } as const;
+    const missions = computed<Mission[]>(() =>
+        views.value.map(
+            ({ id, name, environment, start_date, day_count, objective }) => ({
+                id,
+                name,
+                environment,
+                start_date,
+                day_count,
+                objective,
+            }),
+        ),
+    );
 
-        return missions.value
-            .map((mission) => {
-                const { status, currentDay } = missionStatus(
-                    mission.start_date,
-                    mission.day_count,
-                );
-
-                return {
-                    ...mission,
-                    status,
-                    current_day: currentDay,
-                    end_date: endDate(mission.start_date, mission.day_count),
-                    crew: astronauts.value.filter(
-                        (astronaut) => astronaut.mission_id === mission.id,
-                    ),
-                };
-            })
-            .sort(
-                (a, b) =>
-                    order[a.status] - order[b.status] ||
-                    b.start_date.localeCompare(a.start_date),
-            );
-    });
+    const astronauts = computed<Astronaut[]>(() =>
+        views.value.flatMap((mission) => mission.crew),
+    );
 
     function find(id: number | null): MissionView | null {
         return views.value.find((mission) => mission.id === id) ?? null;
     }
 
-    async function load(): Promise<void> {
-        if (loaded.value) {
+    async function load(force = false): Promise<void> {
+        if (loaded.value && !force) {
             return;
         }
 
-        await wait();
-        missions.value = mockMissions();
-        astronauts.value = mockAstronauts();
+        const [list] = await Promise.all([
+            api<MissionView[]>('/missions'),
+            environments.load(),
+        ]);
+        views.value = list;
         loaded.value = true;
     }
 
     async function createMission(data: MissionFormData): Promise<Mission> {
-        await wait();
-        const mission: Mission = {
-            id: Math.max(0, ...missions.value.map((item) => item.id)) + 1,
-            name: data.name.trim(),
-            environment: data.environment,
-            start_date: data.start_date,
-            day_count: data.day_count,
-            objective: data.objective.trim(),
-        };
-        missions.value.push(mission);
+        const created = await api<MissionView>('/missions', {
+            method: 'POST',
+            body: { ...data, name: data.name.trim() },
+        });
+        // Volver a pedir la lista: el backend decide el orden y el estado.
+        await load(true);
 
-        return mission;
+        return created;
+    }
+
+    /** Pone el tripulante en la misión que corresponde (y lo saca de otra). */
+    function place(astronaut: Astronaut): void {
+        for (const mission of views.value) {
+            mission.crew = mission.crew.filter(
+                (member) => member.id !== astronaut.id,
+            );
+
+            if (mission.id === astronaut.mission_id) {
+                mission.crew.push(astronaut);
+            }
+        }
     }
 
     /** Crea el tripulante (al crear un usuario de la nave). */
     async function addAstronaut(data: AstronautData): Promise<Astronaut> {
-        await wait(150);
-        const astronaut: Astronaut = {
-            id: Math.max(0, ...astronauts.value.map((item) => item.id)) + 1,
-            ...data,
-            name: data.name.trim(),
-        };
-        astronauts.value.push(astronaut);
+        const astronaut = await api<Astronaut>('/astronauts', {
+            method: 'POST',
+            body: data,
+        });
+        place(astronaut);
 
         return astronaut;
     }
@@ -102,15 +98,14 @@ export const useMissionsStore = defineStore('missions', () => {
     async function updateAstronaut(
         id: number,
         data: AstronautData,
-    ): Promise<Astronaut | null> {
-        await wait(150);
-        const astronaut = astronauts.value.find((item) => item.id === id);
+    ): Promise<Astronaut> {
+        const astronaut = await api<Astronaut>(`/astronauts/${id}`, {
+            method: 'PATCH',
+            body: data,
+        });
+        place(astronaut);
 
-        if (astronaut) {
-            Object.assign(astronaut, { ...data, name: data.name.trim() });
-        }
-
-        return astronaut ?? null;
+        return astronaut;
     }
 
     return {
