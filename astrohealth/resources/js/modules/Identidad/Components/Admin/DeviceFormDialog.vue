@@ -21,6 +21,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { ApiError } from '@/lib/api';
 import type {
     CreatedDevice,
     CrewOption,
@@ -70,6 +71,15 @@ async function save(): Promise<void> {
             astronaut_id:
                 target.value === GATEWAY ? null : Number(target.value),
         });
+    } catch (failure) {
+        if (!(failure instanceof ApiError)) {
+            throw failure;
+        }
+
+        error.value =
+            failure.fieldError('name') ??
+            failure.fieldError('astronaut_id') ??
+            failure.message;
     } finally {
         saving.value = false;
     }

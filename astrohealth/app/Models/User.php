@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Modules\Identidad\Contratos\Actor;
 use App\Modules\Identidad\Domain\Enums\ActorType;
 use App\Modules\Identidad\Domain\Enums\Role;
+use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -24,14 +25,15 @@ use Illuminate\Support\Carbon;
  * @property Role|null $role
  * @property bool $active
  * @property int|null $astronaut_id
- * @property Carbon|null $last_login_at
+ * @property int|null $mission_id
+ * @property CarbonImmutable|null $last_login_at
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'role', 'active', 'astronaut_id'])]
+#[Fillable(['name', 'email', 'password', 'role', 'active', 'astronaut_id', 'mission_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements Actor
 {
@@ -84,7 +86,8 @@ class User extends Authenticatable implements Actor
             'role' => Role::class,
             'active' => 'boolean',
             'astronaut_id' => 'integer',
-            'last_login_at' => 'datetime',
+            'mission_id' => 'integer',
+            'last_login_at' => 'immutable_datetime',
         ];
     }
 }

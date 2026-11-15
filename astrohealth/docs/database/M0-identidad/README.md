@@ -13,6 +13,7 @@ Este documento cuenta **cómo quedó hecho**. El diseño está en el documento d
 **Tablas**
 
 - [x] users: + role, + active, + astronaut_id (único, nullable → astronauts)
+- [x] users: + mission_id (nullable → missions), solo para el médico de vuelo
 - [x] devices (client_id único, secret_hash, mission_id, astronaut_id nullable)
 - [x] refresh_tokens (token_hash único, índice family_id)
 
@@ -23,11 +24,12 @@ Este documento cuenta **cómo quedó hecho**. El diseño está en el documento d
 
 ## Tablas creadas (MySQL · MariaDB 10.4)
 
-| Tabla                | Migración                                             | Índices y llaves                                                                                     | Notas                                                                                   |
-| -------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `users` (+ columnas) | `2026_11_15_000300_add_access_columns_to_users_table` | `role` índice · `astronaut_id` único → `astronauts` (`ON DELETE SET NULL`)                           | `role VARCHAR(30) NULL` · `active TINYINT(1) DEFAULT 1` · `last_login_at DATETIME NULL` |
-| `devices`            | `2026_11_15_000400_create_devices_table`              | `client_id` único · `mission_id` → `missions` (cascada) · `astronaut_id` → `astronauts` (`SET NULL`) | `secret_hash` (bcrypt) · `last_seen_at DATETIME`                                        |
-| `refresh_tokens`     | `2026_11_15_000500_create_refresh_tokens_table`       | `token_hash CHAR(64)` único · `family_id CHAR(36)` índice · `user_id` → `users` (cascada)            | Fechas `DATETIME` (no `TIMESTAMP`): ver decisiones                                      |
+| Tabla                    | Migración                                             | Índices y llaves                                                                                     | Notas                                                                                   |
+| ------------------------ | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `users` (+ columnas)     | `2026_11_15_000300_add_access_columns_to_users_table` | `role` índice · `astronaut_id` único → `astronauts` (`ON DELETE SET NULL`)                           | `role VARCHAR(30) NULL` · `active TINYINT(1) DEFAULT 1` · `last_login_at DATETIME NULL` |
+| `users` (+ `mission_id`) | `2026_11_16_000100_add_mission_id_to_users_table`     | `mission_id` → `missions` (`ON DELETE SET NULL`)                                                     | Solo `flight_surgeon`; los tripulantes la toman de su astronauta (M6)                   |
+| `devices`                | `2026_11_15_000400_create_devices_table`              | `client_id` único · `mission_id` → `missions` (cascada) · `astronaut_id` → `astronauts` (`SET NULL`) | `secret_hash` (bcrypt) · `last_seen_at DATETIME`                                        |
+| `refresh_tokens`         | `2026_11_15_000500_create_refresh_tokens_table`       | `token_hash CHAR(64)` único · `family_id CHAR(36)` índice · `user_id` → `users` (cascada)            | Fechas `DATETIME` (no `TIMESTAMP`): ver decisiones                                      |
 
 ## Seeders y datos iniciales
 

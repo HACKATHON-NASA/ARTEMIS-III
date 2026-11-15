@@ -6,6 +6,7 @@ namespace App\Modules\Identidad;
 
 use App\Modules\Identidad\Console\CreateDeviceCommand;
 use App\Modules\Identidad\Console\JwtSecretCommand;
+use App\Modules\Identidad\Console\SetUserPasswordCommand;
 use App\Modules\Identidad\Contratos\Actor;
 use App\Modules\Identidad\Contratos\CurrentActor;
 use App\Modules\Identidad\Domain\ValueObjects\PermissionMatrix;
@@ -53,7 +54,7 @@ final class IdentidadServiceProvider extends ModuleServiceProvider
         $this->registerRateLimiters();
 
         if ($this->app->runningInConsole()) {
-            $this->commands([JwtSecretCommand::class, CreateDeviceCommand::class]);
+            $this->commands([JwtSecretCommand::class, CreateDeviceCommand::class, SetUserPasswordCommand::class]);
         }
     }
 

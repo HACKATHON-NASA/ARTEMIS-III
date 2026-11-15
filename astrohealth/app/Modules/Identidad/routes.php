@@ -3,10 +3,17 @@
 declare(strict_types=1);
 
 use App\Modules\Identidad\Http\Controllers\Api\DeviceTokenController;
+use App\Modules\Identidad\Http\Controllers\Api\ListDevicesController;
+use App\Modules\Identidad\Http\Controllers\Api\ListUsersController;
 use App\Modules\Identidad\Http\Controllers\Api\LoginController;
 use App\Modules\Identidad\Http\Controllers\Api\LogoutController;
 use App\Modules\Identidad\Http\Controllers\Api\MeController;
 use App\Modules\Identidad\Http\Controllers\Api\RefreshController;
+use App\Modules\Identidad\Http\Controllers\Api\SetDeviceActiveController;
+use App\Modules\Identidad\Http\Controllers\Api\SetUserActiveController;
+use App\Modules\Identidad\Http\Controllers\Api\StoreDeviceController;
+use App\Modules\Identidad\Http\Controllers\Api\StoreUserController;
+use App\Modules\Identidad\Http\Controllers\Api\UpdateUserController;
 use App\Modules\Identidad\Http\Middleware\VerifyOrigin;
 use Illuminate\Support\Facades\Route;
 
@@ -33,4 +40,21 @@ Route::prefix('auth')->name('api.auth.')->group(function (): void {
         Route::post('logout', LogoutController::class)->name('logout');
         Route::get('me', MeController::class)->name('me');
     });
+});
+
+/*
+| M0 · Administración del acceso · /api/v1/users y /api/v1/devices (solo admin).
+*/
+
+Route::middleware(['auth:api', 'can:users.manage'])->prefix('users')->name('api.users.')->group(function (): void {
+    Route::get('/', ListUsersController::class)->name('index');
+    Route::post('/', StoreUserController::class)->name('store');
+    Route::patch('{user}', UpdateUserController::class)->whereNumber('user')->name('update');
+    Route::patch('{user}/active', SetUserActiveController::class)->whereNumber('user')->name('active');
+});
+
+Route::middleware(['auth:api', 'can:devices.manage'])->prefix('devices')->name('api.devices.')->group(function (): void {
+    Route::get('/', ListDevicesController::class)->name('index');
+    Route::post('/', StoreDeviceController::class)->name('store');
+    Route::patch('{device}/active', SetDeviceActiveController::class)->whereNumber('device')->name('active');
 });

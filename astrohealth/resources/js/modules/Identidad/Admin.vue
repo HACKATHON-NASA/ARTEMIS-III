@@ -3,6 +3,7 @@ import { Head, router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ApiError } from '@/lib/api';
 import { dashboard, usuarios } from '@/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import AdminHeader from './Components/Admin/AdminHeader.vue';
@@ -116,14 +117,21 @@ async function toggle(
     busy.value[kind] = item.id;
     const active = !item.active;
 
-    if (kind === 'user') {
-        await store.setUserActive(item.id, active);
-    } else {
-        await store.setDeviceActive(item.id, active);
-    }
+    try {
+        if (kind === 'user') {
+            await store.setUserActive(item.id, active);
+        } else {
+            await store.setDeviceActive(item.id, active);
+        }
 
-    busy.value[kind] = null;
-    toast(`${item.name} ${active ? 'activado' : 'desactivado'}`);
+        toast(`${item.name} ${active ? 'activado' : 'desactivado'}`);
+    } catch (error) {
+        toast.error(
+            error instanceof ApiError ? error.message : 'No se pudo cambiar.',
+        );
+    } finally {
+        busy.value[kind] = null;
+    }
 }
 
 onMounted(async () => {

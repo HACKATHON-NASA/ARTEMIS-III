@@ -25,4 +25,18 @@ final class FindDeviceRepository
 
         return $device === null ? null : DeviceMapper::toEntity($device);
     }
+
+    /**
+     * Todos los dispositivos, del más nuevo al más antiguo.
+     *
+     * @return list<DeviceAccount>
+     */
+    public function all(): array
+    {
+        return array_values(Device::query()
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (Device $device): DeviceAccount => DeviceMapper::toEntity($device))
+            ->all());
+    }
 }

@@ -40,6 +40,9 @@ final class UserSeeder extends Seeder
             ['email' => 'cmo@astrohealth.test', 'name' => $members[3]->name, 'role' => Role::CrewMedicalOfficer, 'astronaut_id' => $members[3]->id],
         ];
 
+        // El médico de vuelo sigue la misión de la tripulación (Ares-1).
+        $missionId = $members[0]->missionId;
+
         foreach ($users as $data) {
             RoleAssignment::assert($data['role'], $data['astronaut_id']);
 
@@ -49,6 +52,7 @@ final class UserSeeder extends Seeder
                 password: 'password',
                 role: $data['role'],
                 astronautId: $data['astronaut_id'],
+                missionId: RoleAssignment::missionFor($data['role'], $missionId),
             );
         }
     }

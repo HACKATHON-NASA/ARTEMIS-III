@@ -22,6 +22,7 @@ final class DeviceMapper
             clientId: $device->client_id,
             secretHash: $device->secret_hash,
             active: $device->active,
+            lastSeenAt: $device->last_seen_at,
         );
     }
 }

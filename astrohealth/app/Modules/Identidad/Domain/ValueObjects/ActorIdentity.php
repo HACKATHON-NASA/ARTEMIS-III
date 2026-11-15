@@ -11,7 +11,7 @@ use App\Modules\Identidad\Domain\Enums\Role;
  * Quién es un actor (persona o máquina), sin base de datos ni Laravel.
  *
  * Es lo que Application usa para firmar tokens y armar el perfil.
- * missionId solo viene en las máquinas: la de una persona se pregunta a M6.
+ * missionId viene en las máquinas y en el médico de vuelo; la de un tripulante se pregunta a M6.
  */
 final readonly class ActorIdentity
 {

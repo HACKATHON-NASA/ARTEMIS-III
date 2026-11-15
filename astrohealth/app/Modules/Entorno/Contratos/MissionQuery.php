@@ -10,4 +10,11 @@ namespace App\Modules\Entorno\Contratos;
 interface MissionQuery
 {
     public function exists(int $missionId): bool;
+
+    /**
+     * El nombre de cada misión, por id.
+     *
+     * @return array<int, string>
+     */
+    public function names(): array;
 }

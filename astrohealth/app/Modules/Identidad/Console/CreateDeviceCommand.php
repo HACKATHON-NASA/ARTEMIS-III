@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Identidad\Console;
 
 use App\Modules\Identidad\Application\CreateDevice;
+use App\Shared\Excepciones\BusinessError;
 use Illuminate\Console\Command;
-use InvalidArgumentException;
 
 /**
  * php artisan identidad:device-create --mission=1 --name="Simulador Ares-1" [--astronaut=] [--client-id=]
@@ -50,7 +50,7 @@ final class CreateDeviceCommand extends Command
                 name: trim($name),
                 clientId: $clientId === null || $clientId === '' ? null : $clientId,
             );
-        } catch (InvalidArgumentException $e) {
+        } catch (BusinessError $e) {
             $this->error($e->getMessage());
 
             return self::FAILURE;

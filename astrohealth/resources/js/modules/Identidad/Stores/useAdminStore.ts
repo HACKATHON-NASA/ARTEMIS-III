@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+import { api } from '@/lib/api';
 import type {
     CreatedDevice,
     CrewOption,
@@ -10,35 +11,20 @@ import type {
     UserFormData,
     UserLink,
 } from '../Types/admin';
-import {
-    MOCK_MISSION,
-    MOCK_PENDING_ALERTS,
-    mockDevices,
-    mockUsers,
-} from '../Utils/adminMockData';
+import { MOCK_MISSION, MOCK_PENDING_ALERTS } from '../Utils/adminMockData';
 import { isOnline } from '../Utils/time';
 
 /**
  * Datos de la vista de administración (usuarios, dispositivos, misión).
  * Las misiones y sus tripulantes son de M6 (Entorno/Stores/useMissionsStore).
  *
- * ⚠️ HOY usa datos de prueba (Utils/adminMockData.ts). Cuando el backend
- * tenga /api/v1/users y /api/v1/devices, solo cambia el interior de estas
- * acciones por llamadas a `api()` de @/lib/api: los componentes no cambian.
+ * Usuarios y dispositivos: /api/v1/users y /api/v1/devices (M0, users.manage
+ * y devices.manage). Los errores salen como ApiError para que el formulario
+ * los muestre en su campo.
+ *
+ * ⚠️ La misión del encabezado y las alertas pendientes siguen con datos de
+ * prueba (Utils/adminMockData.ts) hasta F1 (M6) y F5 (M5).
  */
-const FAKE_LATENCY_MS = 350;
-const wait = (ms = FAKE_LATENCY_MS) =>
-    new Promise((resolve) => setTimeout(resolve, ms));
-
-function randomToken(length: number): string {
-    const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    const bytes = crypto.getRandomValues(new Uint8Array(length));
-
-    return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join(
-        '',
-    );
-}
-
 export const useAdminStore = defineStore('admin', () => {
     const users = ref<ManagedUser[]>([]);
     const devices = ref<ManagedDevice[]>([]);
@@ -58,20 +44,19 @@ export const useAdminStore = defineStore('admin', () => {
         pendingAlerts: pendingAlerts.value,
     }));
 
-    function crewName(astronautId: number | null): string | null {
-        return (
-            crew.value.find((member) => member.id === astronautId)?.name ?? null
-        );
-    }
-
     async function load(): Promise<void> {
         loading.value = true;
-        await wait();
-        mission.value = MOCK_MISSION;
-        users.value = mockUsers();
-        devices.value = mockDevices();
-        pendingAlerts.value = MOCK_PENDING_ALERTS;
-        loading.value = false;
+
+        try {
+            [users.value, devices.value] = await Promise.all([
+                api<ManagedUser[]>('/users'),
+                api<ManagedDevice[]>('/devices'),
+            ]);
+            mission.value = MOCK_MISSION;
+            pendingAlerts.value = MOCK_PENDING_ALERTS;
+        } finally {
+            loading.value = false;
+        }
     }
 
     /** La tripulación de la misión actual (la pone el principal desde M6). */
@@ -79,69 +64,63 @@ export const useAdminStore = defineStore('admin', () => {
         crew.value = options;
     }
 
+    function replace<T extends { id: number }>(list: T[], item: T): void {
+        const index = list.findIndex((current) => current.id === item.id);
+
+        if (index === -1) {
+            list.unshift(item);
+        } else {
+            list.splice(index, 1, item);
+        }
+    }
+
     async function saveUser(
         data: UserFormData,
         link: UserLink,
         id?: number,
     ): Promise<void> {
-        await wait();
-        const fields = {
+        const body = {
             name: data.name.trim(),
+            email: data.email.trim(),
             role: data.role,
             mission_id: data.mission_id,
-            crew_role: data.crew_role,
-            ...link,
+            astronaut_id: link.astronaut_id,
         };
-        const existing = users.value.find((user) => user.id === id);
-
-        if (existing) {
-            Object.assign(existing, fields);
-
-            return;
-        }
-
-        users.value.unshift({
-            id: Math.max(0, ...users.value.map((user) => user.id)) + 1,
-            email: data.email.trim().toLowerCase(),
-            active: true,
-            last_login_at: null,
-            ...fields,
-        });
+        const saved = await api<ManagedUser>(
+            id === undefined ? '/users' : `/users/${id}`,
+            { method: id === undefined ? 'POST' : 'PATCH', body },
+        );
+        replace(users.value, saved);
     }
 
     async function setUserActive(id: number, active: boolean): Promise<void> {
-        await wait(200);
-        const user = users.value.find((item) => item.id === id);
-
-        if (user) {
-            user.active = active;
-        }
+        const saved = await api<ManagedUser>(`/users/${id}/active`, {
+            method: 'PATCH',
+            body: { active },
+        });
+        replace(users.value, saved);
     }
 
     async function createDevice(data: DeviceFormData): Promise<CreatedDevice> {
-        await wait();
-        const device: ManagedDevice = {
-            id: Math.max(0, ...devices.value.map((item) => item.id)) + 1,
-            name: data.name.trim(),
-            client_id: `dev-${randomToken(12)}`,
-            mission_id: mission.value?.id ?? 1,
-            astronaut_id: data.astronaut_id,
-            astronaut_name: crewName(data.astronaut_id),
-            active: true,
-            last_seen_at: null,
-        };
-        devices.value.unshift(device);
+        const created = await api<CreatedDevice>('/devices', {
+            method: 'POST',
+            body: {
+                name: data.name.trim(),
+                mission_id: mission.value?.id ?? null,
+                astronaut_id: data.astronaut_id,
+            },
+        });
+        replace(devices.value, created.device);
 
-        return { device, client_secret: randomToken(48) };
+        return created;
     }
 
     async function setDeviceActive(id: number, active: boolean): Promise<void> {
-        await wait(200);
-        const device = devices.value.find((item) => item.id === id);
-
-        if (device) {
-            device.active = active;
-        }
+        const saved = await api<ManagedDevice>(`/devices/${id}/active`, {
+            method: 'PATCH',
+            body: { active },
+        });
+        replace(devices.value, saved);
     }
 
     return {

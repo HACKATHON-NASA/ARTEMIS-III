@@ -6,6 +6,7 @@ namespace App\Modules\Identidad\Domain\Reglas;
 
 use App\Modules\Identidad\Domain\Enums\Role;
 use App\Modules\Identidad\Domain\Excepciones\InvalidRoleAssignment;
+use App\Modules\Identidad\Domain\Excepciones\MissionRequired;
 
 /**
  * Regla: quién puede tener qué rol.
@@ -29,5 +30,21 @@ final class RoleAssignment
         if (! $role->requiresAstronaut() && $astronautId !== null) {
             throw new InvalidRoleAssignment("El rol \"{$role->label()}\" está en Tierra: no se enlaza a un astronauta.");
         }
+    }
+
+    /**
+     * La misión que se guarda en el usuario: solo el médico de vuelo la
+     * tiene (y es obligatoria). Los tripulantes la toman de su astronauta y
+     * administración no sigue ninguna, así que para ellos es null.
+     *
+     * @throws MissionRequired
+     */
+    public static function missionFor(Role $role, ?int $missionId): ?int
+    {
+        if ($role !== Role::FlightSurgeon) {
+            return null;
+        }
+
+        return $missionId ?? throw new MissionRequired;
     }
 }

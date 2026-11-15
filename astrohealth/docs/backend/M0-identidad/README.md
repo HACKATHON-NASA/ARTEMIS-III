@@ -221,34 +221,39 @@ SIMULADOR_CLIENT_SECRET=   # lo usa DeviceSeeder en local; en producción: ident
 
 ## 5. Datos
 
-| Tabla             | Columnas                                                                                                                                        | Notas                                                                                                                  |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `users` (del kit) | + `role` `string(30)` (`Role` en PHP), + `active` `boolean`, + `astronaut_id` _nullable_, único → `astronauts`                                  | El enlace usuario ↔ astronauta vive aquí (M0), así M0 no depende de M6 para el _claim_ `astronaut_id`                  |
-| `devices`         | `id`, `mission_id` → `missions`, `astronaut_id` _nullable_ → `astronauts`, `name`, `client_id` (único), `secret_hash`, `active`, `last_seen_at` | Con `astronaut_id = null`, el dispositivo es un _**gateway**_: envía lecturas de cualquier astronauta de **su** misión |
-| `refresh_tokens`  | `id`, `user_id`, `family_id` (uuid), `token_hash` (único, sha256), `expires_at`, `used_at`, `revoked_at`, `created_at`, `user_agent`, `ip`      | Índice `(family_id)`. Una limpieza diaria borra los vencidos                                                           |
+| Tabla             | Columnas                                                                                                                                               | Notas                                                                                                                                                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `users` (del kit) | + `role` `string(30)` (`Role` en PHP), + `active` `boolean`, + `astronaut_id` _nullable_, único → `astronauts`, + `mission_id` _nullable_ → `missions` | El enlace usuario ↔ astronauta vive aquí (M0), así M0 no depende de M6 para el _claim_ `astronaut_id`. `mission_id` solo lo tiene el médico de vuelo (regla `RoleAssignment::missionFor`); los tripulantes la toman de su astronauta |
+| `devices`         | `id`, `mission_id` → `missions`, `astronaut_id` _nullable_ → `astronauts`, `name`, `client_id` (único), `secret_hash`, `active`, `last_seen_at`        | Con `astronaut_id = null`, el dispositivo es un _**gateway**_: envía lecturas de cualquier astronauta de **su** misión                                                                                                               |
+| `refresh_tokens`  | `id`, `user_id`, `family_id` (uuid), `token_hash` (único, sha256), `expires_at`, `used_at`, `revoked_at`, `created_at`, `user_agent`, `ip`             | Índice `(family_id)`. Una limpieza diaria borra los vencidos                                                                                                                                                                         |
 
 **`UserSeeder`** (solo local; contraseña `password`):
 
-| Correo                                                | Rol                    | Astronauta |
-| ----------------------------------------------------- | ---------------------- | ---------- |
-| `admin@astrohealth.test`                              | `admin`                | —          |
-| `tierra@astrohealth.test`                             | `flight_surgeon`       | —          |
-| `astro1@astrohealth.test` … `astro3@astrohealth.test` | `astronaut`            | 1 … 3      |
-| `cmo@astrohealth.test`                                | `crew_medical_officer` | 4          |
+| Correo                                                | Rol                    | Astronauta                 |
+| ----------------------------------------------------- | ---------------------- | -------------------------- |
+| `admin@astrohealth.test`                              | `admin`                | —                          |
+| `tierra@astrohealth.test`                             | `flight_surgeon`       | — (sigue la misión Ares-1) |
+| `astro1@astrohealth.test` … `astro3@astrohealth.test` | `astronaut`            | 1 … 3                      |
+| `cmo@astrohealth.test`                                | `crew_medical_officer` | 4                          |
 
 **`DeviceSeeder`:** el _gateway_ `Simulador Ares-1` (misión 1, sin astronauta fijo) con `SIMULADOR_CLIENT_ID` y `SIMULADOR_CLIENT_SECRET` del `.env`.
 
 ## 6. Endpoints
 
-| Método             | Ruta                        | Acceso                                                                      | Caso de uso        | Respuesta                                   |
-| ------------------ | --------------------------- | --------------------------------------------------------------------------- | ------------------ | ------------------------------------------- |
-| POST               | `/api/v1/auth/login`        | Público · `throttle:api-login` (5/min por correo+IP)                        | `Login`            | 200 token + perfil + _cookie_               |
-| POST               | `/api/v1/auth/refresh`      | _Cookie_ `refresh_token` · `throttle:api-refresh` (30/min) · `VerifyOrigin` | `RefreshSession`   | 200 token + _cookie_ nueva                  |
-| POST               | `/api/v1/auth/logout`       | `auth:api`                                                                  | `Logout`           | 204 + borra la _cookie_                     |
-| GET                | `/api/v1/auth/me`           | `auth:api`                                                                  | `GetMe`            | 200 perfil + permisos                       |
-| POST               | `/api/v1/auth/device-token` | Público · `throttle:api-device` (10/min por IP)                             | `IssueDeviceToken` | 200 token + perfil                          |
-| GET · POST · PATCH | `/api/v1/users`             | `can:users.manage`                                                          | —                  | ⏳ Fase 6 (en la demo bastan los _seeders_) |
-| GET · POST         | `/api/v1/devices`           | `can:devices.manage`                                                        | —                  | ⏳ Fase 6 (hoy: `identidad:device-create`)  |
+| Método | Ruta                              | Acceso                                                                      | Caso de uso        | Respuesta                                                           |
+| ------ | --------------------------------- | --------------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------- |
+| POST   | `/api/v1/auth/login`              | Público · `throttle:api-login` (5/min por correo+IP)                        | `Login`            | 200 token + perfil + _cookie_                                       |
+| POST   | `/api/v1/auth/refresh`            | _Cookie_ `refresh_token` · `throttle:api-refresh` (30/min) · `VerifyOrigin` | `RefreshSession`   | 200 token + _cookie_ nueva                                          |
+| POST   | `/api/v1/auth/logout`             | `auth:api`                                                                  | `Logout`           | 204 + borra la _cookie_                                             |
+| GET    | `/api/v1/auth/me`                 | `auth:api`                                                                  | `GetMe`            | 200 perfil + permisos                                               |
+| POST   | `/api/v1/auth/device-token`       | Público · `throttle:api-device` (10/min por IP)                             | `IssueDeviceToken` | 200 token + perfil                                                  |
+| GET    | `/api/v1/users`                   | `can:users.manage`                                                          | `ListUsers`        | 200 lista con nombre de tripulante, cargo y misión (de M6)          |
+| POST   | `/api/v1/users`                   | `can:users.manage`                                                          | `CreateUser`       | 201 la persona (sin contraseña conocida: `identidad:user-password`) |
+| PATCH  | `/api/v1/users/{user}`            | `can:users.manage`                                                          | `UpdateUser`       | 200 (el correo no cambia; nadie se quita su rol de admin)           |
+| PATCH  | `/api/v1/users/{user}/active`     | `can:users.manage`                                                          | `SetUserActive`    | 200 (desactivar revoca sus _refresh tokens_)                        |
+| GET    | `/api/v1/devices`                 | `can:devices.manage`                                                        | `ListDevices`      | 200 lista, nunca el secreto                                         |
+| POST   | `/api/v1/devices`                 | `can:devices.manage`                                                        | `AddDevice`        | 201 `{ device, client_secret }`: el secreto UNA vez                 |
+| PATCH  | `/api/v1/devices/{device}/active` | `can:devices.manage`                                                        | `SetDeviceActive`  | 200                                                                 |
 
 **`POST /api/v1/auth/login`** (respuesta real, probada en vivo el 2026-11-14)
 
@@ -295,22 +300,31 @@ SIMULADOR_CLIENT_SECRET=   # lo usa DeviceSeeder en local; en producción: ident
 
 ## 7. Códigos de error
 
-| Código                         | HTTP | Cuándo                                                                                                    | Mensaje                                                           |
-| ------------------------------ | :--: | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `VALIDATION_FAILED`            | 422  | Falta el correo o la contraseña, o el correo no tiene formato                                             | Por campo, en español ("El correo no tiene un formato válido.")   |
-| `AUTH_INVALID_CREDENTIALS`     | 401  | Correo o contraseña incorrectos (no se dice cuál)                                                         | "Credenciales inválidas."                                         |
-| `AUTH_USER_INACTIVE`           | 403  | La contraseña es correcta pero el usuario está desactivado                                                | "Tu usuario está desactivado."                                    |
-| `AUTH_USER_WITHOUT_ROLE`       | 403  | El usuario no tiene rol (p. ej. lo creó un administrador sin asignárselo)                                 | "Tu usuario no tiene un rol asignado. Pide uno al administrador." |
-| `AUTH_INVALID_ROLE_ASSIGNMENT` | 422  | El rol y el enlace con el astronauta no cuadran (datos mal cargados)                                      | El detalle de la regla                                            |
-| `UNAUTHENTICATED`              | 401  | No viene `Authorization: Bearer`                                                                          | "Inicia sesión para continuar."                                   |
-| `AUTH_TOKEN_INVALID`           | 401  | Firma, `iss`, `aud`, algoritmo o formato inválidos; `jti` revocado; el actor ya no existe o está inactivo | "Sesión no válida. Inicia sesión de nuevo."                       |
-| `AUTH_TOKEN_EXPIRED`           | 401  | `exp` vencido (más de 30 s) → Vue llama a `/refresh`                                                      | "La sesión expiró."                                               |
-| `AUTH_REFRESH_INVALID`         | 401  | Sin _cookie_, o _refresh_ inexistente, vencido o revocado                                                 | "Inicia sesión de nuevo."                                         |
-| `AUTH_REFRESH_REUSED`          | 401  | _Refresh_ ya usado → se revocó toda la familia                                                            | "Inicia sesión de nuevo."                                         |
-| `AUTH_ORIGIN_NOT_ALLOWED`      | 403  | `/refresh` llamado desde otro `Origin`                                                                    | "Origen no permitido."                                            |
-| `AUTH_DEVICE_INVALID`          | 401  | `client_id` o secreto incorrectos, o dispositivo inactivo                                                 | "Credenciales de dispositivo inválidas."                          |
-| `FORBIDDEN`                    | 403  | El rol no tiene el permiso, o el recurso no es suyo                                                       | "No tienes permiso para esta acción."                             |
-| `TOO_MANY_REQUESTS`            | 429  | Superó el límite (con `Retry-After`)                                                                      | "Demasiados intentos. Espera un momento."                         |
+| Código                                             | HTTP | Cuándo                                                                                                    | Mensaje                                                           |
+| -------------------------------------------------- | :--: | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `VALIDATION_FAILED`                                | 422  | Falta el correo o la contraseña, o el correo no tiene formato                                             | Por campo, en español ("El correo no tiene un formato válido.")   |
+| `AUTH_INVALID_CREDENTIALS`                         | 401  | Correo o contraseña incorrectos (no se dice cuál)                                                         | "Credenciales inválidas."                                         |
+| `AUTH_USER_INACTIVE`                               | 403  | La contraseña es correcta pero el usuario está desactivado                                                | "Tu usuario está desactivado."                                    |
+| `AUTH_USER_WITHOUT_ROLE`                           | 403  | El usuario no tiene rol (p. ej. lo creó un administrador sin asignárselo)                                 | "Tu usuario no tiene un rol asignado. Pide uno al administrador." |
+| `AUTH_INVALID_ROLE_ASSIGNMENT`                     | 422  | El rol y el enlace con el astronauta no cuadran (datos mal cargados)                                      | El detalle de la regla                                            |
+| `UNAUTHENTICATED`                                  | 401  | No viene `Authorization: Bearer`                                                                          | "Inicia sesión para continuar."                                   |
+| `AUTH_TOKEN_INVALID`                               | 401  | Firma, `iss`, `aud`, algoritmo o formato inválidos; `jti` revocado; el actor ya no existe o está inactivo | "Sesión no válida. Inicia sesión de nuevo."                       |
+| `AUTH_TOKEN_EXPIRED`                               | 401  | `exp` vencido (más de 30 s) → Vue llama a `/refresh`                                                      | "La sesión expiró."                                               |
+| `AUTH_REFRESH_INVALID`                             | 401  | Sin _cookie_, o _refresh_ inexistente, vencido o revocado                                                 | "Inicia sesión de nuevo."                                         |
+| `AUTH_REFRESH_REUSED`                              | 401  | _Refresh_ ya usado → se revocó toda la familia                                                            | "Inicia sesión de nuevo."                                         |
+| `AUTH_ORIGIN_NOT_ALLOWED`                          | 403  | `/refresh` llamado desde otro `Origin`                                                                    | "Origen no permitido."                                            |
+| `AUTH_DEVICE_INVALID`                              | 401  | `client_id` o secreto incorrectos, o dispositivo inactivo                                                 | "Credenciales de dispositivo inválidas."                          |
+| `AUTH_EMAIL_TAKEN`                                 | 422  | Ya hay un usuario con ese correo (campo `email`)                                                          | "Ya hay un usuario con ese correo."                               |
+| `AUTH_MISSION_REQUIRED`                            | 422  | Médico de vuelo sin misión (campo `mission_id`)                                                           | "El médico de vuelo debe seguir una misión."                      |
+| `AUTH_UNKNOWN_MISSION`                             | 422  | La misión no existe en M6 (campo `mission_id`)                                                            | "La misión no existe."                                            |
+| `AUTH_UNKNOWN_ASTRONAUT`                           | 422  | El tripulante no existe en M6 (campo `astronaut_id`)                                                      | "El tripulante no existe."                                        |
+| `AUTH_ASTRONAUT_TAKEN`                             | 422  | El tripulante ya tiene otro usuario (campo `astronaut_id`)                                                | "Ese tripulante ya tiene otro usuario."                           |
+| `AUTH_ASTRONAUT_NOT_IN_MISSION`                    | 422  | El dispositivo se asigna a un tripulante de otra misión (campo `astronaut_id`)                            | "Ese tripulante no es de la misión."                              |
+| `AUTH_CLIENT_ID_TAKEN` · `AUTH_WEAK_DEVICE_SECRET` | 422  | Solo por consola: `client_id` repetido o secreto de menos de 32 caracteres                                | El detalle                                                        |
+| `AUTH_OWN_ACCESS_LOCKED`                           | 409  | El admin intenta quitarse su rol o desactivarse                                                           | "No puedes quitarte tu propio acceso de administrador."           |
+| `AUTH_USER_NOT_FOUND` · `AUTH_DEVICE_NOT_FOUND`    | 404  | El id no existe                                                                                           | "El usuario no existe." · "El dispositivo no existe."             |
+| `FORBIDDEN`                                        | 403  | El rol no tiene el permiso, o el recurso no es suyo                                                       | "No tienes permiso para esta acción."                             |
+| `TOO_MANY_REQUESTS`                                | 429  | Superó el límite (con `Retry-After`)                                                                      | "Demasiados intentos. Espera un momento."                         |
 
 ## 8. Seguridad, punto por punto
 
@@ -332,21 +346,23 @@ SIMULADOR_CLIENT_SECRET=   # lo usa DeviceSeeder en local; en producción: ident
 
 **82 pruebas del módulo** (más las 55 que ya existían): **137 en verde sobre MySQL**, Pint ✅, PHPStan nivel 7 con 0 errores.
 
-| Prueba                    | Tipo    | Verifica                                                                                                                                                     |
-| ------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `RoleTest`                | Unit    | Dónde vive cada rol, quién exige astronauta, etiquetas en español                                                                                            |
-| `RoleAssignmentTest`      | Unit    | Las 9 combinaciones válidas e inválidas de rol + astronauta                                                                                                  |
-| `RefreshRotationTest`     | Unit    | Rotar · reuso → revocar familia · revocado o vencido → rechazar                                                                                              |
-| `TokenClaimsTest`         | Unit    | Ida y vuelta de los _claims_; `sub` ≠ `typ`, rol desconocido o `exp` faltante → error                                                                        |
-| `PermissionMatrixTest`    | Unit    | La matriz real: roles válidos, ningún permiso vacío, reglas clave                                                                                            |
-| `UsersTableTest`          | Feature | Columnas en MySQL, `role` como `enum`, `astronaut_id` único, `nullOnDelete`, `expires_at` es `DATETIME`                                                      |
-| `JwtTest`                 | Feature | Firmar/verificar, payload alterado, `alg: none`, `HS512`, `aud` e `iss` ajenos, basura, vencido con y sin tolerancia, secreto ausente o corto                |
-| `LoginTest`               | Feature | Login correcto (JSON, _cookie_, `last_login_at`), misma respuesta para correo inexistente y clave mala, inactivo, sin rol, validación en español, _throttle_ |
-| `GuardTest`               | Feature | Sin token, válido, malformado, vencido, desactivado y borrado después del login, cambio de rol al instante, varias peticiones seguidas                       |
-| `RefreshAndLogoutTest`    | Feature | Rotación, **reuso → familia revocada**, sin _cookie_, vencido, `Origin` ajeno y propio, _logout_ mata _access_ y _refresh_                                   |
-| `DeviceTokenTest`         | Feature | Token de máquina con solo `measurements.ingest`, sin _cookie_, secreto hasheado, credenciales malas, inactivo                                                |
-| `AuthorizationMatrixTest` | Feature | **5 roles × 14 permisos** responden 200/403 exactamente como la matriz; `health.read` para cada rol                                                          |
-| `SeedersTest`             | Feature | Un usuario por rol enlazado a la tripulación, sin duplicar al repetir, y todos pueden autenticarse                                                           |
+| Prueba                    | Tipo    | Verifica                                                                                                                                                                                                                             |
+| ------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `RoleTest`                | Unit    | Dónde vive cada rol, quién exige astronauta, etiquetas en español                                                                                                                                                                    |
+| `RoleAssignmentTest`      | Unit    | Las 9 combinaciones válidas e inválidas de rol + astronauta; solo el médico de vuelo guarda misión, y es obligatoria                                                                                                                 |
+| `RefreshRotationTest`     | Unit    | Rotar · reuso → revocar familia · revocado o vencido → rechazar                                                                                                                                                                      |
+| `TokenClaimsTest`         | Unit    | Ida y vuelta de los _claims_; `sub` ≠ `typ`, rol desconocido o `exp` faltante → error                                                                                                                                                |
+| `PermissionMatrixTest`    | Unit    | La matriz real: roles válidos, ningún permiso vacío, reglas clave                                                                                                                                                                    |
+| `UsersTableTest`          | Feature | Columnas en MySQL, `role` como `enum`, `astronaut_id` único, `nullOnDelete`, `expires_at` es `DATETIME`                                                                                                                              |
+| `JwtTest`                 | Feature | Firmar/verificar, payload alterado, `alg: none`, `HS512`, `aud` e `iss` ajenos, basura, vencido con y sin tolerancia, secreto ausente o corto                                                                                        |
+| `LoginTest`               | Feature | Login correcto (JSON, _cookie_, `last_login_at`), misma respuesta para correo inexistente y clave mala, inactivo, sin rol, validación en español, _throttle_                                                                         |
+| `GuardTest`               | Feature | Sin token, válido, malformado, vencido, desactivado y borrado después del login, cambio de rol al instante, varias peticiones seguidas                                                                                               |
+| `RefreshAndLogoutTest`    | Feature | Rotación, **reuso → familia revocada**, sin _cookie_, vencido, `Origin` ajeno y propio, _logout_ mata _access_ y _refresh_                                                                                                           |
+| `DeviceTokenTest`         | Feature | Token de máquina con solo `measurements.ingest`, sin _cookie_, secreto hasheado, credenciales malas, inactivo                                                                                                                        |
+| `AuthorizationMatrixTest` | Feature | **5 roles × 14 permisos** responden 200/403 exactamente como la matriz; `health.read` para cada rol                                                                                                                                  |
+| `UsersApiTest`            | Feature | Lista con nombres de M6, crear (correo en minúsculas, médico con misión, tripulante enlazado), errores 422 por campo, editar sin cambiar el correo, el admin no se bloquea a sí mismo (409), desactivar cierra sesiones, 401/403/404 |
+| `DevicesApiTest`          | Feature | Lista sin secreto, crear devuelve el secreto una vez y sirve para `/device-token`, tripulante de otra misión, desactivado no obtiene token, 401/403/404                                                                              |
+| `SeedersTest`             | Feature | Un usuario por rol enlazado a la tripulación, sin duplicar al repetir, y todos pueden autenticarse                                                                                                                                   |
 
 **Ayudas para otras pruebas** (`Identidad/Tests/Support/InteractsWithJwt.php`):
 
@@ -370,7 +386,8 @@ $this->getJson('/api/v1/auth/me', $this->bearer($token))->assertOk();
 - [x] `UserSeeder` · `DeviceSeeder` (y `MissionSeeder` de M6)
 - [x] Ayudas de prueba `InteractsWithJwt`
 - [x] Pruebas de la sección 9 en verde
-- [ ] CRUD de usuarios y dispositivos por API (fase 6)
+- [x] Gestión de usuarios y dispositivos por API (F0 del plan del backend, `documentacion/PLAN_BACKEND.md`): `ListUsers` · `CreateUser` · `UpdateUser` · `SetUserActive` · `ListDevices` · `AddDevice` · `SetDeviceActive`; la pantalla de Usuarios ya los usa
+- [x] `users.mission_id` para el médico de vuelo (su token trae su misión) · `identidad:user-password <correo>`
 - [x] Fortify quitado: el acceso es solo por la API con JWT (login de Vue en `/acceso`)
 
 ## 11. Cómo quedó hecho

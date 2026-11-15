@@ -26,4 +26,13 @@ final class UpdateRefreshTokenRepository
             ->whereNull('revoked_at')
             ->update(['revoked_at' => $at]);
     }
+
+    /** Revoca todas las sesiones abiertas de un usuario (p. ej. al desactivarlo). Devuelve cuántas. */
+    public function revokeAllOfUser(int $userId, CarbonImmutable $at): int
+    {
+        return RefreshToken::query()
+            ->where('user_id', $userId)
+            ->whereNull('revoked_at')
+            ->update(['revoked_at' => $at]);
+    }
 }

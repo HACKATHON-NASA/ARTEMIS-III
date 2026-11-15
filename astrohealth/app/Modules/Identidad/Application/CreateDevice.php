@@ -7,11 +7,14 @@ namespace App\Modules\Identidad\Application;
 use App\Modules\Entorno\Contratos\CrewQuery;
 use App\Modules\Entorno\Contratos\MissionQuery;
 use App\Modules\Identidad\Application\DTOs\NewDevice;
+use App\Modules\Identidad\Domain\Excepciones\AstronautNotInMission;
+use App\Modules\Identidad\Domain\Excepciones\ClientIdTaken;
+use App\Modules\Identidad\Domain\Excepciones\UnknownMission;
+use App\Modules\Identidad\Domain\Excepciones\WeakDeviceSecret;
 use App\Modules\Identidad\Infrastructure\Repositorios\Device\FindDeviceRepository;
 use App\Modules\Identidad\Infrastructure\Repositorios\Device\InsertDeviceRepository;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 
 /**
  * Caso de uso: registrar una máquina. El secreto se guarda hasheado y se
@@ -30,7 +33,7 @@ final readonly class CreateDevice
     ) {}
 
     /**
-     * @throws InvalidArgumentException si la misión o el astronauta no sirven, el client_id ya existe o el secreto es corto.
+     * @throws UnknownMission|AstronautNotInMission|ClientIdTaken|WeakDeviceSecret
      */
     public function execute(
         int $missionId,
@@ -40,23 +43,23 @@ final readonly class CreateDevice
         #[\SensitiveParameter] ?string $clientSecret = null,
     ): NewDevice {
         if (! $this->missions->exists($missionId)) {
-            throw new InvalidArgumentException("La misión {$missionId} no existe.");
+            throw new UnknownMission;
         }
 
         if ($astronautId !== null && $this->crew->missionOf($astronautId) !== $missionId) {
-            throw new InvalidArgumentException("El astronauta {$astronautId} no es de la misión {$missionId}.");
+            throw new AstronautNotInMission;
         }
 
         $clientId ??= 'dev-'.Str::lower(Str::random(12));
 
         if ($this->findDevice->findByClientId($clientId) !== null) {
-            throw new InvalidArgumentException("Ya existe un dispositivo con client_id \"{$clientId}\".");
+            throw new ClientIdTaken;
         }
 
         $clientSecret ??= Str::random(48);
 
         if (strlen($clientSecret) < self::MIN_SECRET_LENGTH) {
-            throw new InvalidArgumentException('El secreto del dispositivo debe tener al menos '.self::MIN_SECRET_LENGTH.' caracteres.');
+            throw new WeakDeviceSecret;
         }
 
         $device = $this->insertDevice->insert($missionId, $astronautId, $name, $clientId, $this->hasher->make($clientSecret));

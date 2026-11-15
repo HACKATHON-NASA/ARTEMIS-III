@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
+import { toast } from 'vue-sonner';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +21,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { ApiError } from '@/lib/api';
 import type {
     ManagedUser,
     MissionOption,
@@ -142,8 +144,32 @@ async function save(): Promise<void> {
             crew_role: needsCrewRole.value ? form.crewRole : null,
         });
         open.value = false;
+    } catch (error) {
+        showServerErrors(error);
     } finally {
         saving.value = false;
+    }
+}
+
+/** Los errores del backend, debajo del campo al que pertenecen. */
+function showServerErrors(error: unknown): void {
+    if (!(error instanceof ApiError)) {
+        throw error;
+    }
+
+    const fields = {
+        name: error.fieldError('name'),
+        email: error.fieldError('email'),
+        role: error.fieldError('role'),
+        mission: error.fieldError('mission_id'),
+        crewRole: error.fieldError('astronaut_id'),
+    };
+    errors.value = Object.fromEntries(
+        Object.entries(fields).filter(([, message]) => message !== undefined),
+    );
+
+    if (Object.keys(errors.value).length === 0) {
+        toast.error(error.message);
     }
 }
 </script>

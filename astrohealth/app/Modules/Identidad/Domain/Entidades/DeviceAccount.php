@@ -7,6 +7,7 @@ namespace App\Modules\Identidad\Domain\Entidades;
 use App\Modules\Identidad\Domain\Enums\ActorType;
 use App\Modules\Identidad\Domain\Enums\Role;
 use App\Modules\Identidad\Domain\ValueObjects\ActorIdentity;
+use Carbon\CarbonImmutable;
 
 /**
  * Una máquina que envía lecturas (el simulador o un sensor), sin Eloquent.
@@ -22,6 +23,7 @@ final readonly class DeviceAccount
         public string $clientId,
         #[\SensitiveParameter] public string $secretHash,
         public bool $active,
+        public ?CarbonImmutable $lastSeenAt = null,
     ) {}
 
     public function identity(): ActorIdentity

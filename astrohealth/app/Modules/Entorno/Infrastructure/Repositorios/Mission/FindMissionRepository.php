@@ -16,4 +16,12 @@ final class FindMissionRepository implements MissionQuery
     {
         return Mission::query()->whereKey($missionId)->exists();
     }
+
+    public function names(): array
+    {
+        /** @var array<int, string> $names */
+        $names = Mission::query()->orderBy('id')->pluck('name', 'id')->all();
+
+        return $names;
+    }
 }

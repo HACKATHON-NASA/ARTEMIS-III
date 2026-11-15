@@ -68,13 +68,16 @@ flowchart LR
 
 ---
 
-## F0 · M0 Identidad: revisión y lo que falta
+## F0 · M0 Identidad: revisión y lo que falta · ✅ hecho (16 nov 2026)
 
 **Revisar (ya existe):**
-- [ ] `config/permissions.php` tiene todos los permisos que usan las pantallas (hoy: `users.manage`, `devices.manage`, `missions.manage`, `mission.update`, `crew.read`, `alerts.read`, `alerts.send`, `alerts.acknowledge`, `advice.send`, `clinical_notes.manage`, `guide.manage`, `gamification.read`, `measurements.ingest`, más el Gate `health.read`). Faltará agregar `measurements.record` (astronauta) en F3 y cada uno tiene prueba en `AuthorizationMatrixTest`.
-- [ ] El Gate `health.read` decide "lo suyo": el astronauta solo ve sus datos; el médico, los de su misión.
-- [x] `TokenFactory` ya incluye `astronaut_id` y `mission_id` en el token (los necesitan todos los módulos).
-- [ ] Los seeders crean los mismos usuarios que usan los *mocks* (Elena, Kenji, Amara, Lucas, la Dra. Sofía Ramírez, el admin).
+- [x] `config/permissions.php` tiene todos los permisos que usan las pantallas (`users.manage`, `devices.manage`, `missions.manage`, `mission.update`, `crew.read`, `alerts.read`, `alerts.send`, `alerts.acknowledge`, `advice.send`, `clinical_notes.manage`, `guide.manage`, `gamification.read`, `measurements.ingest`, `measurements.write.own/crew`, `reminders.manage.own`, más el Gate `health.read`) y `AuthorizationMatrixTest` prueba cada uno con cada rol.
+- [ ] ⚠️ El Gate `health.read` decide "lo suyo" para el astronauta, pero **los médicos y el admin ven a los tripulantes de todas las misiones** (`health.read.any`). Acotarlo a la misión del médico en F1, ahora que `users.mission_id` existe y va en su token.
+- [x] `TokenFactory` incluye `astronaut_id` y `mission_id` en el token; desde F0 también el del médico de vuelo.
+- [x] Los seeders crean los mismos usuarios que usan los *mocks* (Elena, Kenji, Amara, Lucas, la Dra. Sofía Ramírez, el admin); la Dra. Sofía sigue Ares-1.
+
+**Hecho en F0:** las 7 rutas de abajo, la columna `users.mission_id`, el comando `identidad:user-password <correo>` (el admin crea a la persona sin contraseña conocida), errores de negocio con su campo, `CreateDevice` con errores de negocio en vez de `InvalidArgumentException`, 20 pruebas nuevas y la pantalla de Usuarios sin `mockUsers`/`mockDevices`.
+**Queda con datos de prueba en esa pantalla:** la misión del encabezado (F1) y el contador de alertas (F5). **Mientras no exista F1**, crear un usuario de la nave falla con `AUTH_UNKNOWN_ASTRONAUT`, porque el tripulante nuevo se crea en el store de prueba de M6 y no existe en la base de datos.
 
 **Construir:**
 
@@ -137,7 +140,7 @@ flowchart LR
 | Endpoint | Permiso | Caso de uso |
 |---|---|---|
 | `GET /api/v1/indicators` | autenticado | `ListIndicators` |
-| `POST /api/v1/measurements` | `measurements.record` (nuevo, astronauta, lo suyo) | `RecordMeasurements` |
+| `POST /api/v1/measurements` | `measurements.write.own` (lo suyo) · `measurements.write.crew` (médico de la tripulación) | `RecordMeasurements` |
 | `POST /api/v1/ingest/readings` | `measurements.ingest` (dispositivo) | `IngestReadings` (idempotente por `batch_id`; repetido → devuelve el resumen original) |
 | `GET /api/v1/astronauts/{id}/measurements?indicator=&range=` | `health.read` | `ListMeasurements` |
 | Comando `registro:import-file <json>` | consola | Plan B sin red (**D8**) |

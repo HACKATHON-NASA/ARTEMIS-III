@@ -20,6 +20,7 @@ final class UpsertUserRepository
         #[\SensitiveParameter] string $password,
         Role $role,
         ?int $astronautId,
+        ?int $missionId = null,
     ): UserAccount {
         $user = User::query()->updateOrCreate(
             ['email' => $email],
@@ -28,6 +29,7 @@ final class UpsertUserRepository
                 'password' => $password,
                 'role' => $role,
                 'astronaut_id' => $astronautId,
+                'mission_id' => $missionId,
                 'active' => true,
             ],
         );

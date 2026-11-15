@@ -7,9 +7,11 @@ namespace App\Modules\Identidad\Domain\Entidades;
 use App\Modules\Identidad\Domain\Enums\ActorType;
 use App\Modules\Identidad\Domain\Enums\Role;
 use App\Modules\Identidad\Domain\ValueObjects\ActorIdentity;
+use Carbon\CarbonImmutable;
 
 /**
  * Una persona con acceso a la API, tal como la ve M0 (sin Eloquent).
+ * missionId solo lo tiene el médico de vuelo (los tripulantes la toman de su astronauta).
  */
 final readonly class UserAccount
 {
@@ -21,6 +23,8 @@ final readonly class UserAccount
         public ?Role $role,
         public bool $active,
         public ?int $astronautId,
+        public ?int $missionId = null,
+        public ?CarbonImmutable $lastLoginAt = null,
     ) {}
 
     public function identity(): ActorIdentity
@@ -33,6 +37,7 @@ final readonly class UserAccount
             role: $this->role,
             active: $this->active,
             astronautId: $this->astronautId,
+            missionId: $this->missionId,
         );
     }
 }

@@ -22,6 +22,8 @@ final class UserMapper
             role: $user->role,
             active: $user->active,
             astronautId: $user->astronaut_id,
+            missionId: $user->mission_id,
+            lastLoginAt: $user->last_login_at,
         );
     }
 }

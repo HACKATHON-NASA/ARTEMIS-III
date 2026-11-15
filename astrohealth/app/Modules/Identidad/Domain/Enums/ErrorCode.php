@@ -19,4 +19,15 @@ enum ErrorCode: string
     case DeviceInvalid = 'AUTH_DEVICE_INVALID';
     case InvalidRoleAssignment = 'AUTH_INVALID_ROLE_ASSIGNMENT';
     case OriginNotAllowed = 'AUTH_ORIGIN_NOT_ALLOWED';
+    case EmailTaken = 'AUTH_EMAIL_TAKEN';
+    case AstronautTaken = 'AUTH_ASTRONAUT_TAKEN';
+    case UnknownAstronaut = 'AUTH_UNKNOWN_ASTRONAUT';
+    case UnknownMission = 'AUTH_UNKNOWN_MISSION';
+    case MissionRequired = 'AUTH_MISSION_REQUIRED';
+    case AstronautNotInMission = 'AUTH_ASTRONAUT_NOT_IN_MISSION';
+    case ClientIdTaken = 'AUTH_CLIENT_ID_TAKEN';
+    case WeakDeviceSecret = 'AUTH_WEAK_DEVICE_SECRET';
+    case OwnAccessLocked = 'AUTH_OWN_ACCESS_LOCKED';
+    case UserNotFound = 'AUTH_USER_NOT_FOUND';
+    case DeviceNotFound = 'AUTH_DEVICE_NOT_FOUND';
 }

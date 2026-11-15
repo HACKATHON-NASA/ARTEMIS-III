@@ -102,7 +102,7 @@ Todas tienen `id` (`bigint` autoincremental) y `created_at` / `updated_at`, salv
 ### M0 · `users` (columnas que se agregan), `devices`, `refresh_tokens`
 | Tabla | Columnas |
 |---|---|
-| `users` | + `role` `string(30)` (`admin`, `flight_surgeon`, `crew_medical_officer`, `astronaut`; `enum` `Role` en PHP) · + `active` `boolean` · + `astronaut_id` *nullable*, único → `astronauts` |
+| `users` | + `role` `string(30)` (`admin`, `flight_surgeon`, `crew_medical_officer`, `astronaut`; `enum` `Role` en PHP) · + `active` `boolean` · + `astronaut_id` *nullable*, único → `astronauts` · + `mission_id` *nullable* → `missions` (solo el médico de vuelo) |
 | `devices` | `mission_id` → `missions` · `astronaut_id` *nullable* (con `null` es un *gateway* de toda la misión) · `name` · `client_id` único · `secret_hash` · `active` · `last_seen_at` |
 | `refresh_tokens` | `user_id` · `family_id` (uuid) · `token_hash` (sha256, único) · `expires_at` · `used_at` · `revoked_at` · `user_agent` · `ip` · `created_at` |
 
