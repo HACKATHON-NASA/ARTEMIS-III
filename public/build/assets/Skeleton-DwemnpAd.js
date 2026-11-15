@@ -1,0 +1,1 @@
+import{On as e,Zn as t,b as n,k as r,mt as i}from"./runtime-core.esm-bundler-CKm0e5HC.js";import{t as a}from"./utils-Dh8xV5qN.js";var o=r({__name:`Skeleton`,props:{class:{type:[Boolean,null,String,Object,Array]}},setup(r){let o=r;return(r,s)=>(i(),n(`div`,{"data-slot":`skeleton`,class:t(e(a)(`animate-pulse rounded-md bg-primary/10`,o.class))},null,2))}});export{o as t};

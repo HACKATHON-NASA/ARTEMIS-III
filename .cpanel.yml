@@ -1,0 +1,13 @@
+---
+deployment:
+  tasks:
+    - export APP=$HOME/ArtemisIII/ArtemisIII
+    - export WEB=$HOME/ArtemisIII/public
+    - export PHP=/usr/local/bin/php
+    - /bin/mkdir -p $APP $WEB
+    - if command -v rsync >/dev/null; then rsync -a --delete --exclude=.env --exclude=storage/ --exclude=bootstrap/cache/ ArtemisIII/ $APP/; else /bin/cp -R ArtemisIII/. $APP/; fi
+    - if command -v rsync >/dev/null; then rsync -a --delete --exclude=.well-known/ --exclude=storage --exclude=.htaccess.bak public/ $WEB/; else /bin/cp -R public/. $WEB/; fi
+    - /bin/mkdir -p $APP/storage/app/public $APP/storage/framework/cache/data $APP/storage/framework/sessions $APP/storage/framework/views $APP/storage/logs $APP/bootstrap/cache
+    - (cd $APP && $PHP artisan migrate --force)
+    - (cd $APP && ( [ -f storage/app/.seeded ] || ( $PHP artisan db:seed --force && touch storage/app/.seeded ) ))
+    - (cd $APP && $PHP artisan optimize:clear && $PHP artisan optimize)

@@ -1,0 +1,1 @@
+var e={evolution:{label:`Evolución`,hint:`Cómo va desde la última vez`},impression:{label:`Impresión`,hint:`Lo que crees que pasa`},plan:{label:`Plan`,hint:`Qué se va a hacer`},follow_up:{label:`Seguimiento`,hint:`Qué revisar más adelante`}};export{e as t};
