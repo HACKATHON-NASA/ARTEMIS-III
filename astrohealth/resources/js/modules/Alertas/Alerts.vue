@@ -31,7 +31,7 @@ const { t } = useI18n();
  * la tripulación (valores fuera de rango, SOS, pedidos de ayuda y novedades)
  * y se actualiza en vivo (useLiveAlerts, desde el menú). El astronauta habla
  * con Tierra con sus tres botones; Tierra atiende y responde.
- * ⚠️ Por ahora con datos de prueba (ver Stores/useAlertsStore.ts).
+ * Los datos vienen de la API (ver Stores/useAlertsStore.ts).
  */
 defineOptions({
     layout: { breadcrumbs: [{ title: 'nav.alerts', href: alertas() }] },

@@ -19,13 +19,22 @@ final class ReadingValidator
     /** Margen para relojes un poco adelantados. */
     public const FUTURE_TOLERANCE_MINUTES = 5;
 
+    /**
+     * Otras formas de escribir la misma unidad del catálogo. La radiación
+     * del catálogo ya es la dosis de un día: "mSv/day" (como la manda el
+     * simulador) es lo mismo que "mSv".
+     */
+    private const UNIT_ALIASES = [
+        'mSv' => ['mSv/day', 'mSv/d', 'mSv/día'],
+    ];
+
     public static function check(?Indicator $indicator, ?string $unit, float $value, CarbonImmutable $measuredAt, CarbonImmutable $now): ?ErrorCode
     {
         if ($indicator === null) {
             return ErrorCode::UnknownIndicator;
         }
 
-        if ($unit !== null && $unit !== $indicator->unit) {
+        if ($unit !== null && ! self::sameUnit($unit, $indicator->unit)) {
             return ErrorCode::UnitMismatch;
         }
 
@@ -38,6 +47,12 @@ final class ReadingValidator
         }
 
         return null;
+    }
+
+    /** ¿La unidad que llegó es la del catálogo (o una forma equivalente de escribirla)? */
+    public static function sameUnit(string $unit, string $catalogUnit): bool
+    {
+        return $unit === $catalogUnit || in_array($unit, self::UNIT_ALIASES[$catalogUnit] ?? [], true);
     }
 
     /** El mensaje para la persona o para el log del simulador. */

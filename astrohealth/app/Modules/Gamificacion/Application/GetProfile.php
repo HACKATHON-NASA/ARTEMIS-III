@@ -30,7 +30,7 @@ final readonly class GetProfile
     ) {}
 
     /**
-     * @return array{astronaut_id: int, points: int, level: int, level_progress: int, streak_days: int, badges: list<array<string, mixed>>, recent: list<PointEntry>}
+     * @return array{astronaut_id: int, points: int, level: int, level_progress: int, level_size: int, streak_days: int, badges: list<array<string, mixed>>, recent: list<PointEntry>, earning: list<array{reason: string, points: int}>}
      */
     public function execute(int $astronautId, bool $withBadges = true): array
     {
@@ -71,9 +71,29 @@ final readonly class GetProfile
             'points' => $points,
             'level' => $level['level'],
             'level_progress' => $level['progress'],
+            'level_size' => $this->settings->levelSize(),
             'streak_days' => StreakRule::current($complete, max(1, $this->clock->today($astronautId))),
             'badges' => $badges,
             'recent' => array_slice($log, 0, 8),
+            'earning' => $this->earning(),
         ];
+    }
+
+    /**
+     * Cómo se ganan los puntos (config/gamification.php), para la pantalla.
+     *
+     * @return list<array{reason: string, points: int}>
+     */
+    private function earning(): array
+    {
+        $earning = [];
+
+        foreach (PointReason::cases() as $reason) {
+            if ($reason !== PointReason::Badge) {
+                $earning[] = ['reason' => $reason->value, 'points' => $this->settings->pointsFor($reason)];
+            }
+        }
+
+        return $earning;
     }
 }

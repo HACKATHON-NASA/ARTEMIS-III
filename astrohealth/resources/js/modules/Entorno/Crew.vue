@@ -29,7 +29,7 @@ const { t } = useI18n();
  * cuerpo en 3D (M3) y su puntaje (M2). Tocar un órgano abre su ventana en
  * el centro. Si la misión está en curso, debajo van las gráficas (M4). Médicos y
  * administración eligen la misión; quien va en la nave ve la suya.
- * ⚠️ Por ahora con datos de prueba (ver los stores de M6 y M2).
+ * Los datos vienen de la API (ver los stores de M6 y M2).
  */
 defineOptions({
     layout: { breadcrumbs: [{ title: 'nav.crew', href: tripulacion() }] },

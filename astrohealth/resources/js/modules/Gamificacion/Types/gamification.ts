@@ -51,9 +51,13 @@ export type GamificationProfile = {
     level: number;
     /** Puntos dentro del nivel actual (0–99). */
     level_progress: number;
+    /** Puntos por nivel (config/gamification.php). */
+    level_size: number;
     streak_days: number;
     badges: Badge[];
     recent: PointEntry[];
+    /** Cómo se ganan los puntos (config/gamification.php). */
+    earning: { reason: Exclude<PointReason, 'badge'>; points: number }[];
 };
 
 export type LeaderRow = {

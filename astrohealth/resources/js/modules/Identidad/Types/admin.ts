@@ -1,10 +1,8 @@
 import type { Location, Role } from '@/types/auth';
 
 /**
- * Tipos de la vista de administración. Tienen la forma del JSON que
- * devolverán GET /api/v1/users y GET /api/v1/devices (M0, pendientes en el
- * backend): cuando existan, el store cambia los datos de prueba por la API
- * sin tocar los componentes.
+ * Tipos de la vista de administración, con la forma del JSON de
+ * GET /api/v1/users y GET /api/v1/devices (M0).
  */
 
 export type PersonRole = Exclude<Role, 'device'>;

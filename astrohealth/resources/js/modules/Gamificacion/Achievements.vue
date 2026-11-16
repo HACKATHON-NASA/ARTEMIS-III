@@ -95,6 +95,7 @@ onMounted(async () => {
                     :points="store.profile.points"
                     :level="store.profile.level"
                     :progress="store.profile.level_progress"
+                    :size="store.profile.level_size"
                 />
                 <StreakCounter :days="store.profile.streak_days" />
                 <div class="flex items-center gap-3">
@@ -147,6 +148,7 @@ onMounted(async () => {
                     <RecentPoints
                         :recent="store.profile.recent"
                         :today="today"
+                        :earning="store.profile.earning"
                     />
                 </section>
             </div>

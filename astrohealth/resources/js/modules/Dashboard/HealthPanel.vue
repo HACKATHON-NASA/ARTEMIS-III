@@ -32,7 +32,7 @@ const { t } = useI18n();
  * curso. Lo importante de hoy, en vivo: las novedades que llegan (SOS,
  * ayuda, valores fuera de rango), quién necesita atención y qué cambió de
  * color en las últimas 72 h. Los cuerpos de cada uno están en Tripulación.
- * ⚠️ Por ahora con datos de prueba (ver los stores de cada módulo).
+ * Los datos vienen de la API (ver los stores de cada módulo).
  */
 defineOptions({
     layout: { breadcrumbs: [{ title: 'nav.healthPanel', href: salud() }] },

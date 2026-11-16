@@ -33,7 +33,7 @@ const { t } = useI18n();
  * Solo para quien tiene el permiso users.manage (el rol admin). Cada persona
  * de la nave o médico de vuelo va asociada a una misión de M6: al guardar,
  * el principal crea o actualiza su tripulante (useMissionsStore).
- * ⚠️ Por ahora con datos de prueba: ver Stores/useAdminStore.ts.
+ * Los datos vienen de la API (ver Stores/useAdminStore.ts).
  */
 defineOptions({
     layout: { breadcrumbs: [{ title: 'nav.users', href: usuarios() }] },
