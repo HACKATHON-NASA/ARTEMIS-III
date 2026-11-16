@@ -26,7 +26,7 @@ const { t } = useI18n();
  * Resultados de la tripulación (/guia/resultados, M2): cómo va cada uno en lo
  * psicológico (ánimo, ansiedad, estrés) y en lo intelectual (atención y
  * reacción), y cómo ha cambiado en la misión. Solo health.read.any.
- * ⚠️ Por ahora con datos de prueba guardados en este navegador.
+ * Los resultados vienen de la API (ver Stores/usePsychStore.ts).
  */
 defineOptions({
     layout: {

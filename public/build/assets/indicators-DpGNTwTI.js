@@ -1,0 +1,1 @@
+import{n as e}from"./indicators-Do2_g1N1.js";function t(t){return e(t)}export{t};

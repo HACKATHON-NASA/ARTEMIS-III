@@ -1,0 +1,1 @@
+import{l as e}from"./i18n-DB7lOSjr.js";function t(t,n=t){return e(`indicators.${t}.name`,n)}function n(t,n=t){return e(`indicators.${t}.short`,n)}function r(t,n=``){return e(`indicators.${t}.how`,n)}function i(t,n=``){return e(`indicators.${t}.why`,n)}export{i,t as n,n as r,r as t};

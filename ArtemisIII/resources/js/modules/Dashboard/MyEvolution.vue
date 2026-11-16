@@ -24,7 +24,7 @@ const { t } = useI18n();
  * Mi evolución (/evolucion, M4): la historia del astronauta en la misión.
  * Avisa lo que viene empeorando, muestra cada indicador con su flecha y su
  * mini gráfica, abre el elegido en grande y resume sus tests (M2).
- * ⚠️ Por ahora con datos de prueba (ver los stores).
+ * Los datos vienen de la API (ver los stores).
  */
 defineOptions({
     layout: { breadcrumbs: [{ title: 'nav.myEvolution', href: evolucion() }] },

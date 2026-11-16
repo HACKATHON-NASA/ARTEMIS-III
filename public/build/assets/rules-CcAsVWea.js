@@ -1,0 +1,1 @@
+import{l as e,s as t}from"./i18n-DB7lOSjr.js";function n(e){return t(`Gamificacion.reasons.${e}`)}function r(t){return e(`Gamificacion.badges.${t.code}.name`,t.name)}function i(t){return e(`Gamificacion.badges.${t.code}.condition`,t.condition)}export{r as n,n as r,i as t};

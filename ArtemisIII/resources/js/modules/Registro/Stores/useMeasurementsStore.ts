@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { api } from '@/lib/api';
-import { mockRecordReadings } from '@/mocks/crewHealth';
 import type {
     Indicator,
     Measurement,
@@ -13,10 +12,8 @@ import type {
  *
  * GET /api/v1/indicators y POST /api/v1/measurements. El astronauta sale
  * del token; el backend pone el color (M2), recalcula el puntaje y avisa
- * (MeasurementsRecorded).
- *
- * ⚠️ Puente hasta F4/F6: el cuerpo, el Inicio y el Panel aún leen datos de
- * prueba, así que lo guardado también se copia ahí (con el color del backend).
+ * (MeasurementsRecorded). El cuerpo, el Inicio y el Panel lo vuelven a
+ * pedir a la API después de guardar.
  */
 export const useMeasurementsStore = defineStore('measurements', () => {
     const indicators = ref<Indicator[]>([]);
@@ -30,17 +27,13 @@ export const useMeasurementsStore = defineStore('measurements', () => {
         indicators.value = await api<Indicator[]>('/indicators');
     }
 
-    async function record(
-        astronautId: number,
-        payload: RecordPayload,
-    ): Promise<Measurement[]> {
+    async function record(payload: RecordPayload): Promise<Measurement[]> {
         const saved = await api<Measurement[]>('/measurements', {
             method: 'POST',
             body: payload,
         });
 
         lastRecorded.value = saved;
-        mockRecordReadings(astronautId, saved);
 
         return saved;
     }

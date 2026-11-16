@@ -40,7 +40,7 @@ const { t } = useI18n();
 /**
  * Inicio del astronauta (/inicio): cuerpo (M3) + puntaje (M2) + alertas (M5)
  * + rutina (M8), con la misión de M6. El principal compone; cada módulo
- * pone sus piezas. ⚠️ Por ahora, todos con datos de prueba (ver sus stores).
+ * pone sus piezas. Todo viene de la API.
  */
 defineOptions({
     layout: { breadcrumbs: [{ title: 'nav.home', href: inicio() }] },

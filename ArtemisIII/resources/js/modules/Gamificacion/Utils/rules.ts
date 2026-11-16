@@ -2,18 +2,10 @@ import { t, tOr } from '@/lib/i18n';
 import type { Badge, PointReason } from '../Types/gamification';
 
 /**
- * Textos de M7 para la pantalla. Cuántos puntos da cada acción lo decide el
- * backend (config/gamification.php); POINTS solo se muestra en "Cómo ganar
- * puntos" y debe coincidir con esa configuración.
+ * Textos de M7 para la pantalla. Cuántos puntos da cada acción y cada
+ * cuánto se sube de nivel los manda el backend en el perfil
+ * (config/gamification.php): aquí no hay cifras.
  */
-export const POINTS: Record<Exclude<PointReason, 'badge'>, number> = {
-    daily_complete: 10,
-    streak_7: 50,
-    sleep_7h: 5,
-    exercise: 15,
-    reminder: 5,
-    psych_test: 10,
-};
 
 /** Por qué se ganaron unos puntos, en el idioma de ahora. */
 export function reasonLabel(reason: PointReason): string {

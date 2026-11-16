@@ -23,7 +23,7 @@ const { t } = useI18n();
  * Misiones (/admin/misiones, M6): administración crea las misiones y ve en
  * qué va cada una y quiénes la tripulan. Los tripulantes se crean en
  * Usuarios, asociados a una misión. Solo con el permiso missions.manage.
- * ⚠️ Por ahora con datos de prueba (ver Stores/useMissionsStore.ts).
+ * Los datos vienen de la API (ver Stores/useMissionsStore.ts).
  */
 defineOptions({
     layout: { breadcrumbs: [{ title: 'nav.missions', href: misiones() }] },

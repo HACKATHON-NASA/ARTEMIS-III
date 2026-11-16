@@ -36,6 +36,7 @@ onMounted(async () => {
             :points="store.profile.points"
             :level="store.profile.level"
             :progress="store.profile.level_progress"
+            :size="store.profile.level_size"
         />
         <p class="mt-2 text-xs text-muted-foreground">
             {{

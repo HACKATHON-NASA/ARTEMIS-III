@@ -1,1 +1,0 @@
-import{n as e}from"./indicators-De8n03bU.js";function t(t){return e(t)}export{t};

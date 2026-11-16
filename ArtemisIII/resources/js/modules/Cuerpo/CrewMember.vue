@@ -42,7 +42,7 @@ const { t } = useI18n();
  * médico. Su cuerpo, lo que viene empeorando, sus indicadores, sus tests y
  * las indicaciones que se le han dado (advice.send para escribir una) y,
  * para el equipo médico, sus notas clínicas privadas (clinical_notes.manage).
- * ⚠️ Por ahora con datos de prueba (ver los stores de cada módulo).
+ * Los datos vienen de la API (ver los stores de cada módulo).
  */
 const props = defineProps<{ astronautId: number }>();
 

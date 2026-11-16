@@ -29,7 +29,7 @@ const { t } = useI18n();
  * cuerpo (gravedad, retraso con Tierra, radiación y riesgos), el día de
  * misión y la tripulación. Se pueden explorar los otros entornos; quien
  * tiene mission.update puede cambiar la misión a otro.
- * ⚠️ Por ahora con datos de prueba (ver Stores/useMissionStore.ts).
+ * Los datos vienen de la API (ver Stores/useMissionStore.ts).
  */
 defineOptions({
     layout: { breadcrumbs: [{ title: 'nav.myMission', href: mision() }] },

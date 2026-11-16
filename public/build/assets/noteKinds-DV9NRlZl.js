@@ -1,1 +1,0 @@
-import{s as e}from"./i18n-CW8jgLAV.js";function t(t){return{get label(){return e(`Cuerpo.noteKinds.${t}.label`)},get hint(){return e(`Cuerpo.noteKinds.${t}.hint`)}}}var n={evolution:t(`evolution`),impression:t(`impression`),plan:t(`plan`),follow_up:t(`follow_up`)};export{n as t};
